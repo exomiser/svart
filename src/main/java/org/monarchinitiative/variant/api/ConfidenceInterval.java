@@ -1,0 +1,84 @@
+
+package org.monarchinitiative.variant.api;
+
+import java.util.Objects;
+
+/**
+ * Class representing the VCF confidence interval:
+ * <p>
+ * ##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS for imprecise variants">
+ * ##INFO=<ID=CIEND,Number=2,Type=Integer,Description="Confidence interval around END for imprecise variants">
+ * <p>
+ * Although I can't find a formal definition stating this, the examples always show first integer as negative or zero and
+ * the second positive or zero.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+public class ConfidenceInterval {
+
+    private static final ConfidenceInterval PRECISE = new ConfidenceInterval(0, 0);
+
+    private final int lowerBound;
+    private final int upperBound;
+
+    private ConfidenceInterval(int lowerBound, int upperBound) {
+        if (lowerBound > 0 || upperBound < 0) {
+            throw new IllegalArgumentException("'" + lowerBound + ", " + upperBound + "' ConfidenceInterval must have negative lowerBound and positive upperBound");
+        }
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+    }
+
+    public static ConfidenceInterval of(int lowerBound, int upperBound) {
+        if (lowerBound == 0 && upperBound == 0) {
+            return PRECISE;
+        }
+        return new ConfidenceInterval(lowerBound, upperBound);
+    }
+
+    public static ConfidenceInterval precise() {
+        return PRECISE;
+    }
+
+    public int getLowerBound() {
+        return lowerBound;
+    }
+
+    public int getUpperBound() {
+        return upperBound;
+    }
+
+    public int getMinPos(int pos) {
+        return pos + lowerBound;
+    }
+
+    public int getMaxPos(int pos) {
+        return pos + upperBound;
+    }
+
+    public boolean isPrecise() {
+        return lowerBound == 0 && upperBound == 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfidenceInterval)) return false;
+        ConfidenceInterval that = (ConfidenceInterval) o;
+        return lowerBound == that.lowerBound &&
+                upperBound == that.upperBound;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lowerBound, upperBound);
+    }
+
+    @Override
+    public String toString() {
+        return "ConfidenceInterval{" +
+                "lowerBound=" + lowerBound +
+                ", upperBound=" + upperBound +
+                '}';
+    }
+}
