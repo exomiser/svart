@@ -20,5 +20,13 @@ public enum CoordinateSystem {
      * the 3rd and the 7th bases inclusive is [2,7).  The BAM, BCFv2, BED, and PSL formats use the 0-based coordinate
      * system
      */
-    ZERO_BASED
+    ZERO_BASED;
+
+    public boolean isOneBased() {
+        return this == ONE_BASED;
+    }
+
+    public boolean isZeroBased() {
+        return this == ZERO_BASED;
+    }
 }
