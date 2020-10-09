@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public interface GenomicPosition extends Comparable<GenomicPosition> {
 
-    public <T extends GenomicContig<T>> GenomicContig<T> getContig();
+    public Contig getContig();
 
     // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file
     public default int getContigId() {
@@ -83,27 +83,27 @@ public interface GenomicPosition extends Comparable<GenomicPosition> {
      * @param position
      * @return a ONE-BASED position on the POSITIVE strand.
      */
-    public static GenomicPosition precise(GenomicContig contig, int position) {
+    public static GenomicPosition precise(Contig contig, int position) {
         return new DefaultGenomicPosition(contig, position, CoordinateSystem.ONE_BASED, Strand.POSITIVE, ConfidenceInterval.precise());
     }
 
-    public static GenomicPosition precise(GenomicContig contig, int position, Strand strand) {
+    public static GenomicPosition precise(Contig contig, int position, Strand strand) {
         return new DefaultGenomicPosition(contig, position, CoordinateSystem.ONE_BASED, strand, ConfidenceInterval.precise());
     }
 
-    public static GenomicPosition precise(GenomicContig contig, int position, CoordinateSystem coordinateSystem, Strand strand) {
+    public static GenomicPosition precise(Contig contig, int position, CoordinateSystem coordinateSystem, Strand strand) {
         return new DefaultGenomicPosition(contig, position, coordinateSystem, strand, ConfidenceInterval.precise());
     }
 
     class DefaultGenomicPosition implements GenomicPosition {
 
-        private final GenomicContig contig;
+        private final Contig contig;
         private final int position;
         private final CoordinateSystem coordinateSystem;
         private final Strand strand;
         private final ConfidenceInterval confidenceInterval;
 
-        public DefaultGenomicPosition(GenomicContig contig, int position, CoordinateSystem coordinateSystem, Strand strand, ConfidenceInterval confidenceInterval) {
+        public DefaultGenomicPosition(Contig contig, int position, CoordinateSystem coordinateSystem, Strand strand, ConfidenceInterval confidenceInterval) {
             this.contig = contig;
             this.position = position;
             this.coordinateSystem = coordinateSystem;
@@ -112,7 +112,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition> {
         }
 
         @Override
-        public GenomicContig<? extends GenomicContig<?>> getContig() {
+        public Contig getContig() {
             return contig;
         }
 

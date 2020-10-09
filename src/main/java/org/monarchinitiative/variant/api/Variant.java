@@ -3,7 +3,7 @@ package org.monarchinitiative.variant.api;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomicVariation extends GenomicRegion {
+public interface Variant extends GenomicRegion {
 
     /**
      * @return String with the reference allele in the variant, without common
@@ -17,7 +17,7 @@ public interface GenomicVariation extends GenomicRegion {
      */
     String getAlt();
 
-    default VariantType getVariantType() {
+    default VariantType getType() {
         return VariantType.parseAllele(getRef(), getAlt());
     }
 

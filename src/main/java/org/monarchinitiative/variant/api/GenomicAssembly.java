@@ -25,7 +25,7 @@ import java.util.SortedSet;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomicAssembly <T extends GenomicContig<T>> {
+public interface GenomicAssembly {
 
 //    GRCh38.p12
     public String getName();
@@ -42,11 +42,11 @@ public interface GenomicAssembly <T extends GenomicContig<T>> {
 
     public String getRefSeqAccession();
 
-    public SortedSet<T> getContigs();
+    public SortedSet<Contig> getContigs();
 
-    public T getContigById(int contigId);
+    public Contig getContigById(int contigId);
 
-    public T getContigByName(String contigName);
+    public Contig getContigByName(String contigName);
 
 //# Assembly name:  GRCh38.p13
 //# Description:    Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)
