@@ -18,7 +18,6 @@ public enum VariantType {
     // >=1000 (Jannovar VariantAnnotator)
     SNV,
     MNV,    // a multi-nucleotide variation
-    INDEL, // non-symbolic and < 999 bases TODO: what cutoff? or remove in favour of INS or DEL
     // start, end, length
     // pos
 
@@ -87,10 +86,6 @@ public enum VariantType {
 
     public static VariantType parseValue(String value) {
         String stripped = trimAngleBrackets(Objects.requireNonNull(value));
-        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
-        if (stripped.startsWith("STR")) {
-            return STR;
-        }
         switch (stripped) {
             case "SNP":
             case "SNV":
@@ -147,9 +142,15 @@ public enum VariantType {
                 return DUP_INV_BEFORE;
             case "DUP:INV-AFTER":
                 return DUP_INV_AFTER;
+            default:
+                // fall-through
         }
         // in other cases where we don't recognise the exact type, use the closest type or sub-type
         // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN
+        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
+        if (stripped.startsWith("STR")) {
+            return STR;
+        }
         if (stripped.startsWith("DEL:ME")) {
             return DEL_ME;
         }
