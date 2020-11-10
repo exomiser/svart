@@ -2,69 +2,94 @@
 package org.monarchinitiative.variant.api;
 
 
+import java.util.Comparator;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomicRegion extends Comparable<GenomicRegion> {
+public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> {
 
-    public GenomicPosition getStart();
+    Comparator<GenomicRegion> DEFAULT_COMPARATOR = Comparator.comparing(GenomicRegion::getContig)
+            .thenComparing(GenomicRegion::getStartPosition)
+            .thenComparing(GenomicRegion::getEndPosition)
+            .thenComparing(GenomicRegion::getStrand);
 
-    // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file
-    default int getStartContigId() {
-        return getStart().getContig().getId();
+    /**
+     * @return contig where the region is located
+     */
+    Contig getContig();
+
+    /**
+     * @return 1-based begin coordinate
+     */
+    Position getStartPosition();
+
+    /**
+     * @return 1-based begin coordinate of the region
+     */
+    default int getStart() {
+        return getStartPosition().getPos();
     }
 
-    // column 0 of the assembly report file 1-22, X,Y,MT
-    default String getStartContigName() {
-        return getStart().getContig().getName();
+    /**
+     * The begin position is also the end by default
+     *
+     * @return 1-based end coordinate
+     */
+    default Position getEndPosition() {
+        return getStartPosition();
     }
 
-    default int getStartPosition() {
-        return getStart().getPosition();
+    /**
+     * @return 1-based end coordinate of the region
+     */
+    default int getEnd() {
+        return getEndPosition().getPos();
     }
 
-    default ConfidenceInterval getStartCi() {
-        return getStart().getCi();
-    }
-
-    default int getStartMin() {
-        return getStartCi().getMinPos(getStartPosition());
-    }
-
-    default int getStartMax() {
-        return getStartCi().getMaxPos(getStartPosition());
-    }
-
-    public GenomicPosition getEnd();
-
-    // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file
-    default int getEndContigId() {
-        return getEnd().getContig().getId();
-    }
-
-    // column 0 of the assembly report file 1-22, X,Y,MT
-    default String getEndContigName() {
-        return getEnd().getContig().getName();
-    }
-
-    default int getEndPosition() {
-        return getEnd().getPosition();
-    }
-
-    default ConfidenceInterval getEndCi() {
-        return getEnd().getCi();
-    }
-
-    default int getEndMin() {
-        return getEndCi().getMinPos(getEndPosition());
-    }
-
-    default int getEndMax() {
-        return getEndCi().getMaxPos(getEndPosition());
-    }
 
     default int getLength() {
-        return getEnd().getPosition() - getStart().getPosition();
+        return getEnd() - getStart() + 1;
     }
 
+    /**
+     * @param other chromosomal region
+     * @return true if the region shares at least 1 bp with the <code>other</code> region
+     */
+    default boolean overlapsWith(GenomicRegion other) {
+        if (this.getContig().getId() != other.getContig().getId()) {
+            return false;
+        }
+        GenomicRegion onStrand = other.withStrand(this.getStrand());
+        return getStart() <= onStrand.getEnd() && getEnd() >= onStrand.getStart();
+    }
+
+    /**
+     * @param other chromosomal region
+     * @return true if the <code>other</code> region is fully contained within this region
+     */
+    default boolean contains(GenomicRegion other) {
+        if (this.getContig().getId() != other.getContig().getId()) {
+            return false;
+        }
+        GenomicRegion onStrand = other.withStrand(this.getStrand());
+        return onStrand.getStart() >= getStart() && onStrand.getEnd() <= getEnd();
+    }
+
+    default boolean contains(GenomicPosition position) {
+        if (this.getContig().getId() != position.getContig().getId()) {
+            return false;
+        }
+        GenomicPosition onStrand = position.withStrand(this.getStrand());
+        return getStart() <= onStrand.getPos() && onStrand.getPos() <= getEnd();
+    }
+
+    @Override
+    default int compareTo(GenomicRegion other) {
+        return DEFAULT_COMPARATOR.compare(this, other);
+    }
+
+    int hashCode();
+
+    boolean equals(Object o);
 }
