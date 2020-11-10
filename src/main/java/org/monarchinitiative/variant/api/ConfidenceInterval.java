@@ -64,7 +64,7 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
      * @return length of the confidence interval, precise CI has length <code>0</code>
      */
     public int length() {
-        return Math.abs(lowerBound) + Math.abs(upperBound);
+        return Math.abs(lowerBound) + upperBound;
     }
 
     public ConfidenceInterval toOppositeStrand() {
