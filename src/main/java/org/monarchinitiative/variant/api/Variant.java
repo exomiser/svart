@@ -5,6 +5,8 @@ package org.monarchinitiative.variant.api;
  */
 public interface Variant extends GenomicRegion {
 
+    String getId();
+
     /**
      * @return String with the reference allele in the variant, without common
      * suffix or prefix to reference allele.
@@ -17,8 +19,18 @@ public interface Variant extends GenomicRegion {
      */
     String getAlt();
 
+    @Override
+    Variant withStrand(Strand strand);
+
+    @Override
+    default Variant toOppositeStrand() {
+        return withStrand(getStrand().opposite());
+    }
+
     default VariantType getType() {
         return VariantType.parseAllele(getRef(), getAlt());
     }
+
+    boolean isSymbolic();
 
 }
