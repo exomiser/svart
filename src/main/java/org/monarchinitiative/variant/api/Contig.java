@@ -15,6 +15,11 @@ public interface Contig extends Comparable<Contig> {
     // Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
     String getName();
 
+    /**
+     * @return contig sequence role
+     */
+    SequenceRole getSequenceRole();
+
     // Sequence-Length column 8 (zero-based) of assembly-report
     int getLength();
 
@@ -61,4 +66,11 @@ public interface Contig extends Comparable<Contig> {
     // Y	assembled-molecule	Y	Chromosome	CM001014.3	=	NC_000087.8	C57BL/6J	91455967	na
     // MT	assembled-molecule	MT	Mitochondrion	AY172335.1	=	NC_005089.1	non-nuclear	16299	chrM
 
+    int hashCode();
+
+    boolean equals(Object o);
+
+    static Contig of() {
+        return null;
+    }
 }
