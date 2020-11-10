@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Utils {
+public class Seq {
 
     private static final Charset ASCII = StandardCharsets.US_ASCII;
 
@@ -20,7 +20,7 @@ public class Utils {
      */
     static final String IUPAC_BASES = "ACGTUWSMKRYBDHVNacgtuwsmkrybdhvn";
 
-    private Utils() {
+    private Seq() {
         // static utility class
     }
 

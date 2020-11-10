@@ -10,19 +10,19 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class UtilsTest {
+class SeqTest {
 
     @Test
     void reverseComplementByteArray() {
         byte[] seq = "ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn".getBytes(StandardCharsets.US_ASCII);
-        byte[] reversed = Utils.reverseComplement(seq);
+        byte[] reversed = Seq.reverseComplement(seq);
         String rev = new String(reversed, StandardCharsets.US_ASCII);
         assertThat(rev, is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
     }
 
     @Test
     void reverseComplementString() {
-        assertThat(Utils.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn"),
+        assertThat(Seq.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn"),
                 is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
     }
 }
