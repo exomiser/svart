@@ -191,20 +191,31 @@ public enum VariantType {
         return ref.length() < alt.length() ? VariantType.INS : VariantType.DEL;
     }
 
-    private static boolean isSymbolic(String ref, String alt) {
+    public static boolean isSymbolic(String ref, String alt) {
         // The VCF spec only mentions alt alleles as having symbolic characters, so check these first then check the ref
         // just in case.
         return isSymbolic(alt) || isSymbolic(ref);
     }
 
-    private static boolean isSymbolic(String allele) {
+    public static boolean isSymbolic(String allele) {
         // shamelessly copied from HTSJDK Allele via Jannovar
-        if (allele.length() <= 1) {
-            return false;
-        }
-        return (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>') || // symbolic or large insertion
-                (allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.') || // single breakend
-                (allele.contains("[") || allele.contains("]")); // mated breakend
+        return isLargeSymbolic(allele) || isSingleBreakend(allele) || isMatedBreakend(allele);
+    }
+
+    public static boolean isBreakend(String allele) {
+        return isSingleBreakend(allele) || isMatedBreakend(allele);
+    }
+
+    public static boolean isLargeSymbolic(String allele) {
+        return allele.length() > 1 && allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>';
+    }
+
+    public static boolean isSingleBreakend(String allele) {
+        return allele.length() > 1 && allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.';
+    }
+
+    public static boolean isMatedBreakend(String allele) {
+        return allele.length() > 1 && allele.contains("[") || allele.length() > 1 && allele.contains("]");
     }
 
     private static String trimAngleBrackets(String value) {
