@@ -1,5 +1,7 @@
 package org.monarchinitiative.variant.api;
 
+import org.monarchinitiative.variant.api.impl.ContigDefault;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -70,7 +72,7 @@ public interface Contig extends Comparable<Contig> {
 
     boolean equals(Object o);
 
-    static Contig of() {
-        return null;
+    static Contig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+        return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
     }
 }
