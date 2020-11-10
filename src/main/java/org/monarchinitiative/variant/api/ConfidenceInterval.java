@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ConfidenceInterval {
+public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
 
     private static final ConfidenceInterval PRECISE = new ConfidenceInterval(0, 0);
 
@@ -57,7 +57,29 @@ public class ConfidenceInterval {
     }
 
     public boolean isPrecise() {
-        return lowerBound == 0 && upperBound == 0;
+        return this == PRECISE;
+    }
+
+    /**
+     * @return length of the confidence interval, precise CI has length <code>0</code>
+     */
+    public int length() {
+        return Math.abs(lowerBound) + Math.abs(upperBound);
+    }
+
+    public ConfidenceInterval toOppositeStrand() {
+        return isPrecise() ? PRECISE : new ConfidenceInterval(Math.negateExact(upperBound), Math.abs(lowerBound));
+    }
+
+    /**
+     * Shorter confidence interval is better.
+     *
+     * @param o confidence interval to compare with
+     * @return comparison result as specified in {@link Comparable}
+     */
+    @Override
+    public int compareTo(ConfidenceInterval o) {
+        return Integer.compare(this.length(), o.length());
     }
 
     @Override
