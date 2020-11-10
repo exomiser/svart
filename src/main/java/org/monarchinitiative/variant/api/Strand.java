@@ -7,5 +7,16 @@ package org.monarchinitiative.variant.api;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public enum Strand {
-    UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE
+    UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE;
+
+    public Strand opposite() {
+        switch (this) {
+            case POSITIVE:
+                return NEGATIVE;
+            case NEGATIVE:
+                return POSITIVE;
+            default:
+                return this;
+        }
+    }
 }
