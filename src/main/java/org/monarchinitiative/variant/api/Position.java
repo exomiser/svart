@@ -1,6 +1,5 @@
 package org.monarchinitiative.variant.api;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -75,6 +74,8 @@ public class Position implements Comparable<Position> {
         return coordinateSystem;
     }
 
+    // TODO: perhaps it would be best to simply return the int value here? Regions could end up being created using different
+    // based coordinates and there is no guaranteed what CoordinateSystem a pos() is returned in.
     public Position toCoordinateSystem(CoordinateSystem coordinateSystem) {
         if (coordinateSystem == this.coordinateSystem) {
             return this;
@@ -106,10 +107,12 @@ public class Position implements Comparable<Position> {
 
     @Override
     public int compareTo(Position o) {
-        // todo: order by 0-based position
-        return Comparator.comparing(Position::getPos)
-                .thenComparing(Position::getConfidenceInterval)
-                .compare(this, o);
+        // todo: order by 0-based position?
+        int result = Integer.compare(pos, o.pos);
+        if (result == 0) {
+            result = Math.negateExact(Integer.compare(confidenceInterval.length(), o.confidenceInterval.length()));
+        }
+        return result;
     }
 
     @Override
