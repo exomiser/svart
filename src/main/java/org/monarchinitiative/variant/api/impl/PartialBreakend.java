@@ -12,17 +12,17 @@ public class PartialBreakend implements Breakend {
     private final Contig contig;
     private final Position position;
     private final Strand strand;
-    private final String seq; // ref and alt isn't applicable here as they are elsewhere
+    private final String id;
 
-    public PartialBreakend(Contig contig, Position position, Strand strand, String seq) {
+    public PartialBreakend(Contig contig, Position position, Strand strand, String id) {
         this.contig = Objects.requireNonNull(contig);
         this.position = Objects.requireNonNull(position);
         this.strand = Objects.requireNonNull(strand);
-        this.seq = Objects.requireNonNull(seq);
+        this.id = Objects.requireNonNull(id);
     }
 
-    public static PartialBreakend of(Contig contig, Position position, Strand strand, String seq) {
-        return new PartialBreakend(contig, position, strand, seq);
+    public static PartialBreakend of(Contig contig, Position position, Strand strand, String id) {
+        return new PartialBreakend(contig, position, strand, id);
     }
 
     @Override
@@ -46,18 +46,13 @@ public class PartialBreakend implements Breakend {
     }
 
     @Override
-    public String getRef() {
-        return seq;
-    }
-
-    @Override
     public PartialBreakend withStrand(Strand strand) {
         if (this.strand == strand) {
             return this;
         } else {
             Position pos = Position.of(contig.getLength() - position.getPos() + 1,
                     position.getConfidenceInterval().toOppositeStrand());
-            return new PartialBreakend(contig, pos, strand, seq);
+            return new PartialBreakend(contig, pos, strand, id);
         }
     }
 
@@ -69,21 +64,21 @@ public class PartialBreakend implements Breakend {
         return contig.equals(that.contig) &&
                 position.equals(that.position) &&
                 strand == that.strand &&
-                seq.equals(that.seq);
+                id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, position, strand, seq);
+        return Objects.hash(contig, position, strand, id);
     }
 
     @Override
     public String toString() {
         return "PartialBreakend{" +
-                "contig=" + contig +
+                "contig=" + contig.getId() +
                 ", position=" + position +
                 ", strand=" + strand +
-                ", seq='" + seq + '\'' +
+                ", id='" + id + '\'' +
                 '}';
     }
 }
