@@ -36,9 +36,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      *
      * @return 1-based end coordinate
      */
-    default Position getEndPosition() {
-        return getStartPosition();
-    }
+    Position getEndPosition();
 
     /**
      * @return 1-based end coordinate of the region
