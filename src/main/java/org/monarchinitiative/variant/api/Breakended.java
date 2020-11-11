@@ -5,7 +5,9 @@ package org.monarchinitiative.variant.api;
  */
 public interface Breakended {
 
-    String getMateId();
+    default String getMateId() {
+        return getRight().getId();
+    }
 
     default String getEventId() {
         return "";
@@ -13,5 +15,7 @@ public interface Breakended {
 
     Breakend getLeft();
 
-    Breakend getRight();
+    default Breakend getRight() {
+        return Breakend.unresolved();
+    }
 }
