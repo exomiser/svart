@@ -79,7 +79,11 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
      */
     @Override
     public int compareTo(ConfidenceInterval o) {
-        return Integer.compare(this.length(), o.length());
+        return compare(this, o);
+    }
+
+    public static int compare(ConfidenceInterval x, ConfidenceInterval y) {
+        return Integer.compare(x.length(), y.length());
     }
 
     @Override

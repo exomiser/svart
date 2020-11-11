@@ -110,7 +110,7 @@ public class Position implements Comparable<Position> {
         // todo: order by 0-based position?
         int result = Integer.compare(pos, o.pos);
         if (result == 0) {
-            result = Math.negateExact(Integer.compare(confidenceInterval.length(), o.confidenceInterval.length()));
+            result = ConfidenceInterval.compare(confidenceInterval, o.confidenceInterval);
         }
         return result;
     }
