@@ -75,4 +75,8 @@ public interface Contig extends Comparable<Contig> {
     static Contig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
         return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
     }
+
+    static Contig unknown() {
+        return UnknownContig.instance();
+    }
 }
