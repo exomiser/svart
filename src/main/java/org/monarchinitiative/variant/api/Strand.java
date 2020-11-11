@@ -9,6 +9,14 @@ package org.monarchinitiative.variant.api;
 public enum Strand {
     UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE;
 
+    public boolean isPositive() {
+        return this == POSITIVE;
+    }
+
+    public boolean isNegative() {
+        return this == NEGATIVE;
+    }
+
     public Strand opposite() {
         switch (this) {
             case POSITIVE:
