@@ -98,12 +98,15 @@ public final class SymbolicVariant implements Variant {
         if (this.strand == strand) {
             return this;
         } else {
+            // TODO - consider actual coordinate systems
             Position start = Position.of(contig.getLength() - startPosition.getPos() + 1,
                     startPosition.getConfidenceInterval().toOppositeStrand());
             // TODO broken with ins/del need to use length which should be +/-
             Position end = Position.of(contig.getLength() - endPosition.getPos() + 1,
                     endPosition.getConfidenceInterval().toOppositeStrand());
-            return new SymbolicVariant(contig, strand, start, end, Seq.reverseComplement(ref), alt, length, variantType);
+            // TODO - start and end should be switched
+//            return new SymbolicVariant(contig, strand, start, end, Seq.reverseComplement(ref), alt, length, variantType);
+            return new SymbolicVariant(contig, strand, end, start, Seq.reverseComplement(ref), alt, length, variantType);
         }
     }
 

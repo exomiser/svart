@@ -100,6 +100,7 @@ public final class BreakendVariant implements Variant, Breakended {
         return left.getStrand();
     }
 
+    @Override
     public BreakendVariant withStrand(Strand strand) {
         if (left.getStrand().equals(strand)) {
             return this;
@@ -111,7 +112,7 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public BreakendVariant toOppositeStrand() {
-        return null;
+        return withStrand(getStrand().opposite());
     }
 
     @Override

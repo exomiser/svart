@@ -12,8 +12,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
     Comparator<GenomicPosition> NATURAL_COMPARATOR = Comparator
             .comparing(GenomicPosition::getContigId)
             .thenComparing(GenomicPosition::getPosition)
-            .thenComparing(GenomicPosition::getStrand)
-            .thenComparing(GenomicPosition::getCi);
+            .thenComparing(GenomicPosition::getStrand);
 
     Contig getContig();
 

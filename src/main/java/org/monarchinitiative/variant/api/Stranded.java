@@ -10,7 +10,7 @@ public interface Stranded<T> {
     T withStrand(Strand strand);
 
     /**
-     * Convert the breakend to opposite strand no matter what.
+     * Convert to the opposite strand no matter what.
      */
     default T toOppositeStrand() {
         return withStrand(getStrand().opposite());

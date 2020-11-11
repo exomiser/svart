@@ -11,5 +11,7 @@ public interface Adjacency extends Breakended, Stranded<Adjacency> {
     }
 
     @Override
-    Adjacency toOppositeStrand();
+    default Adjacency toOppositeStrand() {
+        return withStrand(getStrand().opposite());
+    }
 }

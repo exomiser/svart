@@ -92,6 +92,22 @@ class SequenceVariantTest {
     }
 
     @Test
+    public void delWithNegativeStrand() {
+        Variant del = SequenceVariant.of(chr1, 1, "AG", "A");
+        Variant negativeDel = del.withStrand(Strand.NEGATIVE);
+
+        assertThat(negativeDel.getContig(), equalTo(chr1));
+        assertThat(negativeDel.getStrand(), equalTo(Strand.NEGATIVE));
+        assertThat(negativeDel.getStartPosition(), equalTo(Position.of(999)));
+        assertThat(negativeDel.getEndPosition(), equalTo(Position.of(1000)));
+        // TODO: this is unexpected behavior
+        assertThat(negativeDel.getRef(), equalTo("CT"));
+        assertThat(negativeDel.getAlt(), equalTo("T"));
+        assertThat(negativeDel.getType(), equalTo(VariantType.DEL));
+        assertThat(negativeDel.getLength(), equalTo(2));
+    }
+
+    @Test
     void snvToOppositeStrand() {
         Variant snv = SequenceVariant.of(chr1, 1, "A", "T");
         assertThat(snv.getStrand(), equalTo(Strand.POSITIVE));

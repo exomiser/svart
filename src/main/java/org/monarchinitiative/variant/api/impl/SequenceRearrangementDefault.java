@@ -9,23 +9,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-class SimpleSequenceRearrangement implements SequenceRearrangement {
+public class SequenceRearrangementDefault implements SequenceRearrangement {
 
     private final List<Adjacency> adjacencies;
 
-    private SimpleSequenceRearrangement(List<Adjacency> adjacencies) {
+    private SequenceRearrangementDefault(List<Adjacency> adjacencies) {
         if (adjacencies.isEmpty()) {
             throw new IllegalArgumentException("Adjacency list cannot be empty");
         }
         this.adjacencies = adjacencies;
     }
 
-    public static SimpleSequenceRearrangement of(Adjacency... adjacencies) {
-        return new SimpleSequenceRearrangement(Arrays.asList(adjacencies));
+    public static SequenceRearrangementDefault of(Adjacency... adjacencies) {
+        return new SequenceRearrangementDefault(Arrays.asList(adjacencies));
     }
 
-    public static SimpleSequenceRearrangement of(List<Adjacency> adjacencies) {
-        return new SimpleSequenceRearrangement(adjacencies);
+    public static SequenceRearrangementDefault of(List<Adjacency> adjacencies) {
+        return new SequenceRearrangementDefault(adjacencies);
     }
 
     @Override
@@ -39,8 +39,8 @@ class SimpleSequenceRearrangement implements SequenceRearrangement {
     }
 
     @Override
-    public SequenceRearrangement withStrand(Strand strand) {
-        if (adjacencies.isEmpty() || adjacencies.get(0).getLeft().getStrand().equals(strand)) {
+    public SequenceRearrangementDefault withStrand(Strand strand) {
+        if (getStrand().equals(strand)) {
             return this;
         } else {
             // reverse order of adjacencies, while also flipping the adjacencies to the opposite strand
@@ -49,7 +49,7 @@ class SimpleSequenceRearrangement implements SequenceRearrangement {
 
                 reversed.add(adjacencies.get(i).toOppositeStrand());
             }
-            return new SimpleSequenceRearrangement(reversed);
+            return new SequenceRearrangementDefault(reversed);
         }
     }
 
@@ -57,7 +57,7 @@ class SimpleSequenceRearrangement implements SequenceRearrangement {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SimpleSequenceRearrangement that = (SimpleSequenceRearrangement) o;
+        SequenceRearrangementDefault that = (SequenceRearrangementDefault) o;
         return Objects.equals(adjacencies, that.adjacencies);
     }
 

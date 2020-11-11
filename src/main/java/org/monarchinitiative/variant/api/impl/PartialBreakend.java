@@ -5,7 +5,11 @@ import org.monarchinitiative.variant.api.*;
 import java.util.Objects;
 
 /**
+ * A reference {@link Breakend} implementation that represents a single breakend record of the VCF 4.3 specification.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @see BreakendVariant
+ * @see Adjacency
  */
 public class PartialBreakend implements Breakend {
 

@@ -64,10 +64,46 @@ public class Position implements Comparable<Position> {
     }
 
     /**
-     * @return one based position
+     * @return position coordinate
      */
     public int getPos() {
         return pos;
+    }
+
+    /**
+     * @return position coordinate in {@link CoordinateSystem#ZERO_BASED}
+     */
+    public Position asZeroBased() {
+        return toCoordinateSystem(CoordinateSystem.ZERO_BASED);
+    }
+
+    /**
+     * @return position coordinate in {@link CoordinateSystem#ZERO_BASED}
+     */
+    public int asZeroBasedPos() {
+        return asZeroBased().getPos();
+    }
+
+    /**
+     * @return position coordinate in {@link CoordinateSystem#ONE_BASED}
+     */
+    public Position asOneBased() {
+        return toCoordinateSystem(CoordinateSystem.ONE_BASED);
+    }
+
+    /**
+     * @return position coordinate in {@link CoordinateSystem#ONE_BASED}
+     */
+    public int asOneBasedPos() {
+        return asOneBased().getPos();
+    }
+
+    public boolean isZeroBased() {
+        return coordinateSystem.isZeroBased();
+    }
+
+    public boolean isOneBased() {
+        return coordinateSystem.isOneBased();
     }
 
     public CoordinateSystem getCoordinateSystem() {

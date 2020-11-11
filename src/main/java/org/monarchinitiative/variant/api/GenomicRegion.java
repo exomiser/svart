@@ -1,4 +1,3 @@
-
 package org.monarchinitiative.variant.api;
 
 
@@ -20,7 +19,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     Contig getContig();
 
     /**
-     * @return 1-based begin coordinate
+     * @return begin coordinate
      */
     Position getStartPosition();
 
@@ -28,7 +27,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return 1-based begin coordinate of the region
      */
     default int getStart() {
-        return getStartPosition().getPos();
+        return getStartPosition().asOneBased().getPos();
     }
 
     /**
@@ -44,12 +43,28 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return 1-based end coordinate of the region
      */
     default int getEnd() {
-        return getEndPosition().getPos();
+        return getEndPosition().asOneBased().getPos();
     }
 
 
     default int getLength() {
         return getEnd() - getStart() + 1;
+    }
+
+    /**
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ZERO_BASED}, where a region
+     * is specified by a half-closed-half-open interval
+     */
+    default boolean isZeroBased() {
+        return getStartPosition().isZeroBased() && getEndPosition().isOneBased();
+    }
+
+    /**
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ONE_BASED}, where a region
+     * is specified by a closed interval
+     */
+    default boolean isOneBased() {
+        return getStartPosition().isOneBased() && getEndPosition().isOneBased();
     }
 
     /**
@@ -73,15 +88,27 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             return false;
         }
         GenomicRegion onStrand = other.withStrand(this.getStrand());
-        return onStrand.getStart() >= getStart() && onStrand.getEnd() <= getEnd();
+
+        // convert start and end positions to 0-based coordinate system
+        int otherStart = onStrand.getStartPosition().asZeroBased().getPos();
+        int otherEnd = onStrand.getEndPosition().asOneBased().getPos();
+        int thisStart = getStartPosition().asZeroBased().getPos();
+        int thisEnd = getEndPosition().asOneBased().asOneBased().getPos();
+
+        return otherStart >= thisStart && otherEnd <= thisEnd;
     }
 
     default boolean contains(GenomicPosition position) {
         if (this.getContig().getId() != position.getContig().getId()) {
             return false;
         }
-        GenomicPosition onStrand = position.withStrand(this.getStrand());
-        return getStart() <= onStrand.getPos() && onStrand.getPos() <= getEnd();
+        // 1-based query position on this region's strand
+        int pos = position.withStrand(getStrand()).getPosition().asOneBased().getPos();
+        // 0-based coordinates of this region
+        int thisStart = getStartPosition().asZeroBased().getPos();
+        int thisEnd = getEndPosition().asOneBased().getPos();
+
+        return thisStart < pos && pos <= thisEnd;
     }
 
     @Override

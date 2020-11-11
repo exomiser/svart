@@ -18,27 +18,35 @@ public interface SequenceRearrangement extends Stranded<SequenceRearrangement> {
      */
     List<Adjacency> getAdjacencies();
 
+    default Breakend getLeftmostBreakend() {
+        return getAdjacencies().get(0).getLeft();
+    }
+
+    default Breakend getRightmostBreakend() {
+        int n = getAdjacencies().size();
+        return getAdjacencies().get(n - 1).getRight();
+    }
+
     default Contig getLeftmostContig() {
-        return getAdjacencies().get(0).getLeft().getContig();
+        return getLeftmostBreakend().getContig();
     }
 
     default Contig getRightmostContig() {
-        return getAdjacencies().get(0).getRight().getContig();
+        return getRightmostBreakend().getContig();
     }
 
     /**
      * @return strand of the leftmost position of the rearrangement
      */
     default Strand getLeftmostStrand() {
-        return getAdjacencies().get(0).getStrand();
+        return getLeftmostBreakend().getStrand();
     }
 
     /**
      * @return strand of the rightmost position of the rearrangement
      */
     default Strand getRightmostStrand() {
-        int n = getAdjacencies().size();
-        return getAdjacencies().get(n - 1).getRight().getStrand();
+        return getRightmostBreakend().getStrand();
     }
 
     /**
@@ -47,15 +55,19 @@ public interface SequenceRearrangement extends Stranded<SequenceRearrangement> {
      * @return coordinate of the leftmost position of the rearrangement
      */
     default Position getLeftmostPosition() {
-        return getAdjacencies().get(0).getLeft().getPosition();
+        return getLeftmostBreakend().getPosition();
     }
+
     /**
      * Get rightmost position of the rearrangement. The position is on the strand that you get by {@link #getRightmostStrand()}.
      *
      * @return coordinate of the rightmost position of the rearrangement
      */
     default Position getRightmostPosition() {
-        int n = getAdjacencies().size();
-        return getAdjacencies().get(n - 1).getRight().getPosition();
+        return getRightmostBreakend().getPosition();
     }
+
+    int hashCode();
+
+    boolean equals(Object o);
 }
