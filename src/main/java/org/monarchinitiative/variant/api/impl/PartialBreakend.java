@@ -40,7 +40,6 @@ public class PartialBreakend implements Breakend {
         return strand;
     }
 
-    // TOD: id and ref might not be required - possible Breakend should not extend GenomicRegion
     @Override
     public String getId() {
         return "";

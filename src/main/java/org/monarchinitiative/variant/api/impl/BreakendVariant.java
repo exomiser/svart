@@ -44,12 +44,24 @@ public final class BreakendVariant implements Variant, Breakended {
         return id;
     }
 
+    @Override
     public String getMateId() {
         return mateId;
     }
 
+    @Override
     public String getEventId() {
         return eventId;
+    }
+
+    @Override
+    public Breakend getLeft() {
+        return left;
+    }
+
+    @Override
+    public Breakend getRight() {
+        return right;
     }
 
     @Override
@@ -85,14 +97,6 @@ public final class BreakendVariant implements Variant, Breakended {
     @Override
     public VariantType getType() {
         return variantType;
-    }
-
-    public Breakend getLeft() {
-        return left;
-    }
-
-    public Breakend getRight() {
-        return right;
     }
 
     @Override
