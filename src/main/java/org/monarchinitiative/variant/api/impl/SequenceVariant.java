@@ -11,6 +11,7 @@ import java.util.Objects;
 public class SequenceVariant implements Variant {
 
     private final Contig contig;
+    private final String id;
     private final Strand strand;
     private final Position startPosition;
     private final Position endPosition;
@@ -18,10 +19,11 @@ public class SequenceVariant implements Variant {
     private final String alt;
     // here ought to be the breakend and adjacency bits too
 
-    public SequenceVariant(Contig contig, Strand strand, Position startPosition, Position endPosition, String ref, String alt) {
+    public SequenceVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
+        this.id = id;
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
         this.startPosition = Objects.requireNonNull(startPosition);
@@ -30,13 +32,17 @@ public class SequenceVariant implements Variant {
         this.alt = Objects.requireNonNull(alt);
     }
 
-    public static SequenceVariant of(Contig contig, int pos, String ref, String alt) {
+    public static SequenceVariant of(Contig contig, String id, int pos, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
         Position start = Position.of(pos);
         Position end = calculateEnd(start, ref, alt);
-        return new SequenceVariant(contig, Strand.POSITIVE, start, end, ref, alt);
+        return new SequenceVariant(contig, id, Strand.POSITIVE, start, end, ref, alt);
+    }
+
+    public static SequenceVariant of(Contig contig, int pos, String ref, String alt) {
+        return of(contig, "", pos, ref, alt);
     }
 
     private static Position calculateEnd(Position start, String ref, String alt) {
@@ -50,7 +56,7 @@ public class SequenceVariant implements Variant {
 
     @Override
     public String getId() {
-        return "";
+        return id;
     }
 
     @Override
@@ -92,7 +98,7 @@ public class SequenceVariant implements Variant {
                     startPosition.getConfidenceInterval().toOppositeStrand());
             Position end = Position.of(contig.getLength() - endPosition.getPos() + 1,
                     endPosition.getConfidenceInterval().toOppositeStrand());
-            return new SequenceVariant(contig, strand, start, end, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+            return new SequenceVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
         }
     }
 

@@ -10,6 +10,7 @@ import java.util.Objects;
 public final class SymbolicVariant implements Variant {
 
     private final Contig contig;
+    private final String id;
     private final Strand strand;
     private final Position startPosition;
     private final Position endPosition;
@@ -18,10 +19,11 @@ public final class SymbolicVariant implements Variant {
     private final int length;
     private final VariantType variantType;
 
-    public SymbolicVariant(Contig contig, Strand strand, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
+    public SymbolicVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
         if (!VariantType.isLargeSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create symbolic variant from non-symbolic or breakend allele " + alt);
         }
+        this.id = id;
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
         this.startPosition = Objects.requireNonNull(startPosition);
@@ -34,23 +36,27 @@ public final class SymbolicVariant implements Variant {
         this.variantType = Objects.requireNonNull(variantType);
     }
 
+    public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int length, VariantType variantType) {
+        return of(contig, "", Position.of(start), Position.of(end), ref, alt, length, variantType);
+    }
+
     /**
      * @return precise one-based, positive strand symbolic variant
      */
-    public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int length, VariantType variantType) {
-        return of(contig, Position.of(start), Position.of(end), ref, alt, length, variantType);
+    public static SymbolicVariant of(Contig contig, String id, int start, int end, String ref, String alt, int length, VariantType variantType) {
+        return of(contig, id, Position.of(start), Position.of(end), ref, alt, length, variantType);
     }
 
     /**
      * @return one-based, positive strand symbolic variant
      */
-    public static SymbolicVariant of(Contig contig, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
-        return new SymbolicVariant(contig, Strand.POSITIVE, startPosition, endPosition, ref, alt, length, variantType);
+    public static SymbolicVariant of(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
+        return new SymbolicVariant(contig, id, Strand.POSITIVE, startPosition, endPosition, ref, alt, length, variantType);
     }
 
     @Override
     public String getId() {
-        return "";
+        return id;
     }
 
     @Override
@@ -103,7 +109,7 @@ public final class SymbolicVariant implements Variant {
             // TODO broken with ins/del need to use length which should be +/-
             Position end = Position.of(contig.getLength() - endPosition.getPos() + 1,
                     endPosition.getConfidenceInterval().toOppositeStrand());
-            return new SymbolicVariant(contig, strand, start, end, Seq.reverseComplement(ref), alt, length, variantType);
+            return new SymbolicVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), alt, length, variantType);
         }
     }
 
