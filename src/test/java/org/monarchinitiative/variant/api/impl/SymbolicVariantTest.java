@@ -98,7 +98,7 @@ class SymbolicVariantTest {
         assertThat(negative.getContig(), equalTo(chr1));
         assertThat(negative.getStrand(), equalTo(Strand.NEGATIVE));
         assertThat(negative.getStartPosition(), equalTo(Position.of(1000)));
-        assertThat(negative.getEndPosition(), equalTo(Position.of(900)));
+        assertThat(negative.getEndPosition(), equalTo(Position.of(901)));
         assertThat(negative.getRef(), equalTo("T"));
         assertThat(negative.getAlt(), equalTo("<DEL>"));
         assertThat(negative.getType(), equalTo(VariantType.DEL));
