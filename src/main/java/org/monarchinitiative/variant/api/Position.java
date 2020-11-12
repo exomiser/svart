@@ -1,27 +1,9 @@
 package org.monarchinitiative.variant.api;
 
-import java.util.Objects;
-
 /**
  * Position with a confidence level expressed using a {@link ConfidenceInterval}.
  */
-public class Position implements Comparable<Position> {
-
-    private final int pos;
-    private final CoordinateSystem coordinateSystem;
-    private final ConfidenceInterval confidenceInterval;
-
-    private Position(int pos, CoordinateSystem coordinateSystem, ConfidenceInterval confidenceInterval) {
-        this.pos = pos;
-        this.coordinateSystem = coordinateSystem;
-        if (this.coordinateSystem == CoordinateSystem.ZERO_BASED && this.pos < 0) {
-            throw new IllegalArgumentException(coordinateSystem + " position `" + pos + "` cannot be negative");
-        }
-        if (this.coordinateSystem == CoordinateSystem.ONE_BASED && this.pos <= 0) {
-            throw new IllegalArgumentException(coordinateSystem + " position `" + pos + "` cannot be non-positive");
-        }
-        this.confidenceInterval = Objects.requireNonNull(confidenceInterval);
-    }
+public interface Position extends Comparable<Position> {
 
     /**
      * Create precise position using given coordinate system.
@@ -30,8 +12,8 @@ public class Position implements Comparable<Position> {
      * @param coordinateSystem coordinate system
      * @return precise position
      */
-    public static Position of(int pos, CoordinateSystem coordinateSystem) {
-        return of(pos, ConfidenceInterval.precise(), coordinateSystem);
+    static Position of(int pos, CoordinateSystem coordinateSystem) {
+        return of(coordinateSystem, pos, ConfidenceInterval.precise());
     }
 
     /**
@@ -45,93 +27,94 @@ public class Position implements Comparable<Position> {
     }
 
     public static Position of(int pos, int ciUpstream, int ciDownstream, CoordinateSystem coordinateSystem) {
-        return of(pos, ConfidenceInterval.of(ciUpstream, ciDownstream), coordinateSystem);
+        return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
     }
 
     public static Position of(int pos, ConfidenceInterval confidenceInterval) {
-        return of(pos, confidenceInterval, CoordinateSystem.ONE_BASED);
+        return of(CoordinateSystem.ZERO_BASED, pos, confidenceInterval);
     }
 
-    public static Position of(int pos, ConfidenceInterval confidenceInterval, CoordinateSystem coordinateSystem) {
-        return new Position(pos, coordinateSystem, confidenceInterval);
+    /**
+     *
+     * @param coordinateSystem The coordinate system of the pos argument.
+     * @param pos The position in the stated coordinate system
+     * @param confidenceInterval confidence interval around the given position
+     * @return a {@link Position} in the given coordinateSystem with the specified confidenceInterval
+     */
+    static Position of(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
+        return coordinateSystem == CoordinateSystem.ZERO_BASED ? new ZeroBasedPosition(pos, confidenceInterval) : new OneBasedPosition(pos, confidenceInterval);
     }
 
-    public Position withPos(int pos) {
-        if (pos == this.pos) {
-            return this;
-        }
-        return of(pos, this.confidenceInterval, this.getCoordinateSystem());
-    }
+    Position withPos(int pos);
 
     /**
      * @return one based position
      */
-    public int getPos() {
-        return pos;
+    int getPos();
+
+    int zeroBasedPos();
+
+    int oneBasedPos();
+
+    CoordinateSystem getCoordinateSystem();
+
+    Position toCoordinateSystem(CoordinateSystem coordinateSystem);
+
+    default boolean isOneBased() {
+        return getCoordinateSystem() == CoordinateSystem.ONE_BASED;
     }
 
-    public CoordinateSystem getCoordinateSystem() {
-        return coordinateSystem;
+    default boolean isZeroBased() {
+        return getCoordinateSystem() == CoordinateSystem.ZERO_BASED;
     }
 
-    // TODO: perhaps it would be best to simply return the int value here? Regions could end up being created using different
-    // based coordinates and there is no guaranteed what CoordinateSystem a pos() is returned in.
-    public Position toCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (coordinateSystem == this.coordinateSystem) {
-            return this;
-        }
-        return new Position(this.coordinateSystem == CoordinateSystem.ZERO_BASED ? pos + 1 : pos - 1, coordinateSystem, confidenceInterval);
+    default Position oneBased() {
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+    }
+
+    default Position zeroBased() {
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+    }
+
+    default Position withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        return getCoordinateSystem() == coordinateSystem ? this : toCoordinateSystem(coordinateSystem);
     }
 
     /**
      * @return confidence interval associated with the position
      */
-    public ConfidenceInterval getConfidenceInterval() {
-        return confidenceInterval;
+    ConfidenceInterval getConfidenceInterval();
+
+    default int getMinPos() {
+        return getConfidenceInterval().getMinPos(getPos());
     }
 
-    public int getMinPos() {
-        return confidenceInterval.getMinPos(pos);
-    }
-
-    public int getMaxPos() {
-        return confidenceInterval.getMaxPos(pos);
+    default int getMaxPos() {
+        return getConfidenceInterval().getMaxPos(getPos());
     }
 
     /**
      * @return true if this position is precise (CI = [0,0])
      */
-    public boolean isPrecise() {
-        return confidenceInterval.isPrecise();
+    default boolean isPrecise() {
+        return getConfidenceInterval().isPrecise();
     }
 
-    @Override
-    public int compareTo(Position o) {
-        // todo: order by 0-based position?
-        int result = Integer.compare(pos, o.pos);
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     *
+     * @param o
+     * @return a natural ordering of positions IN ZERO-BASED COORDINATES.
+     */
+    default int compareTo(Position o) {
+        return compare(this, o);
+    }
+
+    static int compare(Position x, Position y) {
+        int result = Integer.compare(x.zeroBasedPos(), y.zeroBasedPos());
         if (result == 0) {
-            result = ConfidenceInterval.compare(confidenceInterval, o.confidenceInterval);
+            result = ConfidenceInterval.compare(x.getConfidenceInterval(), y.getConfidenceInterval());
         }
         return result;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Position position = (Position) o;
-        return pos == position.pos &&
-                Objects.equals(confidenceInterval, position.confidenceInterval);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pos, confidenceInterval);
-    }
-
-    @Override
-    public String toString() {
-        return ((confidenceInterval.isPrecise()) ? String.valueOf(pos) : pos +"(" + confidenceInterval + ")");
-    }
-
 }
