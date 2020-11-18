@@ -32,17 +32,17 @@ public class SequenceVariant implements Variant {
         this.alt = Objects.requireNonNull(alt);
     }
 
-    public static SequenceVariant of(Contig contig, String id, int pos, String ref, String alt) {
+    public static SequenceVariant oneBased(Contig contig, String id, int pos, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
-        Position start = Position.of(pos);
+        Position start = Position.of(pos, CoordinateSystem.ONE_BASED);
         Position end = calculateEnd(start, ref, alt);
         return new SequenceVariant(contig, id, Strand.POSITIVE, start, end, ref, alt);
     }
 
-    public static SequenceVariant of(Contig contig, int pos, String ref, String alt) {
-        return of(contig, "", pos, ref, alt);
+    public static SequenceVariant oneBased(Contig contig, int pos, String ref, String alt) {
+        return oneBased(contig, "", pos, ref, alt);
     }
 
     private static Position calculateEnd(Position start, String ref, String alt) {
@@ -50,42 +50,47 @@ public class SequenceVariant implements Variant {
         if ((ref.length() | alt.length()) == 1) {
             return start;
         }
-        return start.withPos(start.getPos() + ref.length() - 1);
+        return start.withPos(start.pos() + ref.length() - 1);
     }
 
 
     @Override
-    public String getId() {
+    public String id() {
         return id;
     }
 
     @Override
-    public Contig getContig() {
+    public Contig contig() {
         return contig;
     }
 
     @Override
-    public Position getStartPosition() {
+    public Position startPosition() {
         return startPosition;
     }
 
     @Override
-    public Position getEndPosition() {
+    public Position endPosition() {
         return endPosition;
     }
 
     @Override
-    public String getRef() {
+    public int changeLength() {
+        return alt.length() - ref.length();
+    }
+
+    @Override
+    public String ref() {
         return ref;
     }
 
     @Override
-    public String getAlt() {
+    public String alt() {
         return alt;
     }
 
     @Override
-    public Strand getStrand() {
+    public Strand strand() {
         return strand;
     }
 
@@ -94,10 +99,10 @@ public class SequenceVariant implements Variant {
         if (this.strand == strand) {
             return this;
         } else {
-            Position start = Position.of(contig.getLength() - startPosition.getPos() + 1,
-                    startPosition.getConfidenceInterval().toOppositeStrand());
-            Position end = Position.of(contig.getLength() - endPosition.getPos() + 1,
-                    endPosition.getConfidenceInterval().toOppositeStrand());
+            Position start = Position.of(contig.length() - startPosition.pos() + 1,
+                    startPosition.confidenceInterval().toOppositeStrand());
+            Position end = Position.of(contig.length() - endPosition.pos() + 1,
+                    endPosition.confidenceInterval().toOppositeStrand());
             return new SequenceVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
         }
     }
@@ -128,14 +133,14 @@ public class SequenceVariant implements Variant {
     @Override
     public String toString() {
         return "SequenceVariant{" +
-                "contig=" + contig.getId() +
+                "contig=" + contig.id() +
                 ", strand=" + strand +
                 ", startPosition=" + startPosition +
                 ", endPosition=" + endPosition +
-                ", length=" + getLength() +
+                ", length=" + length() +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
-                ", variantType=" + getType() +
+                ", variantType=" + variantType() +
                 '}';
     }
 }

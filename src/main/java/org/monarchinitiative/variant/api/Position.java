@@ -22,16 +22,17 @@ public interface Position extends Comparable<Position> {
      * @param pos position coordinate
      * @return precise position
      */
-    public static Position of(int pos) {
+    // TODO: rename Position.oneBased() and provide Position.zeroBased() static constructor
+    static Position of(int pos) {
         return of(pos, ConfidenceInterval.precise());
     }
 
-    public static Position of(int pos, int ciUpstream, int ciDownstream, CoordinateSystem coordinateSystem) {
+    static Position of(int pos, int ciUpstream, int ciDownstream, CoordinateSystem coordinateSystem) {
         return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
     }
 
-    public static Position of(int pos, ConfidenceInterval confidenceInterval) {
-        return of(CoordinateSystem.ZERO_BASED, pos, confidenceInterval);
+    static Position of(int pos, ConfidenceInterval confidenceInterval) {
+        return of(CoordinateSystem.ONE_BASED, pos, confidenceInterval);
     }
 
     /**
@@ -42,7 +43,7 @@ public interface Position extends Comparable<Position> {
      * @return a {@link Position} in the given coordinateSystem with the specified confidenceInterval
      */
     static Position of(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
-        return coordinateSystem == CoordinateSystem.ZERO_BASED ? new ZeroBasedPosition(pos, confidenceInterval) : new OneBasedPosition(pos, confidenceInterval);
+        return coordinateSystem == CoordinateSystem.ONE_BASED ? new OneBasedPosition(pos, confidenceInterval) : new ZeroBasedPosition(pos, confidenceInterval);
     }
 
     Position withPos(int pos);
@@ -50,22 +51,22 @@ public interface Position extends Comparable<Position> {
     /**
      * @return one based position
      */
-    int getPos();
+    int pos();
 
     int zeroBasedPos();
 
     int oneBasedPos();
 
-    CoordinateSystem getCoordinateSystem();
+    CoordinateSystem coordinateSystem();
 
     Position toCoordinateSystem(CoordinateSystem coordinateSystem);
 
     default boolean isOneBased() {
-        return getCoordinateSystem() == CoordinateSystem.ONE_BASED;
+        return coordinateSystem() == CoordinateSystem.ONE_BASED;
     }
 
     default boolean isZeroBased() {
-        return getCoordinateSystem() == CoordinateSystem.ZERO_BASED;
+        return coordinateSystem() == CoordinateSystem.ZERO_BASED;
     }
 
     default Position oneBased() {
@@ -77,27 +78,27 @@ public interface Position extends Comparable<Position> {
     }
 
     default Position withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        return getCoordinateSystem() == coordinateSystem ? this : toCoordinateSystem(coordinateSystem);
+        return coordinateSystem() == coordinateSystem ? this : toCoordinateSystem(coordinateSystem);
     }
 
     /**
      * @return confidence interval associated with the position
      */
-    ConfidenceInterval getConfidenceInterval();
+    ConfidenceInterval confidenceInterval();
 
-    default int getMinPos() {
-        return getConfidenceInterval().getMinPos(getPos());
+    default int minPos() {
+        return confidenceInterval().minPos(pos());
     }
 
-    default int getMaxPos() {
-        return getConfidenceInterval().getMaxPos(getPos());
+    default int maxPos() {
+        return confidenceInterval().maxPos(pos());
     }
 
     /**
      * @return true if this position is precise (CI = [0,0])
      */
     default boolean isPrecise() {
-        return getConfidenceInterval().isPrecise();
+        return confidenceInterval().isPrecise();
     }
 
     /**
@@ -113,7 +114,7 @@ public interface Position extends Comparable<Position> {
     static int compare(Position x, Position y) {
         int result = Integer.compare(x.zeroBasedPos(), y.zeroBasedPos());
         if (result == 0) {
-            result = ConfidenceInterval.compare(x.getConfidenceInterval(), y.getConfidenceInterval());
+            result = ConfidenceInterval.compare(x.confidenceInterval(), y.confidenceInterval());
         }
         return result;
     }

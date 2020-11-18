@@ -16,86 +16,101 @@ public final class SymbolicVariant implements Variant {
     private final Position endPosition;
     private final String ref;
     private final String alt;
-    private final int length;
     private final VariantType variantType;
+    private final int changeLength;
 
-    public SymbolicVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
+    private SymbolicVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
         if (!VariantType.isLargeSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create symbolic variant from non-symbolic or breakend allele " + alt);
         }
-        this.id = id;
+        this.id = Objects.requireNonNull(id);
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
+        if (startPosition.zeroBasedPos() >= endPosition.oneBasedPos()) {
+            throw new IllegalArgumentException("start " + startPosition.zeroBasedPos() + " must be upstream of end " + endPosition
+                    .oneBasedPos());
+        }
         this.ref = Objects.requireNonNull(ref);
         this.alt = Objects.requireNonNull(alt);
-        // check length agrees with start / end type
-        this.length = length;
-        // check type agrees with alt
-        this.variantType = Objects.requireNonNull(variantType);
+        this.variantType = VariantType.parseType(alt);
+        this.changeLength = checkChangeLength(changeLength, startPosition, endPosition, variantType);
     }
 
-    public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int length, VariantType variantType) {
-        return of(contig, "", Position.of(start), Position.of(end), ref, alt, length, variantType);
+    private int checkChangeLength(int changeLength, Position startPosition, Position endPosition, VariantType variantType) {
+        if (variantType.baseType() == VariantType.DEL && (startPosition.zeroBasedPos() - endPosition.zeroBasedPos() != changeLength)) {
+            throw new IllegalArgumentException("BAD DEL!");
+        } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
+            throw new IllegalArgumentException("BAD INS!");
+        } else if (variantType.baseType() == VariantType.DUP && (changeLength <= 0)) {
+            throw new IllegalArgumentException("BAD DUP!");
+        } else if (variantType.baseType() == VariantType.INV && (changeLength != 0)) {
+            throw new IllegalArgumentException("BAD INV!");
+        }
+        return changeLength;
+    }
+
+    public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int changeLength) {
+        return of(contig, "", Position.of(start), Position.of(end), ref, alt, changeLength);
     }
 
     /**
      * @return precise one-based, positive strand symbolic variant
      */
-    public static SymbolicVariant of(Contig contig, String id, int start, int end, String ref, String alt, int length, VariantType variantType) {
-        return of(contig, id, Position.of(start), Position.of(end), ref, alt, length, variantType);
+    public static SymbolicVariant of(Contig contig, String id, int start, int end, String ref, String alt, int changeLength) {
+        return of(contig, id, Position.of(start), Position.of(end), ref, alt, changeLength);
     }
 
     /**
      * @return one-based, positive strand symbolic variant
      */
-    public static SymbolicVariant of(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int length, VariantType variantType) {
-        return new SymbolicVariant(contig, id, Strand.POSITIVE, startPosition, endPosition, ref, alt, length, variantType);
+    public static SymbolicVariant of(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
+        return new SymbolicVariant(contig, id, Strand.POSITIVE, startPosition, endPosition, ref, alt, changeLength);
     }
 
     @Override
-    public String getId() {
+    public String id() {
         return id;
     }
 
     @Override
-    public Contig getContig() {
+    public Contig contig() {
         return contig;
     }
 
     @Override
-    public Position getStartPosition() {
+    public Position startPosition() {
         return startPosition;
     }
 
     @Override
-    public Position getEndPosition() {
+    public Position endPosition() {
         return endPosition;
     }
 
     @Override
-    public int getLength() {
-        return length;
+    public int changeLength() {
+        return changeLength;
     }
 
     @Override
-    public String getRef() {
+    public String ref() {
         return ref;
     }
 
     @Override
-    public String getAlt() {
+    public String alt() {
         return alt;
     }
 
     @Override
-    public VariantType getType() {
+    public VariantType variantType() {
         return variantType;
     }
 
     @Override
-    public Strand getStrand() {
+    public Strand strand() {
         return strand;
     }
 
@@ -104,12 +119,12 @@ public final class SymbolicVariant implements Variant {
         if (this.strand == strand) {
             return this;
         } else {
-            Position start = Position.of(contig.getLength() - startPosition.getPos() + 1,
-                    startPosition.getConfidenceInterval().toOppositeStrand());
+            Position start = Position.of(contig.length() - startPosition.pos() + 1,
+                    startPosition.confidenceInterval().toOppositeStrand());
             // TODO broken with ins/del need to use length which should be +/-
-            Position end = Position.of(contig.getLength() - endPosition.getPos() + 1,
-                    endPosition.getConfidenceInterval().toOppositeStrand());
-            return new SymbolicVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), alt, length, variantType);
+            Position end = Position.of(contig.length() - endPosition.pos() + 1,
+                    endPosition.confidenceInterval().toOppositeStrand());
+            return new SymbolicVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), alt, changeLength);
         }
     }
 
@@ -123,7 +138,7 @@ public final class SymbolicVariant implements Variant {
         if (this == o) return true;
         if (!(o instanceof SymbolicVariant)) return false;
         SymbolicVariant that = (SymbolicVariant) o;
-        return length == that.length &&
+        return changeLength == that.changeLength &&
                 contig.equals(that.contig) &&
                 strand == that.strand &&
                 startPosition.equals(that.startPosition) &&
@@ -135,17 +150,17 @@ public final class SymbolicVariant implements Variant {
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, strand, startPosition, endPosition, length, ref, alt, variantType);
+        return Objects.hash(contig, strand, startPosition, endPosition, changeLength, ref, alt, variantType);
     }
 
     @Override
     public String toString() {
         return "SymbolicVariant{" +
-                "contig=" + contig.getId() +
+                "contig=" + contig.id() +
                 ", strand=" + strand +
                 ", startPosition=" + startPosition +
                 ", endPosition=" + endPosition +
-                ", length=" + length +
+                ", changeLength=" + changeLength +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", variantType=" + variantType +

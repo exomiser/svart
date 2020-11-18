@@ -12,28 +12,28 @@ public interface Contig extends Comparable<Contig> {
     // *MUST* be unique within an assembly
     // Other unplaced, unlocalised, patch, alt-scaffold sequences are not required to be ordered in any specific way.
     // Zero is reserved as the 'unknown' value.
-    int getId();
+    int id();
 
     // Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
-    String getName();
+    String name();
 
     /**
      * @return contig sequence role
      */
-    SequenceRole getSequenceRole();
+    SequenceRole sequenceRole();
 
     // Sequence-Length column 8 (zero-based) of assembly-report
-    int getLength();
+    int length();
 
     // The Genbank identifier for the contig. This should not be empty and is the primary source of the sequence.
     // GenBank-Accn column 4 (zero-based) of assembly-report
-    String getGenBankAccession();
+    String genBankAccession();
 
     // The RefSeq accession of the contig or empty if unknown
     // RefSeq is recommended by the HGVS for use when reporting variants.
     // http://varnomen.hgvs.org/bg-material/refseq/
     // RefSeq-Accn column 6 (zero-based) of assembly-report
-    String getRefSeqAccession();
+    String refSeqAccession();
 
     // Because chr prefixes are awesome
     // UCSC-style-name column 9 (zero-based) of assembly-report

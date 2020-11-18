@@ -24,7 +24,7 @@ class OneBasedPosition implements Position {
     }
 
     @Override
-    public int getPos() {
+    public int pos() {
         return pos;
     }
 
@@ -39,7 +39,7 @@ class OneBasedPosition implements Position {
     }
 
     @Override
-    public CoordinateSystem getCoordinateSystem() {
+    public CoordinateSystem coordinateSystem() {
         return CoordinateSystem.ONE_BASED;
     }
 
@@ -49,7 +49,7 @@ class OneBasedPosition implements Position {
     }
 
     @Override
-    public ConfidenceInterval getConfidenceInterval() {
+    public ConfidenceInterval confidenceInterval() {
         return confidenceInterval;
     }
 

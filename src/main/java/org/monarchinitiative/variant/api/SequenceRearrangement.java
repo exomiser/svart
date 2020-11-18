@@ -16,46 +16,46 @@ public interface SequenceRearrangement extends Stranded<SequenceRearrangement> {
     /**
      * @return list of adjacencies
      */
-    List<Adjacency> getAdjacencies();
+    List<Adjacency> adjacencies();
 
-    default Contig getLeftmostContig() {
-        return getAdjacencies().get(0).getLeft().getContig();
+    default Contig leftmostContig() {
+        return adjacencies().get(0).left().contig();
     }
 
-    default Contig getRightmostContig() {
-        return getAdjacencies().get(0).getRight().getContig();
+    default Contig rightmostContig() {
+        return adjacencies().get(0).right().contig();
     }
 
     /**
      * @return strand of the leftmost position of the rearrangement
      */
-    default Strand getLeftmostStrand() {
-        return getAdjacencies().get(0).getStrand();
+    default Strand leftmostStrand() {
+        return adjacencies().get(0).strand();
     }
 
     /**
      * @return strand of the rightmost position of the rearrangement
      */
-    default Strand getRightmostStrand() {
-        int n = getAdjacencies().size();
-        return getAdjacencies().get(n - 1).getRight().getStrand();
+    default Strand rightmostStrand() {
+        int n = adjacencies().size();
+        return adjacencies().get(n - 1).right().strand();
     }
 
     /**
-     * Get leftmost position of the rearrangement. The position is on the strand that you get by {@link #getLeftmostStrand()}.
+     * Get leftmost position of the rearrangement. The position is on the strand that you get by {@link #leftmostStrand()}.
      *
      * @return coordinate of the leftmost position of the rearrangement
      */
-    default Position getLeftmostPosition() {
-        return getAdjacencies().get(0).getLeft().getPosition();
+    default Position leftmostPosition() {
+        return adjacencies().get(0).left().position();
     }
     /**
-     * Get rightmost position of the rearrangement. The position is on the strand that you get by {@link #getRightmostStrand()}.
+     * Get rightmost position of the rearrangement. The position is on the strand that you get by {@link #rightmostStrand()}.
      *
      * @return coordinate of the rightmost position of the rearrangement
      */
-    default Position getRightmostPosition() {
-        int n = getAdjacencies().size();
-        return getAdjacencies().get(n - 1).getRight().getPosition();
+    default Position rightmostPosition() {
+        int n = adjacencies().size();
+        return adjacencies().get(n - 1).right().position();
     }
 }

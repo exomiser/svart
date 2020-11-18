@@ -16,100 +16,133 @@ class SequenceVariantTest {
 
     @Test
     void throwsIllegalArgumentWithSymbolicAllele() {
-        assertThrows(IllegalArgumentException.class, () -> SequenceVariant.of(chr1, 1, "A", "<INS>"));
+        assertThrows(IllegalArgumentException.class, () -> SequenceVariant.oneBased(chr1, 1, "A", "<INS>"));
     }
 
     @Test
     void throwsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> SequenceVariant.of(chr1, 1, "A", "A[1:2]"));
+        assertThrows(IllegalArgumentException.class, () -> SequenceVariant.oneBased(chr1, 1, "A", "A[1:2]"));
     }
 
     @Test
     void shouldNotBeSymbolic() {
-        Variant instance = SequenceVariant.of(chr1, 1, "A", "T");
+        Variant instance = SequenceVariant.oneBased(chr1, 1, "A", "T");
         assertThat(instance.isSymbolic(), equalTo(false));
     }
 
     @Test
     void snv() {
-        Variant snv = SequenceVariant.of(chr1, 1, "A", "T");
+        Variant snv = SequenceVariant.oneBased(chr1, 1, "A", "T");
 
-        assertThat(snv.getStartPosition(), equalTo(snv.getEndPosition()));
-        assertThat(snv.getType(), equalTo(VariantType.SNV));
-        assertThat(snv.getLength(), equalTo(1));
+        assertThat(snv.startPosition(), equalTo(snv.endPosition()));
+        assertThat(snv.variantType(), equalTo(VariantType.SNV));
+        assertThat(snv.length(), equalTo(1));
     }
 
     @Test
     void mnv() {
-        Variant mnv = SequenceVariant.of(chr1, 1, "AT", "TG");
+        Variant mnv = SequenceVariant.oneBased(chr1, 1, "AT", "TG");
 
-        assertThat(mnv.getStartPosition(), equalTo(Position.of(1)));
-        assertThat(mnv.getStart(), equalTo(1));
-        assertThat(mnv.getEndPosition(), equalTo(Position.of(2)));
-        assertThat(mnv.getType(), equalTo(VariantType.MNV));
-        assertThat(mnv.getLength(), equalTo(2));
+        assertThat(mnv.startPosition(), equalTo(Position.of(1)));
+        assertThat(mnv.start(), equalTo(1));
+        assertThat(mnv.endPosition(), equalTo(Position.of(2)));
+        assertThat(mnv.variantType(), equalTo(VariantType.MNV));
+        assertThat(mnv.length(), equalTo(2));
     }
 
     @Test
     void del() {
-        Variant del = SequenceVariant.of(chr1, 1, "AG", "A");
+        Variant del = SequenceVariant.oneBased(chr1, 1, "AG", "A");
 
-        assertThat(del.getStartPosition(), equalTo(Position.of(1)));
-        assertThat(del.getEndPosition(), equalTo(Position.of(2)));
-        assertThat(del.getType(), equalTo(VariantType.DEL));
-        assertThat(del.getLength(), equalTo(2));
+        assertThat(del.startPosition(), equalTo(Position.of(1)));
+        assertThat(del.endPosition(), equalTo(Position.of(2)));
+        assertThat(del.variantType(), equalTo(VariantType.DEL));
+        assertThat(del.length(), equalTo(2));
     }
 
     @Test
     void ins() {
-        Variant ins = SequenceVariant.of(chr1, 1, "A", "AG");
+        Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
 
-        assertThat(ins.getStartPosition(), equalTo(Position.of(1)));
-        assertThat(ins.getEndPosition(), equalTo(Position.of(1)));
-        assertThat(ins.getType(), equalTo(VariantType.INS));
-        assertThat(ins.getLength(), equalTo(1));
+        assertThat(ins.startPosition(), equalTo(Position.of(1)));
+        assertThat(ins.endPosition(), equalTo(Position.of(1)));
+        assertThat(ins.variantType(), equalTo(VariantType.INS));
+        assertThat(ins.length(), equalTo(1));
+        assertThat(ins.refLength(), equalTo(1));
+        assertThat(ins.changeLength(), equalTo(1));
     }
 
     @Test
     void insWithSameStrand() {
-        Variant ins = SequenceVariant.of(chr1, 1, "A", "AG");
+        Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
         assertSame(ins, ins.withStrand(Strand.POSITIVE));
     }
 
     @Test
     void insWithNegativeStrand() {
-        Variant ins = SequenceVariant.of(chr1, 1, "A", "AG");
+        Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
         Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
-        assertThat(negativeIns.getContig(), equalTo(chr1));
-        assertThat(negativeIns.getStrand(), equalTo(Strand.NEGATIVE));
-        assertThat(negativeIns.getStartPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.getEndPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.getRef(), equalTo("T"));
-        assertThat(negativeIns.getAlt(), equalTo("CT"));
-        assertThat(negativeIns.getType(), equalTo(VariantType.INS));
-        assertThat(negativeIns.getLength(), equalTo(1));
+        assertThat(negativeIns.contig(), equalTo(chr1));
+        assertThat(negativeIns.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(negativeIns.startPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.ref(), equalTo("T"));
+        assertThat(negativeIns.alt(), equalTo("CT"));
+        assertThat(negativeIns.variantType(), equalTo(VariantType.INS));
+        assertThat(negativeIns.length(), equalTo(1));
+    }
+
+    @Test
+    public void delWithNegativeStrand() {
+        Contig chr5 = Contig.of(5, "5", SequenceRole.UNKNOWN, 5, "", "", "");
+        Variant del = SequenceVariant.oneBased(chr5, 1, "AG", "A");
+        Variant negativeDel = del.withStrand(Strand.NEGATIVE);
+
+        assertThat(negativeDel.contig(), equalTo(chr5));
+        assertThat(negativeDel.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(negativeDel.startPosition(), equalTo(Position.of(4)));
+        assertThat(negativeDel.endPosition(), equalTo(Position.of(5)));
+        assertThat(negativeDel.ref(), equalTo("CT"));
+        assertThat(negativeDel.alt(), equalTo("T"));
+        assertThat(negativeDel.variantType(), equalTo(VariantType.DEL));
+        assertThat(negativeDel.length(), equalTo(2));
+        assertThat(negativeDel.refLength(), equalTo(2));
+        assertThat(negativeDel.changeLength(), equalTo(-1));
+    }
+
+    @Test
+    void delLenSvLen() {
+        Variant del = SequenceVariant.oneBased(chr1, "rs2376870", 2827694, "CGTGGATGCGGGGAC", "C");
+       //.    PASS   SVTYPE=DEL;LEN=15;HOMLEN=1;HOMSEQ=G;SVLEN=-14
+        assertThat(del.variantType(), equalTo(VariantType.DEL));
+        assertThat(del.length(), equalTo(15));
+        assertThat(del.refLength(), equalTo(15));
+        assertThat(del.changeLength(), equalTo(-14));
     }
 
     @Test
     void snvToOppositeStrand() {
-        Variant snv = SequenceVariant.of(chr1, 1, "A", "T");
-        assertThat(snv.getStrand(), equalTo(Strand.POSITIVE));
+        Variant snv = SequenceVariant.oneBased(chr1, 1, "A", "T");
+        assertThat(snv.strand(), equalTo(Strand.POSITIVE));
         Variant oppositeSnv = snv.toOppositeStrand();
-        assertThat(oppositeSnv.getContig(), equalTo(chr1));
-        assertThat(oppositeSnv.getStrand(), equalTo(Strand.NEGATIVE));
-        assertThat(oppositeSnv.getStartPosition(), equalTo(Position.of(1000)));
-        assertThat(oppositeSnv.getEndPosition(), equalTo(Position.of(1000)));
-        assertThat(oppositeSnv.getRef(), equalTo("T"));
-        assertThat(oppositeSnv.getAlt(), equalTo("A"));
-        assertThat(oppositeSnv.getType(), equalTo(VariantType.SNV));
-        assertThat(oppositeSnv.getLength(), equalTo(1));}
+        assertThat(oppositeSnv.contig(), equalTo(chr1));
+        assertThat(oppositeSnv.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(oppositeSnv.startPosition(), equalTo(Position.of(1000)));
+        assertThat(oppositeSnv.endPosition(), equalTo(Position.of(1000)));
+        assertThat(oppositeSnv.ref(), equalTo("T"));
+        assertThat(oppositeSnv.alt(), equalTo("A"));
+        assertThat(oppositeSnv.variantType(), equalTo(VariantType.SNV));
+        assertThat(oppositeSnv.length(), equalTo(1));
+        assertThat(oppositeSnv.refLength(), equalTo(1));
+        assertThat(oppositeSnv.changeLength(), equalTo(0));
+    }
 
     @Test
     void symbolicVariantContainsSnv() {
-        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100, VariantType.INS);
-        assertTrue(largeIns.contains(SequenceVariant.of(chr1, 1, "A", "T")));
-        assertFalse(largeIns.contains(SequenceVariant.of(chr1, 200, "C", "A")));
+        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
+        assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
+        assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));
         assertTrue(largeIns.contains(PartialBreakend.of(chr1, Position.of(1), Strand.POSITIVE, "T")));
     }
 

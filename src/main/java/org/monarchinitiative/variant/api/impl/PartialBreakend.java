@@ -26,22 +26,22 @@ public class PartialBreakend implements Breakend {
     }
 
     @Override
-    public Contig getContig() {
+    public Contig contig() {
         return contig;
     }
 
     @Override
-    public Position getPosition() {
+    public Position position() {
         return position;
     }
 
     @Override
-    public Strand getStrand() {
+    public Strand strand() {
         return strand;
     }
 
     @Override
-    public String getId() {
+    public String id() {
         return "";
     }
 
@@ -50,8 +50,8 @@ public class PartialBreakend implements Breakend {
         if (this.strand == strand) {
             return this;
         } else {
-            Position pos = Position.of(contig.getLength() - position.getPos() + 1,
-                    position.getConfidenceInterval().toOppositeStrand());
+            Position pos = Position.of(contig.length() - position.pos() + 1,
+                    position.confidenceInterval().toOppositeStrand());
             return new PartialBreakend(contig, pos, strand, id);
         }
     }
@@ -75,7 +75,7 @@ public class PartialBreakend implements Breakend {
     @Override
     public String toString() {
         return "PartialBreakend{" +
-                "contig=" + contig.getId() +
+                "contig=" + contig.id() +
                 ", position=" + position +
                 ", strand=" + strand +
                 ", id='" + id + '\'' +

@@ -29,18 +29,18 @@ class SimpleSequenceRearrangement implements SequenceRearrangement {
     }
 
     @Override
-    public List<Adjacency> getAdjacencies() {
+    public List<Adjacency> adjacencies() {
         return adjacencies;
     }
 
     @Override
-    public Strand getStrand() {
-        return getLeftmostStrand();
+    public Strand strand() {
+        return leftmostStrand();
     }
 
     @Override
     public SequenceRearrangement withStrand(Strand strand) {
-        if (adjacencies.isEmpty() || adjacencies.get(0).getLeft().getStrand().equals(strand)) {
+        if (adjacencies.isEmpty() || adjacencies.get(0).left().strand().equals(strand)) {
             return this;
         } else {
             // reverse order of adjacencies, while also flipping the adjacencies to the opposite strand

@@ -16,92 +16,114 @@ class SymbolicVariantTest {
 
     @Test
     void symbolicVariantOverlapsOther() {
-        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100, VariantType.INS);
-        Variant otherIns = SymbolicVariant.of(chr1, 99, 299, "C", "<INS>", 200, VariantType.INS);
+        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
+        Variant otherIns = SymbolicVariant.of(chr1, 99, 299, "C", "<INS>", 200);
         assertTrue(largeIns.overlapsWith(otherIns));
         assertTrue(otherIns.overlapsWith(largeIns));
     }
 
-
     @Test
     void throwsIllegalArgumentWithNonSymbolicAllele() {
         // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
-        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "T", 1, VariantType.SNV));
+        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "T", 1));
     }
 
     @Test
     void symbolicThrowsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "A[1:2]", 1, VariantType.BND));
+        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "A[1:2]", 1));
     }
 
     @Test
     void shouldBeSymbolic() {
-        Variant instance = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100, VariantType.INS);
+        Variant instance = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
         assertThat(instance.isSymbolic(), equalTo(true));
     }
 
     @Test
     void symbolicDel() {
-        Variant del = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", 100, VariantType.DEL);
+        Variant del = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", -99);
 
-        assertThat(del.getContig(), equalTo(chr1));
-        assertThat(del.getStartPosition(), equalTo(Position.of(1)));
-        assertThat(del.getEndPosition(), equalTo(Position.of(100)));
-        assertThat(del.getType(), equalTo(VariantType.DEL));
-        assertThat(del.getLength(), equalTo(100));
-        assertThat(del.getRef(), equalTo("A"));
-        assertThat(del.getAlt(), equalTo("<DEL>"));
+        assertThat(del.contig(), equalTo(chr1));
+        assertThat(del.startPosition(), equalTo(Position.of(1)));
+        assertThat(del.endPosition(), equalTo(Position.of(100)));
+        assertThat(del.variantType(), equalTo(VariantType.DEL));
+        assertThat(del.length(), equalTo(100));
+        assertThat(del.ref(), equalTo("A"));
+        assertThat(del.alt(), equalTo("<DEL>"));
+        assertThat(del.refLength(), equalTo(100));
+        assertThat(del.changeLength(), equalTo(-99));
+
+        // END: End reference position (1-based), indicating the variant spans positions POS-END on reference/contig CHROM.
+        //   END is deprecated and has been replaced with LEN.
+        // LEN: The length of the variant's alignment to the reference indicating the variant spans positions POS-(LEN - 1) on reference/contig CHROM.
+        //    LEN = length of REF allele
+        // changeLength == SVLEN
+        // SVLEN Difference in length between REF and ALT alleles
+        //  (longer ALT (insertions) have positive values, shorter ALT alleles (e.g. deletions) have negative values
+    }
+
+    @Test
+    void symbolicDelLenSvLen() {
+        //1       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
+        Variant del = SymbolicVariant.of(chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
+        assertThat(del.length(), equalTo(206));
+        assertThat(del.refLength(), equalTo(206));
+        assertThat(del.changeLength(), equalTo(-205));
     }
 
     @Test
     void symbolicIns() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100, VariantType.INS);
+        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
 
-        assertThat(ins.getContig(), equalTo(chr1));
-        assertThat(ins.getStartPosition(), equalTo(Position.of(1)));
-        assertThat(ins.getEndPosition(), equalTo(Position.of(1)));
-        assertThat(ins.getType(), equalTo(VariantType.INS));
-        assertThat(ins.getLength(), equalTo(100));
-        assertThat(ins.getRef(), equalTo("A"));
-        assertThat(ins.getAlt(), equalTo("<INS>"));
+        assertThat(ins.contig(), equalTo(chr1));
+        assertThat(ins.startPosition(), equalTo(Position.of(1)));
+        assertThat(ins.endPosition(), equalTo(Position.of(1)));
+        assertThat(ins.variantType(), equalTo(VariantType.INS));
+        assertThat(ins.length(), equalTo(1));
+        assertThat(ins.ref(), equalTo("A"));
+        assertThat(ins.alt(), equalTo("<INS>"));
+        assertThat(ins.refLength(), equalTo(1));
+        assertThat(ins.changeLength(), equalTo(100));
     }
 
     @Test
     void symbolicInsWithSameStrand() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100, VariantType.INS);
+        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
         assertSame(ins, ins.withStrand(Strand.POSITIVE));
     }
 
     @Test
     void symbolicInsWithNegativeStrand() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100, VariantType.INS);
+        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
         Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
-        assertThat(negativeIns.getContig(), equalTo(chr1));
-        assertThat(negativeIns.getStrand(), equalTo(Strand.NEGATIVE));
-        assertThat(negativeIns.getStartPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.getEndPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.getRef(), equalTo("T"));
-        assertThat(negativeIns.getAlt(), equalTo("<INS>"));
-        assertThat(negativeIns.getType(), equalTo(VariantType.INS));
-        assertThat(negativeIns.getLength(), equalTo(100));
+        assertThat(negativeIns.contig(), equalTo(chr1));
+        assertThat(negativeIns.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(negativeIns.startPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.ref(), equalTo("T"));
+        assertThat(negativeIns.alt(), equalTo("<INS>"));
+        assertThat(negativeIns.variantType(), equalTo(VariantType.INS));
+        assertThat(negativeIns.length(), equalTo(1));
+        assertThat(negativeIns.changeLength(), equalTo(100));
     }
 
     @Test
     void symbolicDelWithNegativeStrand() {
-        Variant del = SequenceVariant.of(chr1, 1, "ATCATTTACC", "A");
-        Variant instance = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", 100, VariantType.DEL);
+        Variant del = SequenceVariant.oneBased(chr1, 1, "ATCATTTACC", "A");
+        Variant instance = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", -99);
         Variant negative = instance.withStrand(Strand.NEGATIVE);
         System.out.println(del);
         System.out.println(instance);
         System.out.println(negative);
-        assertThat(negative.getContig(), equalTo(chr1));
-        assertThat(negative.getStrand(), equalTo(Strand.NEGATIVE));
-        assertThat(negative.getStartPosition(), equalTo(Position.of(901)));
-        assertThat(negative.getEndPosition(), equalTo(Position.of(1000)));
-        assertThat(negative.getRef(), equalTo("T"));
-        assertThat(negative.getAlt(), equalTo("<DEL>"));
-        assertThat(negative.getType(), equalTo(VariantType.DEL));
-        assertThat(negative.getLength(), equalTo(100));
+        assertThat(negative.contig(), equalTo(chr1));
+        assertThat(negative.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(negative.startPosition(), equalTo(Position.of(901)));
+        assertThat(negative.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negative.ref(), equalTo("T"));
+        assertThat(negative.alt(), equalTo("<DEL>"));
+        assertThat(negative.variantType(), equalTo(VariantType.DEL));
+        assertThat(negative.length(), equalTo(100));
+        assertThat(negative.changeLength(), equalTo(-99));
     }
 }

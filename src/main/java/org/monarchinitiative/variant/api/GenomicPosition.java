@@ -9,48 +9,49 @@ import java.util.Comparator;
  */
 public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition> {
 
+    // TODO: do this manually below
     Comparator<GenomicPosition> NATURAL_COMPARATOR = Comparator
-            .comparing(GenomicPosition::getContigId)
-            .thenComparing(GenomicPosition::getPosition)
-            .thenComparing(GenomicPosition::getStrand)
-            .thenComparing(GenomicPosition::getCi);
+            .comparing(GenomicPosition::contigId)
+            .thenComparing(GenomicPosition::position)
+            .thenComparing(GenomicPosition::strand)
+            .thenComparing(GenomicPosition::ci);
 
-    Contig getContig();
+    Contig contig();
 
     // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file
-    default int getContigId() {
-        return getContig().getId();
+    default int contigId() {
+        return contig().id();
     }
 
     // column 0 of the assembly report file 1-22, X,Y,MT
-    default String getContigName() {
-        return getContig().getName();
+    default String contigName() {
+        return contig().name();
     }
 
-    Position getPosition();
+    Position position();
 
-    default int getPos() {
-        return getPosition().getPos();
+    default int pos() {
+        return position().pos();
     }
 
-    default CoordinateSystem getCoordinateSystem() {
-        return getPosition().getCoordinateSystem();
+    default CoordinateSystem coordinateSystem() {
+        return position().coordinateSystem();
     }
 
-    default Strand getStrand() {
+    default Strand strand() {
         return Strand.POSITIVE;
     }
 
-    default ConfidenceInterval getCi() {
-        return getPosition().getConfidenceInterval();
+    default ConfidenceInterval ci() {
+        return position().confidenceInterval();
     }
 
-    default int getMin() {
-        return getPosition().getMinPos();
+    default int min() {
+        return position().minPos();
     }
 
-    default int getMax() {
-        return getPosition().getMaxPos();
+    default int max() {
+        return position().maxPos();
     }
 
     @Override

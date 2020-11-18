@@ -84,7 +84,7 @@ public enum VariantType {
         this.subType = subType;
     }
 
-    public static VariantType parseValue(String value) {
+    public static VariantType parseType(String value) {
         String stripped = trimAngleBrackets(Objects.requireNonNull(value));
         switch (stripped) {
             case "SNP":
@@ -178,9 +178,9 @@ public enum VariantType {
         return UNKNOWN;
     }
 
-    public static VariantType parseAllele(String ref, String alt) {
+    public static VariantType parseType(String ref, String alt) {
         if (isSymbolic(ref, alt)) {
-            return parseValue(alt);
+            return parseType(alt);
         }
         if (ref.length() == alt.length()) {
             if (alt.length() == 1) {
@@ -225,11 +225,11 @@ public enum VariantType {
         return value;
     }
 
-    public VariantType getBaseType() {
+    public VariantType baseType() {
         return baseType;
     }
 
-    public VariantType getSubType() {
+    public VariantType subType() {
         return subType;
     }
 

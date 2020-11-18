@@ -6,8 +6,8 @@ package org.monarchinitiative.variant.api;
 public interface Adjacency extends Breakended, Stranded<Adjacency> {
 
     @Override
-    default Strand getStrand() {
-        return getLeft().getStrand();
+    default Strand strand() {
+        return left().strand();
     }
 
     @Override

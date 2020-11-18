@@ -35,72 +35,82 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     @Override
-    public String getId() {
-        return left.getId();
+    public String id() {
+        return left.id();
     }
 
     @Override
-    public String getMateId() {
-        return right.getId();
+    public String mateId() {
+        return right.id();
     }
 
     @Override
-    public String getEventId() {
+    public String eventId() {
         return eventId;
     }
 
     @Override
-    public Breakend getLeft() {
+    public Breakend left() {
         return left;
     }
 
     @Override
-    public Breakend getRight() {
+    public Breakend right() {
         return right;
     }
 
     @Override
-    public Contig getContig() {
-        return left.getContig();
+    public Contig contig() {
+        return left.contig();
     }
 
     @Override
-    public Position getStartPosition() {
-        return left.getPosition();
+    public Position startPosition() {
+        return left.position();
     }
 
     @Override
-    public Position getEndPosition() {
-        return left.getPosition();
+    public Position endPosition() {
+        return left.position();
     }
 
     @Override
-    public int getLength() {
+    public int length() {
         return alt.length();
     }
 
     @Override
-    public String getRef() {
+    public int refLength() {
+        return ref.length();
+    }
+
+    @Override
+    public int changeLength() {
+        return 0;
+    }
+
+    @Override
+    public String ref() {
         return ref;
     }
 
     @Override
-    public String getAlt() {
+    public String alt() {
         return alt;
     }
 
     @Override
-    public VariantType getType() {
+    public VariantType variantType() {
         return VariantType.BND;
     }
 
     @Override
-    public Strand getStrand() {
-        return left.getStrand();
+    public Strand strand() {
+        return left.strand();
     }
 
     public BreakendVariant withStrand(Strand strand) {
-        if (left.getStrand().equals(strand)) {
+        if (left.strand().equals(strand)) {
             return this;
         } else {
             return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), ref, Seq
@@ -110,7 +120,7 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public BreakendVariant toOppositeStrand() {
-        return withStrand(getStrand().opposite());
+        return withStrand(strand().opposite());
     }
 
     @Override

@@ -40,19 +40,19 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
         return PRECISE;
     }
 
-    public int getLowerBound() {
+    public int lowerBound() {
         return lowerBound;
     }
 
-    public int getUpperBound() {
+    public int upperBound() {
         return upperBound;
     }
 
-    public int getMinPos(int pos) {
+    public int minPos(int pos) {
         return pos + lowerBound;
     }
 
-    public int getMaxPos(int pos) {
+    public int maxPos(int pos) {
         return pos + upperBound;
     }
 

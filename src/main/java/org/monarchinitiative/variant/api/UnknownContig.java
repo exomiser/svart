@@ -17,32 +17,32 @@ final class UnknownContig implements Contig {
     }
 
     @Override
-    public int getId() {
+    public int id() {
         return 0;
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return NAME;
     }
 
     @Override
-    public SequenceRole getSequenceRole() {
+    public SequenceRole sequenceRole() {
         return SequenceRole.UNKNOWN;
     }
 
     @Override
-    public int getLength() {
+    public int length() {
         return 0;
     }
 
     @Override
-    public String getGenBankAccession() {
+    public String genBankAccession() {
         return "";
     }
 
     @Override
-    public String getRefSeqAccession() {
+    public String refSeqAccession() {
         return "";
     }
 

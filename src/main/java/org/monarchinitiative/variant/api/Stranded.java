@@ -5,7 +5,7 @@ package org.monarchinitiative.variant.api;
  */
 public interface Stranded<T> {
 
-    Strand getStrand();
+    Strand strand();
 
     T withStrand(Strand strand);
 
@@ -13,6 +13,6 @@ public interface Stranded<T> {
      * Convert the breakend to opposite strand no matter what.
      */
     default T toOppositeStrand() {
-        return withStrand(getStrand().opposite());
+        return withStrand(strand().opposite());
     }
 }

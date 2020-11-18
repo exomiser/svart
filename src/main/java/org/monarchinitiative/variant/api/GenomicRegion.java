@@ -9,26 +9,27 @@ import java.util.Comparator;
  */
 public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> {
 
-    Comparator<GenomicRegion> DEFAULT_COMPARATOR = Comparator.comparing(GenomicRegion::getContig)
-            .thenComparing(GenomicRegion::getStartPosition)
-            .thenComparing(GenomicRegion::getEndPosition)
-            .thenComparing(GenomicRegion::getStrand);
+    // TODO: do this manually below
+    Comparator<GenomicRegion> DEFAULT_COMPARATOR = Comparator.comparing(GenomicRegion::contig)
+            .thenComparing(GenomicRegion::startPosition)
+            .thenComparing(GenomicRegion::endPosition)
+            .thenComparing(GenomicRegion::strand);
 
     /**
      * @return contig where the region is located
      */
-    Contig getContig();
+    Contig contig();
 
     /**
      * @return 1-based begin coordinate
      */
-    Position getStartPosition();
+    Position startPosition();
 
     /**
      * @return 1-based begin coordinate of the region
      */
-    default int getStart() {
-        return getStartPosition().getPos();
+    default int start() {
+        return startPosition().pos();
     }
 
     /**
@@ -36,18 +37,18 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      *
      * @return 1-based end coordinate
      */
-    Position getEndPosition();
+    Position endPosition();
 
     /**
      * @return 1-based end coordinate of the region
      */
-    default int getEnd() {
-        return getEndPosition().getPos();
+    default int end() {
+        return endPosition().pos();
     }
 
 
-    default int getLength() {
-        return getEnd() - getStart() + 1;
+    default int length() {
+        return endPosition().oneBasedPos() - startPosition().zeroBasedPos();
     }
 
     /**
@@ -55,11 +56,11 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return true if the region shares at least 1 bp with the <code>other</code> region
      */
     default boolean overlapsWith(GenomicRegion other) {
-        if (this.getContig().getId() != other.getContig().getId()) {
+        if (this.contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.getStrand());
-        return getStart() <= onStrand.getEnd() && getEnd() >= onStrand.getStart();
+        GenomicRegion onStrand = other.withStrand(this.strand());
+        return start() <= onStrand.end() && end() >= onStrand.start();
     }
 
     /**
@@ -67,19 +68,25 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(GenomicRegion other) {
-        if (this.getContig().getId() != other.getContig().getId()) {
+        if (this.contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.getStrand());
-        return onStrand.getStart() >= getStart() && onStrand.getEnd() <= getEnd();
+        GenomicRegion onStrand = other.withStrand(this.strand());
+        return onStrand.start() >= start() && onStrand.end() <= end();
     }
 
-    default boolean contains(GenomicPosition position) {
-        if (this.getContig().getId() != position.getContig().getId()) {
+    default boolean contains(GenomicPosition genomicPosition) {
+        if (this.contig().id() != genomicPosition.contig().id()) {
             return false;
         }
-        GenomicPosition onStrand = position.withStrand(this.getStrand());
-        return getStart() <= onStrand.getPos() && onStrand.getPos() <= getEnd();
+        // TODO: check other suggestions from PR
+        // 1-based query position on this region's strand
+        int pos = genomicPosition.withStrand(this.strand()).position().oneBasedPos();
+        // 0-based coordinates of this region
+        int thisStart = startPosition().zeroBasedPos();
+        int thisEnd = endPosition().oneBasedPos();
+
+        return thisStart < pos && pos <= thisEnd;
     }
 
     @Override

@@ -29,32 +29,32 @@ public final class ContigDefault implements Contig {
     }
 
     @Override
-    public int getId() {
+    public int id() {
         return id;
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return name;
     }
 
     @Override
-    public SequenceRole getSequenceRole() {
+    public SequenceRole sequenceRole() {
         return sequenceRole;
     }
 
     @Override
-    public int getLength() {
+    public int length() {
         return length;
     }
 
     @Override
-    public String getGenBankAccession() {
+    public String genBankAccession() {
         return genbankAccession;
     }
 
     @Override
-    public String getRefSeqAccession() {
+    public String refSeqAccession() {
         return refSeqAccession;
     }
 
@@ -65,7 +65,7 @@ public final class ContigDefault implements Contig {
 
     @Override
     public int compareTo(Contig o) {
-        return Integer.compare(this.getId(), o.getId());
+        return Integer.compare(this.id(), o.id());
     }
 
     @Override

@@ -9,7 +9,7 @@ public interface Breakend extends GenomicPosition {
     /**
      * @return id corresponding to id of the record (e.g. VCF) this breakend was created from
      */
-    String getId();
+    String id();
 
     // override Stranded<T> methods from ChromosomalRegion in order to return the more specific Breakend type
     @Override
@@ -20,6 +20,6 @@ public interface Breakend extends GenomicPosition {
      */
     @Override
     default Breakend toOppositeStrand() {
-        return withStrand(getStrand().opposite());
+        return withStrand(strand().opposite());
     }
 }

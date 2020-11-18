@@ -27,7 +27,7 @@ class ZeroBasedPosition implements Position {
      * @return one based position
      */
     @Override
-    public int getPos() {
+    public int pos() {
         return pos;
     }
 
@@ -42,12 +42,12 @@ class ZeroBasedPosition implements Position {
     }
 
     @Override
-    public ConfidenceInterval getConfidenceInterval() {
+    public ConfidenceInterval confidenceInterval() {
         return confidenceInterval;
     }
 
     @Override
-    public CoordinateSystem getCoordinateSystem() {
+    public CoordinateSystem coordinateSystem() {
         return CoordinateSystem.ZERO_BASED;
     }
 

@@ -20,7 +20,7 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
-    public String getId() {
+    public String id() {
         return ID;
     }
 
@@ -30,12 +30,12 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
-    public Contig getContig() {
+    public Contig contig() {
         return contig;
     }
 
     @Override
-    public Position getPosition() {
+    public Position position() {
         return position;
     }
 

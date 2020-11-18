@@ -20,14 +20,14 @@ class BreakendVariantTest {
         Breakend left = PartialBreakend.of(chr2, Position.of(4150333, -8,10, CoordinateSystem.ONE_BASED), Strand.POSITIVE, "28382_1");
         Breakend right = PartialBreakend.of(chr13, Position.of(33423926, -2,1, CoordinateSystem.ONE_BASED), Strand.POSITIVE, "28382_2");
         BreakendVariant instance = new BreakendVariant("28382", left, right, "N", "N");
-        assertThat(instance.getContig(), equalTo(chr2));
-        assertThat(instance.getStartPosition().getPos(), equalTo(4150333));
-        assertThat(instance.getRef(), equalTo("N"));
-        assertThat(instance.getAlt(), equalTo("N"));
-        assertThat(instance.getLeft().getContig(), equalTo(chr2));
-        assertThat(instance.getLeft().getPos(), equalTo(4150333));
-        assertThat(instance.getRight().getContig(), equalTo(chr13));
-        assertThat(instance.getRight().getPos(), equalTo(33423926));
+        assertThat(instance.contig(), equalTo(chr2));
+        assertThat(instance.startPosition().pos(), equalTo(4150333));
+        assertThat(instance.ref(), equalTo("N"));
+        assertThat(instance.alt(), equalTo("N"));
+        assertThat(instance.left().contig(), equalTo(chr2));
+        assertThat(instance.left().pos(), equalTo(4150333));
+        assertThat(instance.right().contig(), equalTo(chr13));
+        assertThat(instance.right().pos(), equalTo(33423926));
 
         System.out.println(instance.withStrand(Strand.NEGATIVE));
         // 13      33423926        28382_2 N       N]2:4150333]    284.1   PASS    SVTYPE=BND;POS=33423926;STRANDS=++:31;CIPOS=-2,1;CIEND=-8,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_1;EVENT=28382;

@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,38 +34,38 @@ class ConfidenceIntervalTest {
     void getLowerBound() {
         int lowerBound = -10;
         ConfidenceInterval instance = ConfidenceInterval.of(lowerBound, 0);
-        assertThat(instance.getLowerBound(), equalTo(lowerBound));
+        assertThat(instance.lowerBound(), equalTo(lowerBound));
     }
 
     @Test
     void getUpperBound() {
         int upperBound = 20;
         ConfidenceInterval instance = ConfidenceInterval.of(0, upperBound);
-        assertThat(instance.getUpperBound(), equalTo(upperBound));
+        assertThat(instance.upperBound(), equalTo(upperBound));
     }
 
     @Test
     void getMin() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
-        assertThat(instance.getMinPos(200), equalTo(190));
+        assertThat(instance.minPos(200), equalTo(190));
     }
 
     @Test
     void getMinFromPrecise() {
         ConfidenceInterval instance = ConfidenceInterval.precise();
-        assertThat(instance.getMinPos(100), equalTo(100));
+        assertThat(instance.minPos(100), equalTo(100));
     }
 
     @Test
     void getMax() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
-        assertThat(instance.getMaxPos(200), equalTo(220));
+        assertThat(instance.maxPos(200), equalTo(220));
     }
 
     @Test
     void getMaxFromPrecise() {
         ConfidenceInterval instance = ConfidenceInterval.precise();
-        assertThat(instance.getMaxPos(100), equalTo(100));
+        assertThat(instance.maxPos(100), equalTo(100));
     }
 
     @Test

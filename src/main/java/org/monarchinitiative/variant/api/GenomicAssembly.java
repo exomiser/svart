@@ -28,25 +28,25 @@ import java.util.SortedSet;
 public interface GenomicAssembly {
 
 //    GRCh38.p12
-    public String getName();
+    public String name();
 
-    public String getOrganismName();
+    public String organismName();
 
-    public String getTaxId();
+    public String taxId();
 
-    public String getSubmitter();
+    public String submitter();
 
-    public String getDate();
+    public String date();
 
-    public String getGenBankAccession();
+    public String genBankAccession();
 
-    public String getRefSeqAccession();
+    public String refSeqAccession();
 
-    public SortedSet<Contig> getContigs();
+    public SortedSet<Contig> contigs();
 
-    public Contig getContigById(int contigId);
+    public Contig contigById(int contigId);
 
-    public Contig getContigByName(String contigName);
+    public Contig contigByName(String contigName);
 
 //# Assembly name:  GRCh38.p13
 //# Description:    Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)

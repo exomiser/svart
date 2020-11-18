@@ -16,18 +16,18 @@ class PositionTest {
 
     @Test
     void properties() {
-        assertThat(Position.of(101).getPos(), is(101));
-        assertThat(Position.of(101).getConfidenceInterval(), is(ConfidenceInterval.precise()));
-        assertThat(Position.of(101).getCoordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(Position.of(101).pos(), is(101));
+        assertThat(Position.of(101).confidenceInterval(), is(ConfidenceInterval.precise()));
+        assertThat(Position.of(101).coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).getPos(), is(101));
-        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).getConfidenceInterval(), is(ConfidenceInterval.of(-20, 10)));
+        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).pos(), is(101));
+        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).confidenceInterval(), is(ConfidenceInterval.of(-20, 10)));
     }
 
     @Test
     void zeroBasedPosition() {
         Position instance = Position.of(2, CoordinateSystem.ZERO_BASED);
-        assertThat(instance.getCoordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
         assertThat(instance.isOneBased(), is(false));
         assertThat(instance.isZeroBased(), is (true));
     }
@@ -49,7 +49,7 @@ class PositionTest {
     @Test
     void oneBasedPosition() {
         Position instance = Position.of(2, CoordinateSystem.ONE_BASED);
-        assertThat(instance.getCoordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
         assertThat(instance.isZeroBased(), is(false));
         assertThat(instance.isOneBased(), is (true));
     }
