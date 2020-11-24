@@ -57,7 +57,7 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
     }
 
     public boolean isPrecise() {
-        return this == PRECISE;
+        return this.equals(PRECISE);
     }
 
     /**

@@ -79,4 +79,8 @@ public interface Contig extends Comparable<Contig> {
     static Contig unknown() {
         return UnknownContig.instance();
     }
+
+    static int compare(Contig x, Contig y) {
+        return Integer.compare(x.id(), y.id());
+    }
 }

@@ -1,20 +1,11 @@
 package org.monarchinitiative.variant.api;
 
-import java.util.Comparator;
-
 /**
  * Represents a {@link Position} on a {@link Contig}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition> {
-
-    // TODO: do this manually below
-    Comparator<GenomicPosition> NATURAL_COMPARATOR = Comparator
-            .comparing(GenomicPosition::contigId)
-            .thenComparing(GenomicPosition::position)
-            .thenComparing(GenomicPosition::strand)
-            .thenComparing(GenomicPosition::ci);
 
     Contig contig();
 
@@ -56,6 +47,17 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
 
     @Override
     default int compareTo(GenomicPosition o) {
-        return NATURAL_COMPARATOR.compare(this, o);
+        return compare(this, o);
+    }
+
+    static int compare(GenomicPosition x, GenomicPosition y) {
+        int result = Contig.compare(x.contig(), y.contig());
+        if (result == 0) {
+            result = Position.compare(x.position(), y.position());
+        }
+        if (result == 0) {
+            result = Strand.compare(x.strand(), y.strand());
+        }
+        return result;
     }
 }

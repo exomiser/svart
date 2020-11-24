@@ -2,18 +2,10 @@
 package org.monarchinitiative.variant.api;
 
 
-import java.util.Comparator;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> {
-
-    // TODO: do this manually below
-    Comparator<GenomicRegion> DEFAULT_COMPARATOR = Comparator.comparing(GenomicRegion::contig)
-            .thenComparing(GenomicRegion::startPosition)
-            .thenComparing(GenomicRegion::endPosition)
-            .thenComparing(GenomicRegion::strand);
 
     /**
      * @return contig where the region is located
@@ -52,6 +44,22 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     }
 
     /**
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ZERO_BASED}, where a region
+     * is specified by a half-closed-half-open interval
+     */
+    default boolean isZeroBased() {
+        return startPosition().isZeroBased() && endPosition().isOneBased();
+    }
+
+    /**
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ONE_BASED}, where a region
+     * is specified by a closed interval
+     */
+    default boolean isOneBased() {
+        return startPosition().isOneBased() && endPosition().isOneBased();
+    }
+
+    /**
      * @param other chromosomal region
      * @return true if the region shares at least 1 bp with the <code>other</code> region
      */
@@ -72,14 +80,22 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             return false;
         }
         GenomicRegion onStrand = other.withStrand(this.strand());
-        return onStrand.start() >= start() && onStrand.end() <= end();
+//        return onStrand.start() >= start() && onStrand.end() <= end();
+
+        // convert start and end positions to 0-based coordinate system
+        int otherStart = onStrand.startPosition().zeroBasedPos();
+        int otherEnd = onStrand.endPosition().oneBasedPos();
+
+        int thisStart = startPosition().zeroBasedPos();
+        int thisEnd = endPosition().oneBasedPos();
+
+        return otherStart >= thisStart && otherEnd <= thisEnd;
     }
 
     default boolean contains(GenomicPosition genomicPosition) {
         if (this.contig().id() != genomicPosition.contig().id()) {
             return false;
         }
-        // TODO: check other suggestions from PR
         // 1-based query position on this region's strand
         int pos = genomicPosition.withStrand(this.strand()).position().oneBasedPos();
         // 0-based coordinates of this region
@@ -91,7 +107,21 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
 
     @Override
     default int compareTo(GenomicRegion other) {
-        return DEFAULT_COMPARATOR.compare(this, other);
+        return compare(this, other);
+    }
+
+    static int compare(GenomicRegion x, GenomicRegion y) {
+        int result = Contig.compare(x.contig(), y.contig());
+        if (result == 0) {
+            result = Position.compare(x.startPosition(), y.startPosition());
+        }
+        if (result == 0) {
+            result = Position.compare(x.endPosition(), y.endPosition());
+        }
+        if (result == 0) {
+            result = Strand.compare(x.strand(), y.strand());
+        }
+        return result;
     }
 
     int hashCode();

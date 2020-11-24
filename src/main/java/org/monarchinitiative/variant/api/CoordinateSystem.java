@@ -29,4 +29,8 @@ public enum CoordinateSystem {
     public boolean isZeroBased() {
         return this == ZERO_BASED;
     }
+
+    public static int compare(CoordinateSystem x, CoordinateSystem y) {
+        return x.compareTo(y);
+    }
 }
