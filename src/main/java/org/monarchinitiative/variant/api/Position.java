@@ -1,93 +1,92 @@
 package org.monarchinitiative.variant.api;
 
+import java.util.Objects;
+
 /**
  * Position with a confidence level expressed using a {@link ConfidenceInterval}.
  */
-public interface Position extends Comparable<Position>, CoordinateSystemed<Position> {
+public class Position implements Comparable<Position> {
+
+    private final int pos;
+    private final ConfidenceInterval confidenceInterval;
+
+    private Position(int pos, ConfidenceInterval confidenceInterval) {
+        if (pos < 0) {
+            throw new IllegalArgumentException("Cannot create position `" + pos + "` with negative value");
+        }
+        this.pos = pos;
+        this.confidenceInterval = Objects.requireNonNull(confidenceInterval);
+    }
 
     /**
      * Create precise position using given coordinate system.
      *
-     * @param pos              position coordinate
-     * @param coordinateSystem coordinate system
-     * @return precise position
-     */
-    static Position of(int pos, CoordinateSystem coordinateSystem) {
-        return of(coordinateSystem, pos, ConfidenceInterval.precise());
-    }
-
-    static Position of(int pos, CoordinateSystem coordinateSystem, int ciUpstream, int ciDownstream) {
-        return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
-    }
-
-    /**
-     * Create 1-based precise position.
-     *
      * @param pos position coordinate
      * @return precise position
      */
-    static Position oneBased(int pos) {
-        return oneBased(pos, ConfidenceInterval.precise());
+    public static Position of(int pos) {
+        return of(pos, ConfidenceInterval.precise());
     }
 
-    static Position oneBased(int pos, ConfidenceInterval confidenceInterval) {
-        return of(CoordinateSystem.ONE_BASED, pos, confidenceInterval);
-    }
-
-    static Position zeroBased(int pos) {
-        return zeroBased(pos, ConfidenceInterval.precise());
-    }
-
-    static Position zeroBased(int pos, ConfidenceInterval confidenceInterval) {
-        return of(CoordinateSystem.ZERO_BASED, pos, confidenceInterval);
+    public static Position of(int pos, int ciUpstream, int ciDownstream) {
+        return of(pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
     }
 
     /**
-     *
-     * @param coordinateSystem The coordinate system of the pos argument.
-     * @param pos The position in the stated coordinate system
+     * @param pos                The position in the stated coordinate system
      * @param confidenceInterval confidence interval around the given position
      * @return a {@link Position} in the given coordinateSystem with the specified confidenceInterval
      */
-    static Position of(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
-        return coordinateSystem == CoordinateSystem.ONE_BASED ? new OneBasedPosition(pos, confidenceInterval) : new ZeroBasedPosition(pos, confidenceInterval);
+    public static Position of(int pos, ConfidenceInterval confidenceInterval) {
+        return new Position(pos, confidenceInterval);
     }
 
-    Position withPos(int pos);
-
     /**
+     * Creates a new {@link Position} using the pos argument with the same {@link ConfidenceInterval} around the point.
      *
-     * @param delta
-     * @return a Position shifted by the provided delta
-     * */
-    Position shiftPos(int delta);
+     * @param pos numeric position for the new instance
+     * @return a new Position instance with the same {@link ConfidenceInterval} as the instance it was derived from
+     */
+    public Position withPos(int pos) {
+        return pos == this.pos ? this : new Position(pos, confidenceInterval);
+    }
 
     /**
-     * @return one based position
+     * Creates a new {@link Position} using the delta argument to increment/decrement with pos with the same {@link ConfidenceInterval} around the resulting point.
+     *
+     * @param delta amount by which to shift the position. Positive inputs will increase the value of pos, negative decrease it.
+     * @return a Position shifted by the provided delta
      */
-    int pos();
+    public Position shiftPos(int delta) {
+        return delta == 0 ? this : new Position(pos + delta, confidenceInterval);
+    }
 
-    int zeroBasedPos();
-
-    int oneBasedPos();
+    /**
+     * @return the numeric position
+     */
+    public int pos() {
+        return pos;
+    }
 
     /**
      * @return confidence interval associated with the position
      */
-    ConfidenceInterval confidenceInterval();
+    public ConfidenceInterval confidenceInterval() {
+        return confidenceInterval;
+    }
 
-    default int minPos() {
+    public int minPos() {
         return confidenceInterval().minPos(pos());
     }
 
-    default int maxPos() {
+    public int maxPos() {
         return confidenceInterval().maxPos(pos());
     }
 
     /**
      * @return true if this position is precise (CI = [0,0])
      */
-    default boolean isPrecise() {
+    public boolean isPrecise() {
         return confidenceInterval().isPrecise();
     }
 
@@ -97,15 +96,38 @@ public interface Position extends Comparable<Position>, CoordinateSystemed<Posit
      * @param o
      * @return a natural ordering of positions IN ZERO-BASED COORDINATES.
      */
-    default int compareTo(Position o) {
+    @Override
+    public int compareTo(Position o) {
         return compare(this, o);
     }
 
-    static int compare(Position x, Position y) {
-        int result = Integer.compare(x.zeroBasedPos(), y.zeroBasedPos());
+    public static int compare(Position x, Position y) {
+        int result = Integer.compare(x.pos(), y.pos());
         if (result == 0) {
             result = ConfidenceInterval.compare(x.confidenceInterval(), y.confidenceInterval());
         }
         return result;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, CoordinateSystem.ZERO_BASED, confidenceInterval);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Position)) return false;
+        Position that = (Position) o;
+        return pos == that.pos &&
+                confidenceInterval.equals(that.confidenceInterval);
+    }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "pos=" + pos +
+                ", confidenceInterval=" + confidenceInterval +
+                '}';
     }
 }

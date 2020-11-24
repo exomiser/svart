@@ -9,7 +9,8 @@ final class UnresolvedBreakend implements Breakend {
 
     private static final String ID = "";
     private static final Strand STRAND = Strand.UNKNOWN;
-    private static final Position POSITION = Position.oneBased(1);
+    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.ONE_BASED;
+    private static final Position POSITION = Position.of(1);
     private static final Contig CONTIG = Contig.unknown();
 
     private UnresolvedBreakend() {
@@ -35,6 +36,16 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
+    public CoordinateSystem coordinateSystem() {
+        return COORDINATE_SYSTEM;
+    }
+
+    @Override
+    public Breakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        return this;
+    }
+
+    @Override
     public Position position() {
         return POSITION;
     }
@@ -54,6 +65,7 @@ final class UnresolvedBreakend implements Breakend {
         return "UnresolvedBreakend{" +
                 "id='" + ID + '\'' +
                 ", strand=" + STRAND +
+                ", coordinateSystem=" + COORDINATE_SYSTEM +
                 ", position=" + POSITION +
                 ", contig=" + CONTIG +
                 '}';

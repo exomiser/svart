@@ -13,24 +13,25 @@ public class SequenceVariant implements Variant {
     private final Contig contig;
     private final String id;
     private final Strand strand;
+    private final CoordinateSystem coordinateSystem;
     private final Position startPosition;
     private final Position endPosition;
     private final String ref;
     private final String alt;
-    // here ought to be the breakend and adjacency bits too
 
-    public SequenceVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt) {
+    private final int startZeroBased;
+
+    public SequenceVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
         this.id = id;
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
+        this.coordinateSystem = Objects.requireNonNull(coordinateSystem);
         this.startPosition = Objects.requireNonNull(startPosition);
+        this.startZeroBased = coordinateSystem.isZeroBased() ? startPosition.pos() : startPosition.pos() - 1;
         this.endPosition = Objects.requireNonNull(endPosition);
-        if (endPosition.isZeroBased()) {
-            throw new IllegalArgumentException("End position must be one-based");
-        }
         this.ref = Objects.requireNonNull(ref);
         this.alt = Objects.requireNonNull(alt);
     }
@@ -39,23 +40,37 @@ public class SequenceVariant implements Variant {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
-        Position start = Position.of(pos, CoordinateSystem.ONE_BASED);
-        Position end = calculateEnd(start, ref, alt);
-        return new SequenceVariant(contig, id, Strand.POSITIVE, start, end, ref, alt);
+        Position start = Position.of(pos);
+        CoordinateSystem oneBased = CoordinateSystem.ONE_BASED;
+        Position end = calculateEnd(start, oneBased, ref, alt);
+        return new SequenceVariant(contig, id, Strand.POSITIVE, oneBased, start, end, ref, alt);
+    }
+
+    public static SequenceVariant zeroBased(Contig contig, String id, int pos, String ref, String alt) {
+        if (VariantType.isSymbolic(alt)) {
+            throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
+        }
+        Position start = Position.of(pos);
+        CoordinateSystem zeroBased = CoordinateSystem.ZERO_BASED;
+        Position end = calculateEnd(start, zeroBased, ref, alt);
+        return new SequenceVariant(contig, id, Strand.POSITIVE, zeroBased, start, end, ref, alt);
     }
 
     public static SequenceVariant oneBased(Contig contig, int pos, String ref, String alt) {
         return oneBased(contig, "", pos, ref, alt);
     }
 
-    private static Position calculateEnd(Position start, String ref, String alt) {
-        // SNV case
-        if ((ref.length() | alt.length()) == 1) {
-            return start;
-        }
-        return start.withPos(start.pos() + ref.length() - 1);
+    public static SequenceVariant zeroBased(Contig contig, int pos, String ref, String alt) {
+        return zeroBased(contig, "", pos, ref, alt);
     }
 
+    private static Position calculateEnd(Position start, CoordinateSystem coordinateSystem, String ref, String alt) {
+        // SNV case
+        if ((ref.length() | alt.length()) == 1) {
+            return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.shiftPos(1) : start;
+        }
+        return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
+    }
 
     @Override
     public String id() {
@@ -75,6 +90,25 @@ public class SequenceVariant implements Variant {
     @Override
     public Position endPosition() {
         return endPosition;
+    }
+
+    @Override
+    public int startZeroBased() {
+        return startZeroBased;
+    }
+
+    @Override
+    public CoordinateSystem coordinateSystem() {
+        return coordinateSystem;
+    }
+
+    @Override
+    public SequenceVariant withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (this.coordinateSystem == coordinateSystem) {
+            return this;
+        }
+        int startDelta = this.coordinateSystem.delta(coordinateSystem);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, startPosition.shiftPos(startDelta), endPosition, ref, alt);
     }
 
     @Override
@@ -101,13 +135,14 @@ public class SequenceVariant implements Variant {
     public SequenceVariant withStrand(Strand strand) {
         if (this.strand == strand) {
             return this;
-        } else {
-            Position start = Position.oneBased(contig.length() - startPosition.pos() + 1,
-                    startPosition.confidenceInterval().toOppositeStrand());
-            Position end = Position.oneBased(contig.length() - endPosition.pos() + 1,
-                    endPosition.confidenceInterval().toOppositeStrand());
-            return new SequenceVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+        } else if (coordinateSystem.isOneBased()) {
+            Position start = Position.of(contig.length() - start() + 1, startPosition.confidenceInterval().toOppositeStrand());
+            Position end = Position.of(contig.length() - end() + 1, endPosition.confidenceInterval().toOppositeStrand());
+            return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
         }
+        Position start = Position.of(contig.length() - start(), startPosition.confidenceInterval().toOppositeStrand());
+        Position end = Position.of(contig.length() - end(), endPosition.confidenceInterval().toOppositeStrand());
+        return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 
     @Override

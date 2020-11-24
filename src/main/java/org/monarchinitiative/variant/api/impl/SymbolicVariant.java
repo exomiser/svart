@@ -12,6 +12,7 @@ public final class SymbolicVariant implements Variant {
     private final Contig contig;
     private final String id;
     private final Strand strand;
+    private final CoordinateSystem coordinateSystem;
     private final Position startPosition;
     private final Position endPosition;
     private final String ref;
@@ -19,30 +20,31 @@ public final class SymbolicVariant implements Variant {
     private final VariantType variantType;
     private final int changeLength;
 
-    private SymbolicVariant(Contig contig, String id, Strand strand, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
+    private final int startZeroBased;
+
+    private SymbolicVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
         if (!VariantType.isLargeSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create symbolic variant from non-symbolic or breakend allele " + alt);
         }
         this.id = Objects.requireNonNull(id);
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
+        this.coordinateSystem = Objects.requireNonNull(coordinateSystem);
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
-        if (endPosition.isZeroBased()) {
-            throw new IllegalArgumentException("End position must be one-based");
-        }
-        if (startPosition.zeroBasedPos() >= endPosition.oneBasedPos()) {
-            throw new IllegalArgumentException("start " + startPosition.zeroBasedPos() + " must be upstream of end " + endPosition
-                    .oneBasedPos());
+
+        this.startZeroBased = coordinateSystem.isZeroBased() ? startPosition.pos() : startPosition.pos() - 1;
+        if (startZeroBased >= endPosition.pos()) {
+            throw new IllegalArgumentException("start " + startZeroBased + " must be upstream of end " + endPosition.pos());
         }
         this.ref = Objects.requireNonNull(ref);
         this.alt = Objects.requireNonNull(alt);
         this.variantType = VariantType.parseType(alt);
-        this.changeLength = checkChangeLength(changeLength, startPosition, endPosition, variantType);
+        this.changeLength = checkChangeLength(changeLength, startZeroBased, endPosition, variantType);
     }
 
-    private int checkChangeLength(int changeLength, Position startPosition, Position endPosition, VariantType variantType) {
-        if (variantType.baseType() == VariantType.DEL && (startPosition.zeroBasedPos() - endPosition.zeroBasedPos() != changeLength)) {
+    private int checkChangeLength(int changeLength, int startZeroBased, Position endPosition, VariantType variantType) {
+        if (variantType.baseType() == VariantType.DEL && (startZeroBased - (endPosition.pos() - 1) != changeLength)) {
             throw new IllegalArgumentException("BAD DEL!");
         } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
             throw new IllegalArgumentException("BAD INS!");
@@ -58,21 +60,39 @@ public final class SymbolicVariant implements Variant {
      * @return precise one-based, positive strand symbolic variant
      */
     public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int changeLength) {
-        return of(contig, "", Position.oneBased(start), Position.oneBased(end), ref, alt, changeLength);
+        return of(contig, "", Position.of(start), Position.of(end), ref, alt, changeLength);
     }
 
     /**
      * @return precise one-based, positive strand symbolic variant
      */
     public static SymbolicVariant of(Contig contig, String id, int start, int end, String ref, String alt, int changeLength) {
-        return of(contig, id, Position.oneBased(start), Position.oneBased(end), ref, alt, changeLength);
+        return of(contig, id, Position.of(start), Position.of(end), ref, alt, changeLength);
     }
 
     /**
      * @return one-based, positive strand symbolic variant
      */
     public static SymbolicVariant of(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return new SymbolicVariant(contig, id, Strand.POSITIVE, startPosition, endPosition, ref, alt, changeLength);
+        return new SymbolicVariant(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, startPosition, endPosition, ref, alt, changeLength);
+    }
+
+    /**
+     * @return precise zero-based, positive strand symbolic variant
+     */
+    public static SymbolicVariant zeroBased(Contig contig, int start, int end, String ref, String alt, int changeLength) {
+        return zeroBased(contig, "", Position.of(start), Position.of(end), ref, alt, changeLength);
+    }
+
+    /**
+     * @return precise zero-based, positive strand symbolic variant
+     */
+    public static SymbolicVariant zeroBased(Contig contig, String id, int start, int end, String ref, String alt, int changeLength) {
+        return zeroBased(contig, id, Position.of(start), Position.of(end), ref, alt, changeLength);
+    }
+
+    public static SymbolicVariant zeroBased(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
+        return new SymbolicVariant(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, startPosition, endPosition, ref, alt, changeLength);
     }
 
     @Override
@@ -93,6 +113,26 @@ public final class SymbolicVariant implements Variant {
     @Override
     public Position endPosition() {
         return endPosition;
+    }
+
+    @Override
+    public int startZeroBased() {
+        return startZeroBased;
+    }
+
+    @Override
+    public CoordinateSystem coordinateSystem() {
+        return coordinateSystem;
+    }
+
+    @Override
+    public GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (this.coordinateSystem == coordinateSystem) {
+            return this;
+        }
+        int startDelta = this.coordinateSystem.delta(coordinateSystem);
+        // TODO check changelength doesnt need altering
+        return new SymbolicVariant(contig, id, strand, coordinateSystem, startPosition.shiftPos(startDelta), endPosition, ref, alt, changeLength);
     }
 
     @Override
@@ -124,14 +164,14 @@ public final class SymbolicVariant implements Variant {
     public SymbolicVariant withStrand(Strand strand) {
         if (this.strand == strand) {
             return this;
-        } else {
-            Position start = Position.oneBased(contig.length() - startPosition.pos() + 1,
-                    startPosition.confidenceInterval().toOppositeStrand());
-            // TODO broken with ins/del need to use length which should be +/-
-            Position end = Position.oneBased(contig.length() - endPosition.pos() + 1,
-                    endPosition.confidenceInterval().toOppositeStrand());
-            return new SymbolicVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), alt, changeLength);
+        } else if (coordinateSystem.isOneBased()) {
+            Position start = Position.of(contig.length() - start() + 1, startPosition.confidenceInterval().toOppositeStrand());
+            Position end = Position.of(contig.length() - end() + 1, endPosition.confidenceInterval().toOppositeStrand());
+            return new SymbolicVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), alt, changeLength);
         }
+        Position start = Position.of(contig.length() - start(), startPosition.confidenceInterval().toOppositeStrand());
+        Position end = Position.of(contig.length() - end(), endPosition.confidenceInterval().toOppositeStrand());
+        return new SymbolicVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), alt, changeLength);
     }
 
     @Override

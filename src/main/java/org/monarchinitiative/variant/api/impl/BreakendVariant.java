@@ -75,6 +75,19 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     @Override
+    public CoordinateSystem coordinateSystem() {
+        return left.coordinateSystem();
+    }
+
+    @Override
+    public BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (left.coordinateSystem() == coordinateSystem) {
+            return this;
+        }
+        return new BreakendVariant(eventId, right.withCoordinateSystem(coordinateSystem), left.withCoordinateSystem(coordinateSystem), ref, alt);
+    }
+
+    @Override
     public int length() {
         return alt.length();
     }
@@ -110,7 +123,7 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     public BreakendVariant withStrand(Strand strand) {
-        if (left.strand().equals(strand)) {
+        if (left.strand() == strand) {
             return this;
         } else {
             return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), ref, Seq

@@ -12,17 +12,19 @@ public class PartialBreakend implements Breakend {
     private final Contig contig;
     private final String id;
     private final Strand strand;
+    private final CoordinateSystem coordinateSystem;
     private final Position position;
 
-    public PartialBreakend(Contig contig, Position position, Strand strand, String id) {
+    public PartialBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
         this.contig = Objects.requireNonNull(contig);
+        this.coordinateSystem = coordinateSystem;
         this.position = Objects.requireNonNull(position);
         this.strand = Objects.requireNonNull(strand);
         this.id = Objects.requireNonNull(id);
     }
 
-    public static PartialBreakend of(Contig contig, Position position, Strand strand, String id) {
-        return new PartialBreakend(contig, position, strand, id);
+    public static PartialBreakend oneBased(Contig contig, String id, Strand strand, Position position) {
+        return new PartialBreakend(contig, id, strand, CoordinateSystem.ONE_BASED, position);
     }
 
     @Override
@@ -46,13 +48,27 @@ public class PartialBreakend implements Breakend {
     }
 
     @Override
+    public CoordinateSystem coordinateSystem() {
+        return coordinateSystem;
+    }
+
+    @Override
+    public PartialBreakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (this.coordinateSystem == coordinateSystem) {
+            return this;
+        }
+        int startDelta = this.coordinateSystem.delta(coordinateSystem);
+        return new PartialBreakend(contig, id, strand, coordinateSystem, position.shiftPos(startDelta));
+    }
+
+    @Override
     public PartialBreakend withStrand(Strand strand) {
         if (this.strand == strand) {
             return this;
         } else {
-            Position pos = Position.oneBased(contig.length() - position.pos() + 1,
+            Position pos = Position.of(contig.length() - position.pos() + 1,
                     position.confidenceInterval().toOppositeStrand());
-            return new PartialBreakend(contig, pos, strand, id);
+            return new PartialBreakend(contig, id, strand, coordinateSystem, pos);
         }
     }
 

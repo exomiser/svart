@@ -5,7 +5,7 @@ package org.monarchinitiative.variant.api;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> {
+public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> , CoordinateSystemed<GenomicRegion> {
 
     /**
      * @return contig where the region is located
@@ -13,21 +13,29 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     Contig contig();
 
     /**
-     * @return 1-based begin coordinate
+     * @return start coordinate
      */
     Position startPosition();
 
     /**
-     * @return 1-based begin coordinate of the region
+     * @return start coordinate of the region
      */
     default int start() {
         return startPosition().pos();
     }
 
     /**
+     * Returns to zero based start position of the region.
+     * @return
+     */
+    default int startZeroBased() {
+        return coordinateSystem().isZeroBased() ? start() : start() - 1;
+    }
+
+    /**
      * The begin position is also the end by default
      *
-     * @return 1-based end coordinate
+     * @return end coordinate
      */
     Position endPosition();
 
@@ -40,23 +48,25 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
 
 
     default int length() {
-        return endPosition().oneBasedPos() - startPosition().zeroBasedPos();
+        return end() - startZeroBased();
     }
 
     /**
      * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ZERO_BASED}, where a region
      * is specified by a half-closed-half-open interval
      */
+    @Override
     default boolean isZeroBased() {
-        return startPosition().isZeroBased() && endPosition().isOneBased();
+        return coordinateSystem().isZeroBased();
     }
 
     /**
      * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ONE_BASED}, where a region
      * is specified by a closed interval
      */
+    @Override
     default boolean isOneBased() {
-        return startPosition().isOneBased() && endPosition().isOneBased();
+        return coordinateSystem().isOneBased();
     }
 
     /**
@@ -79,30 +89,16 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         if (this.contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.strand());
-//        return onStrand.start() >= start() && onStrand.end() <= end();
-
-        // convert start and end positions to 0-based coordinate system
-        int otherStart = onStrand.startPosition().zeroBasedPos();
-        int otherEnd = onStrand.endPosition().oneBasedPos();
-
-        int thisStart = startPosition().zeroBasedPos();
-        int thisEnd = endPosition().oneBasedPos();
-
-        return otherStart >= thisStart && otherEnd <= thisEnd;
+        GenomicRegion onStrand = other.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
+        return onStrand.start() >= start() && onStrand.end() <= end();
     }
 
     default boolean contains(GenomicPosition genomicPosition) {
         if (this.contig().id() != genomicPosition.contig().id()) {
             return false;
         }
-        // 1-based query position on this region's strand
-        int pos = genomicPosition.withStrand(this.strand()).position().oneBasedPos();
-        // 0-based coordinates of this region
-        int thisStart = startPosition().zeroBasedPos();
-        int thisEnd = endPosition().oneBasedPos();
-
-        return thisStart < pos && pos <= thisEnd;
+        GenomicPosition onStrand = genomicPosition.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
+        return start() >= onStrand.pos() && onStrand.pos() <= end();
     }
 
     @Override
@@ -113,7 +109,9 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     static int compare(GenomicRegion x, GenomicRegion y) {
         int result = Contig.compare(x.contig(), y.contig());
         if (result == 0) {
-            result = Position.compare(x.startPosition(), y.startPosition());
+            // calculate normalization delta for start positions
+            int delta = x.coordinateSystem().delta(y.coordinateSystem());
+            result = Position.compare(x.startPosition(), y.startPosition().shiftPos(delta));
         }
         if (result == 0) {
             result = Position.compare(x.endPosition(), y.endPosition());

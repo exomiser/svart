@@ -5,7 +5,7 @@ package org.monarchinitiative.variant.api;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition> {
+public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition>, CoordinateSystemed<GenomicPosition> {
 
     Contig contig();
 
@@ -23,10 +23,6 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
 
     default int pos() {
         return position().pos();
-    }
-
-    default CoordinateSystem coordinateSystem() {
-        return position().coordinateSystem();
     }
 
     default Strand strand() {
