@@ -10,9 +10,9 @@ import java.util.Objects;
 public class PartialBreakend implements Breakend {
 
     private final Contig contig;
-    private final Position position;
-    private final Strand strand;
     private final String id;
+    private final Strand strand;
+    private final Position position;
 
     public PartialBreakend(Contig contig, Position position, Strand strand, String id) {
         this.contig = Objects.requireNonNull(contig);
@@ -50,7 +50,7 @@ public class PartialBreakend implements Breakend {
         if (this.strand == strand) {
             return this;
         } else {
-            Position pos = Position.of(contig.length() - position.pos() + 1,
+            Position pos = Position.oneBased(contig.length() - position.pos() + 1,
                     position.confidenceInterval().toOppositeStrand());
             return new PartialBreakend(contig, pos, strand, id);
         }
