@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -16,12 +15,12 @@ class PositionTest {
 
     @Test
     void properties() {
-        assertThat(Position.of(101).pos(), is(101));
-        assertThat(Position.of(101).confidenceInterval(), is(ConfidenceInterval.precise()));
-        assertThat(Position.of(101).coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(Position.oneBased(101).pos(), is(101));
+        assertThat(Position.oneBased(101).confidenceInterval(), is(ConfidenceInterval.precise()));
+        assertThat(Position.oneBased(101).coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).pos(), is(101));
-        assertThat(Position.of(101, ConfidenceInterval.of(-20, 10)).confidenceInterval(), is(ConfidenceInterval.of(-20, 10)));
+        assertThat(Position.oneBased(101, ConfidenceInterval.of(-20, 10)).pos(), is(101));
+        assertThat(Position.oneBased(101, ConfidenceInterval.of(-20, 10)).confidenceInterval(), is(ConfidenceInterval.of(-20, 10)));
     }
 
     @Test
@@ -34,8 +33,8 @@ class PositionTest {
 
     @Test
     void zeroBasedWithPos() {
-        Position one = Position.of(1);
-        Position two = Position.of(2);
+        Position one = Position.oneBased(1);
+        Position two = Position.oneBased(2);
         assertThat(one.withPos(2), equalTo(two));
     }
 
@@ -56,8 +55,8 @@ class PositionTest {
 
     @Test
     void isPrecise() {
-        assertThat(Position.of(1).isPrecise(), is(true));
-        assertThat(Position.of(1, ConfidenceInterval.of(-20, 10)).isPrecise(), is(false));
+        assertThat(Position.oneBased(1).isPrecise(), is(true));
+        assertThat(Position.oneBased(1, ConfidenceInterval.of(-20, 10)).isPrecise(), is(false));
     }
 
     @Test
@@ -73,16 +72,16 @@ class PositionTest {
     void toZeroBasedFromOneBased() {
         Position oneBased = Position.of(1, CoordinateSystem.ONE_BASED);
         Position zeroBased = Position.of(0, CoordinateSystem.ZERO_BASED);
-        assertThat(oneBased.toCoordinateSystem(CoordinateSystem.ZERO_BASED), equalTo(zeroBased));
-        assertThat(oneBased.zeroBased(), equalTo(zeroBased));
+        assertThat(oneBased.withCoordinateSystem(CoordinateSystem.ZERO_BASED), equalTo(zeroBased));
+        assertThat(oneBased.toZeroBased(), equalTo(zeroBased));
     }
 
     @Test
     void toOneBasedFromZeroBased() {
         Position zeroBased = Position.of(0, CoordinateSystem.ZERO_BASED);
         Position oneBased = Position.of(1, CoordinateSystem.ONE_BASED);
-        assertThat(zeroBased.toCoordinateSystem(CoordinateSystem.ONE_BASED), equalTo(oneBased));
-        assertThat(zeroBased.oneBased(), equalTo(oneBased));
+        assertThat(zeroBased.withCoordinateSystem(CoordinateSystem.ONE_BASED), equalTo(oneBased));
+        assertThat(zeroBased.toOneBased(), equalTo(oneBased));
     }
 
     @Test
@@ -113,8 +112,8 @@ class PositionTest {
     @Test
     void comparePositionsWithDifferentCIs() {
         // precise is higher/better than imprecise
-        Position precise = Position.of(1);
-        Position imprecise = Position.of(1, ConfidenceInterval.of(-20, 10));
+        Position precise = Position.oneBased(1);
+        Position imprecise = Position.oneBased(1, ConfidenceInterval.of(-20, 10));
         assertThat(precise.compareTo(imprecise), is(-1));
     }
 
@@ -125,10 +124,33 @@ class PositionTest {
             "3,2,1",
     })
     void comparePrecisePositions(int leftPos, int rightPos, int expected) {
-        final Position left = Position.of(leftPos);
-        final Position right = Position.of(rightPos);
+        Position left = Position.oneBased(leftPos);
+        Position right = Position.oneBased(rightPos);
 
         assertThat(left.compareTo(right), is(expected));
     }
 
+    @Test
+    void shiftPosOneBased() {
+        Position oneBasedTwo = Position.oneBased(2);
+        assertThat(oneBasedTwo.shiftPos(-1), equalTo(Position.oneBased(1)));
+        assertThat(oneBasedTwo.shiftPos(0), equalTo(Position.oneBased(2)));
+        assertThat(oneBasedTwo.shiftPos(1), equalTo(Position.oneBased(3)));
+    }
+
+    @Test
+    void shiftPosZeroBased() {
+        Position zeroBasedOne = Position.zeroBased(1);
+        assertThat(zeroBasedOne.shiftPos(-1), equalTo(Position.zeroBased(0)));
+        assertThat(zeroBasedOne.shiftPos(0), equalTo(Position.zeroBased(1)));
+        assertThat(zeroBasedOne.shiftPos(1), equalTo(Position.zeroBased(2)));
+    }
+
+    @Test
+    void comparatorInconsistentWithEquals() {
+        Position zeroBased = Position.zeroBased(0);
+        Position oneBased = Position.oneBased(1);
+        assertThat(zeroBased, not(oneBased));
+        assertThat(Position.compare(zeroBased, oneBased), equalTo(0));
+    }
 }

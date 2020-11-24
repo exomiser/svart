@@ -28,6 +28,9 @@ public class SequenceVariant implements Variant {
         this.strand = Objects.requireNonNull(strand);
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
+        if (endPosition.isZeroBased()) {
+            throw new IllegalArgumentException("End position must be one-based");
+        }
         this.ref = Objects.requireNonNull(ref);
         this.alt = Objects.requireNonNull(alt);
     }
@@ -99,9 +102,9 @@ public class SequenceVariant implements Variant {
         if (this.strand == strand) {
             return this;
         } else {
-            Position start = Position.of(contig.length() - startPosition.pos() + 1,
+            Position start = Position.oneBased(contig.length() - startPosition.pos() + 1,
                     startPosition.confidenceInterval().toOppositeStrand());
-            Position end = Position.of(contig.length() - endPosition.pos() + 1,
+            Position end = Position.oneBased(contig.length() - endPosition.pos() + 1,
                     endPosition.confidenceInterval().toOppositeStrand());
             return new SequenceVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
         }

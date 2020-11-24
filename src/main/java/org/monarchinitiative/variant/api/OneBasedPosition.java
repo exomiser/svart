@@ -24,6 +24,11 @@ class OneBasedPosition implements Position {
     }
 
     @Override
+    public Position shiftPos(int delta) {
+        return delta == 0 ? this : new OneBasedPosition(pos + delta, confidenceInterval);
+    }
+
+    @Override
     public int pos() {
         return pos;
     }
@@ -44,7 +49,7 @@ class OneBasedPosition implements Position {
     }
 
     @Override
-    public Position toCoordinateSystem(CoordinateSystem coordinateSystem) {
+    public Position withCoordinateSystem(CoordinateSystem coordinateSystem) {
         return coordinateSystem == CoordinateSystem.ONE_BASED ? this : new ZeroBasedPosition(pos -1, confidenceInterval);
     }
 

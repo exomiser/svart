@@ -31,21 +31,78 @@ class SequenceVariantTest {
     }
 
     @Test
-    void snv() {
+    void snvOneBased() {
         Variant snv = SequenceVariant.oneBased(chr1, 1, "A", "T");
 
         assertThat(snv.startPosition(), equalTo(snv.endPosition()));
         assertThat(snv.variantType(), equalTo(VariantType.SNV));
         assertThat(snv.length(), equalTo(1));
+        assertThat(snv.isOneBased(), equalTo(true));
+    }
+
+    @Test
+    void throwsExceptionWithZeroBasedEnd() {
+        Position startBasedPosition = Position.zeroBased(0);
+        Position zeroBasedEndPosition = Position.zeroBased(1);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> new SequenceVariant(chr1, "", Strand.POSITIVE, startBasedPosition, zeroBasedEndPosition, "A", "T"));
+
+        assertThat(exception.getMessage(), equalTo("End position must be one-based"));
+    }
+
+    @Test
+    void snvZeroBased() {
+        // BED / UCSC
+        // https://www.genome.ucsc.edu/FAQ/FAQformat.html#format1
+        // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
+        //
+        // VCF is 1-based = [a, b] aka 'fully-closed' so for x in set [a, b] {x | a <= x <= b} (as is HGVS and GFF)
+        // BED is 0-based = [a, b) aka 'half-open' so for x in set [a, b) {x | a <= x > b}
+        //
+        // Seq:       A  T  G  C  T
+        // 1-based:   1  2  3  4  5
+        // 0-based: 0  1  2  3  4  5
+        //
+        // 1-based AT = 1, 2   len = (2 - 1) + 1
+        // 0-based AT = 0, 2   len = 2 - 0
+        //
+        // Given the end position is numerically identical in both coordinate systems, it might make more sense to define
+        // the coordinate system directly rather than messing about with Positions.
+
+        // e.g. OneBasedInterval.of(1, 1).toZeroBased().equalTo(ZeroBasedInterval.of(0, 1)). This is sort of what the
+        // GenomicRegion is trying to do.
+        //
+        // Joda time uses half-open intervals - https://www.joda.org/joda-time/key_interval.html
+        // "Intervals are implemented as half-open, which is to say that the start instant is inclusive but the end instant is exclusive.
+        // The end is always greater than or equal to the start. The interval is also restricted to just one chronology and time zone."
+        //
+        // Java time https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html
+        // the Duration class is closest to Interval https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html and has a 'between' method
+        //  public static Duration between(Temporal startInclusive, Temporal endExclusive) specifies '0-based' coordinates
+
+
+        // e.g. this is from a BED file which uses 0-based coordinates - the endPosition is 1, but it doesn't really have
+        // a coordinate system itself as these values are identical in both systems. So really it's the _interval_ which has
+        // the coordinate system, not the positions.
+        // In this case if both positions are zero-based everything fails.
+        Variant snv = new SequenceVariant(chr1, "", Strand.POSITIVE, Position.zeroBased(0), Position.oneBased(1), "A", "T");
+
+        assertThat(snv.startPosition(), equalTo(Position.zeroBased(0)));
+        assertThat(snv.endPosition(), equalTo(Position.oneBased(1)));
+        assertThat(snv.variantType(), equalTo(VariantType.SNV));
+        assertThat(snv.length(), equalTo(1));
+        assertThat(snv.refLength(), equalTo(1));
+        assertThat(snv.changeLength(), equalTo(0));
+        assertThat(snv.isZeroBased(), equalTo(true));
     }
 
     @Test
     void mnv() {
         Variant mnv = SequenceVariant.oneBased(chr1, 1, "AT", "TG");
 
-        assertThat(mnv.startPosition(), equalTo(Position.of(1)));
+        assertThat(mnv.startPosition(), equalTo(Position.oneBased(1)));
         assertThat(mnv.start(), equalTo(1));
-        assertThat(mnv.endPosition(), equalTo(Position.of(2)));
+        assertThat(mnv.endPosition(), equalTo(Position.oneBased(2)));
         assertThat(mnv.variantType(), equalTo(VariantType.MNV));
         assertThat(mnv.length(), equalTo(2));
     }
@@ -54,8 +111,8 @@ class SequenceVariantTest {
     void del() {
         Variant del = SequenceVariant.oneBased(chr1, 1, "AG", "A");
 
-        assertThat(del.startPosition(), equalTo(Position.of(1)));
-        assertThat(del.endPosition(), equalTo(Position.of(2)));
+        assertThat(del.startPosition(), equalTo(Position.oneBased(1)));
+        assertThat(del.endPosition(), equalTo(Position.oneBased(2)));
         assertThat(del.variantType(), equalTo(VariantType.DEL));
         assertThat(del.length(), equalTo(2));
     }
@@ -64,8 +121,8 @@ class SequenceVariantTest {
     void ins() {
         Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
 
-        assertThat(ins.startPosition(), equalTo(Position.of(1)));
-        assertThat(ins.endPosition(), equalTo(Position.of(1)));
+        assertThat(ins.startPosition(), equalTo(Position.oneBased(1)));
+        assertThat(ins.endPosition(), equalTo(Position.oneBased(1)));
         assertThat(ins.variantType(), equalTo(VariantType.INS));
         assertThat(ins.length(), equalTo(1));
         assertThat(ins.refLength(), equalTo(1));
@@ -85,8 +142,8 @@ class SequenceVariantTest {
 
         assertThat(negativeIns.contig(), equalTo(chr1));
         assertThat(negativeIns.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(negativeIns.startPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.startPosition(), equalTo(Position.oneBased(1000)));
+        assertThat(negativeIns.endPosition(), equalTo(Position.oneBased(1000)));
         assertThat(negativeIns.ref(), equalTo("T"));
         assertThat(negativeIns.alt(), equalTo("CT"));
         assertThat(negativeIns.variantType(), equalTo(VariantType.INS));
@@ -101,8 +158,8 @@ class SequenceVariantTest {
 
         assertThat(negativeDel.contig(), equalTo(chr5));
         assertThat(negativeDel.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(negativeDel.startPosition(), equalTo(Position.of(4)));
-        assertThat(negativeDel.endPosition(), equalTo(Position.of(5)));
+        assertThat(negativeDel.startPosition(), equalTo(Position.oneBased(4)));
+        assertThat(negativeDel.endPosition(), equalTo(Position.oneBased(5)));
         assertThat(negativeDel.ref(), equalTo("CT"));
         assertThat(negativeDel.alt(), equalTo("T"));
         assertThat(negativeDel.variantType(), equalTo(VariantType.DEL));
@@ -128,8 +185,8 @@ class SequenceVariantTest {
         Variant oppositeSnv = snv.toOppositeStrand();
         assertThat(oppositeSnv.contig(), equalTo(chr1));
         assertThat(oppositeSnv.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(oppositeSnv.startPosition(), equalTo(Position.of(1000)));
-        assertThat(oppositeSnv.endPosition(), equalTo(Position.of(1000)));
+        assertThat(oppositeSnv.startPosition(), equalTo(Position.oneBased(1000)));
+        assertThat(oppositeSnv.endPosition(), equalTo(Position.oneBased(1000)));
         assertThat(oppositeSnv.ref(), equalTo("T"));
         assertThat(oppositeSnv.alt(), equalTo("A"));
         assertThat(oppositeSnv.variantType(), equalTo(VariantType.SNV));
@@ -143,7 +200,7 @@ class SequenceVariantTest {
         Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
         assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
         assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));
-        assertTrue(largeIns.contains(PartialBreakend.of(chr1, Position.of(1), Strand.POSITIVE, "T")));
+        assertTrue(largeIns.contains(PartialBreakend.of(chr1, Position.oneBased(1), Strand.POSITIVE, "T")));
     }
 
 }

@@ -8,9 +8,9 @@ final class UnresolvedBreakend implements Breakend {
     private static final UnresolvedBreakend INSTANCE = new UnresolvedBreakend();
 
     private static final String ID = "";
-    private static final Strand strand = Strand.UNKNOWN;
-    private static final Position position = Position.of(0);
-    private static final Contig contig = Contig.unknown();
+    private static final Strand STRAND = Strand.UNKNOWN;
+    private static final Position POSITION = Position.oneBased(1);
+    private static final Contig CONTIG = Contig.unknown();
 
     private UnresolvedBreakend() {
     }
@@ -31,12 +31,12 @@ final class UnresolvedBreakend implements Breakend {
 
     @Override
     public Contig contig() {
-        return contig;
+        return CONTIG;
     }
 
     @Override
     public Position position() {
-        return position;
+        return POSITION;
     }
 
     @Override
@@ -53,9 +53,9 @@ final class UnresolvedBreakend implements Breakend {
     public String toString() {
         return "UnresolvedBreakend{" +
                 "id='" + ID + '\'' +
-                ", strand=" + strand +
-                ", position=" + position +
-                ", contig=" + contig +
+                ", strand=" + STRAND +
+                ", position=" + POSITION +
+                ", contig=" + CONTIG +
                 '}';
     }
 }

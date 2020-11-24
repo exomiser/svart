@@ -31,6 +31,16 @@ public enum Strand {
         return this == NEGATIVE;
     }
 
+    public boolean hasComplement() {
+        switch (this) {
+            case NEGATIVE:
+            case POSITIVE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public Strand opposite() {
         switch (this) {
             case POSITIVE:

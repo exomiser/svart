@@ -215,7 +215,9 @@ public enum VariantType {
     }
 
     public static boolean isMatedBreakend(String allele) {
-        return allele.length() > 1 && allele.contains("[") || allele.length() > 1 && allele.contains("]");
+//        return allele.length() > 1 && allele.contains("[") || allele.length() > 1 && allele.contains("]");
+        // TODO(jules) is this change OK?
+        return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
     private static String trimAngleBrackets(String value) {

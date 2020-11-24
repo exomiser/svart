@@ -44,8 +44,8 @@ class SymbolicVariantTest {
         Variant del = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", -99);
 
         assertThat(del.contig(), equalTo(chr1));
-        assertThat(del.startPosition(), equalTo(Position.of(1)));
-        assertThat(del.endPosition(), equalTo(Position.of(100)));
+        assertThat(del.startPosition(), equalTo(Position.oneBased(1)));
+        assertThat(del.endPosition(), equalTo(Position.oneBased(100)));
         assertThat(del.variantType(), equalTo(VariantType.DEL));
         assertThat(del.length(), equalTo(100));
         assertThat(del.ref(), equalTo("A"));
@@ -76,8 +76,8 @@ class SymbolicVariantTest {
         Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
 
         assertThat(ins.contig(), equalTo(chr1));
-        assertThat(ins.startPosition(), equalTo(Position.of(1)));
-        assertThat(ins.endPosition(), equalTo(Position.of(1)));
+        assertThat(ins.startPosition(), equalTo(Position.oneBased(1)));
+        assertThat(ins.endPosition(), equalTo(Position.oneBased(1)));
         assertThat(ins.variantType(), equalTo(VariantType.INS));
         assertThat(ins.length(), equalTo(1));
         assertThat(ins.ref(), equalTo("A"));
@@ -99,8 +99,8 @@ class SymbolicVariantTest {
 
         assertThat(negativeIns.contig(), equalTo(chr1));
         assertThat(negativeIns.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(negativeIns.startPosition(), equalTo(Position.of(1000)));
-        assertThat(negativeIns.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negativeIns.startPosition(), equalTo(Position.oneBased(1000)));
+        assertThat(negativeIns.endPosition(), equalTo(Position.oneBased(1000)));
         assertThat(negativeIns.ref(), equalTo("T"));
         assertThat(negativeIns.alt(), equalTo("<INS>"));
         assertThat(negativeIns.variantType(), equalTo(VariantType.INS));
@@ -118,8 +118,8 @@ class SymbolicVariantTest {
         System.out.println(negative);
         assertThat(negative.contig(), equalTo(chr1));
         assertThat(negative.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(negative.startPosition(), equalTo(Position.of(901)));
-        assertThat(negative.endPosition(), equalTo(Position.of(1000)));
+        assertThat(negative.startPosition(), equalTo(Position.oneBased(901)));
+        assertThat(negative.endPosition(), equalTo(Position.oneBased(1000)));
         assertThat(negative.ref(), equalTo("T"));
         assertThat(negative.alt(), equalTo("<DEL>"));
         assertThat(negative.variantType(), equalTo(VariantType.DEL));

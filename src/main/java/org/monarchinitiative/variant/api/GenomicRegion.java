@@ -12,6 +12,16 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      */
     Contig contig();
 
+    // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file
+    default int contigId() {
+        return contig().id();
+    }
+
+    // column 0 of the assembly report file 1-22, X,Y,MT
+    default String contigName() {
+        return contig().name();
+    }
+
     /**
      * @return 1-based begin coordinate
      */
