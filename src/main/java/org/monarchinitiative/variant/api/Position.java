@@ -3,7 +3,7 @@ package org.monarchinitiative.variant.api;
 /**
  * Position with a confidence level expressed using a {@link ConfidenceInterval}.
  */
-public interface Position extends Comparable<Position> {
+public interface Position extends Comparable<Position>, CoordinateSystemed<Position> {
 
     /**
      * Create precise position using given coordinate system.
@@ -16,23 +16,30 @@ public interface Position extends Comparable<Position> {
         return of(coordinateSystem, pos, ConfidenceInterval.precise());
     }
 
+    static Position of(int pos, CoordinateSystem coordinateSystem, int ciUpstream, int ciDownstream) {
+        return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
+    }
+
     /**
      * Create 1-based precise position.
      *
      * @param pos position coordinate
      * @return precise position
      */
-    // TODO: rename Position.oneBased() and provide Position.zeroBased() static constructor
-    static Position of(int pos) {
-        return of(pos, ConfidenceInterval.precise());
+    static Position oneBased(int pos) {
+        return oneBased(pos, ConfidenceInterval.precise());
     }
 
-    static Position of(int pos, int ciUpstream, int ciDownstream, CoordinateSystem coordinateSystem) {
-        return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
-    }
-
-    static Position of(int pos, ConfidenceInterval confidenceInterval) {
+    static Position oneBased(int pos, ConfidenceInterval confidenceInterval) {
         return of(CoordinateSystem.ONE_BASED, pos, confidenceInterval);
+    }
+
+    static Position zeroBased(int pos) {
+        return zeroBased(pos, ConfidenceInterval.precise());
+    }
+
+    static Position zeroBased(int pos, ConfidenceInterval confidenceInterval) {
+        return of(CoordinateSystem.ZERO_BASED, pos, confidenceInterval);
     }
 
     /**
@@ -49,6 +56,13 @@ public interface Position extends Comparable<Position> {
     Position withPos(int pos);
 
     /**
+     *
+     * @param delta
+     * @return a Position shifted by the provided delta
+     * */
+    Position shiftPos(int delta);
+
+    /**
      * @return one based position
      */
     int pos();
@@ -56,30 +70,6 @@ public interface Position extends Comparable<Position> {
     int zeroBasedPos();
 
     int oneBasedPos();
-
-    CoordinateSystem coordinateSystem();
-
-    Position toCoordinateSystem(CoordinateSystem coordinateSystem);
-
-    default boolean isOneBased() {
-        return coordinateSystem() == CoordinateSystem.ONE_BASED;
-    }
-
-    default boolean isZeroBased() {
-        return coordinateSystem() == CoordinateSystem.ZERO_BASED;
-    }
-
-    default Position oneBased() {
-        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
-    }
-
-    default Position zeroBased() {
-        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
-    }
-
-    default Position withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        return coordinateSystem() == coordinateSystem ? this : toCoordinateSystem(coordinateSystem);
-    }
 
     /**
      * @return confidence interval associated with the position

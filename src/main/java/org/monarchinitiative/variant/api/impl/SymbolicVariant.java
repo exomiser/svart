@@ -28,6 +28,9 @@ public final class SymbolicVariant implements Variant {
         this.strand = Objects.requireNonNull(strand);
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
+        if (endPosition.isZeroBased()) {
+            throw new IllegalArgumentException("End position must be one-based");
+        }
         if (startPosition.zeroBasedPos() >= endPosition.oneBasedPos()) {
             throw new IllegalArgumentException("start " + startPosition.zeroBasedPos() + " must be upstream of end " + endPosition
                     .oneBasedPos());
@@ -51,15 +54,18 @@ public final class SymbolicVariant implements Variant {
         return changeLength;
     }
 
+    /**
+     * @return precise one-based, positive strand symbolic variant
+     */
     public static SymbolicVariant of(Contig contig, int start, int end, String ref, String alt, int changeLength) {
-        return of(contig, "", Position.of(start), Position.of(end), ref, alt, changeLength);
+        return of(contig, "", Position.oneBased(start), Position.oneBased(end), ref, alt, changeLength);
     }
 
     /**
      * @return precise one-based, positive strand symbolic variant
      */
     public static SymbolicVariant of(Contig contig, String id, int start, int end, String ref, String alt, int changeLength) {
-        return of(contig, id, Position.of(start), Position.of(end), ref, alt, changeLength);
+        return of(contig, id, Position.oneBased(start), Position.oneBased(end), ref, alt, changeLength);
     }
 
     /**
@@ -119,10 +125,10 @@ public final class SymbolicVariant implements Variant {
         if (this.strand == strand) {
             return this;
         } else {
-            Position start = Position.of(contig.length() - startPosition.pos() + 1,
+            Position start = Position.oneBased(contig.length() - startPosition.pos() + 1,
                     startPosition.confidenceInterval().toOppositeStrand());
             // TODO broken with ins/del need to use length which should be +/-
-            Position end = Position.of(contig.length() - endPosition.pos() + 1,
+            Position end = Position.oneBased(contig.length() - endPosition.pos() + 1,
                     endPosition.confidenceInterval().toOppositeStrand());
             return new SymbolicVariant(contig, id, strand, end, start, Seq.reverseComplement(ref), alt, changeLength);
         }

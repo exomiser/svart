@@ -23,6 +23,11 @@ class ZeroBasedPosition implements Position {
         return pos == this.pos ? this : new ZeroBasedPosition(pos, confidenceInterval);
     }
 
+    @Override
+    public Position shiftPos(int delta) {
+        return delta == 0 ? this : new ZeroBasedPosition(pos + delta, confidenceInterval);
+    }
+
     /**
      * @return one based position
      */
@@ -52,10 +57,9 @@ class ZeroBasedPosition implements Position {
     }
 
     @Override
-    public Position toCoordinateSystem(CoordinateSystem coordinateSystem) {
+    public Position withCoordinateSystem(CoordinateSystem coordinateSystem) {
         return coordinateSystem == CoordinateSystem.ZERO_BASED ? this : new OneBasedPosition(pos + 1, confidenceInterval);
     }
-
 
     @Override
     public int hashCode() {
