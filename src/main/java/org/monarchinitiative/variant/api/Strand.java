@@ -2,12 +2,26 @@
 package org.monarchinitiative.variant.api;
 
 /**
- * Contains the 4 strand types from GFF3.
+ * Contains the 4 strand types from GFF3. This is a superset of BED which only defines [+, -, .]
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public enum Strand {
     UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE;
+
+    public static Strand parseStrand(String value) {
+        switch (value) {
+            case "+":
+                return POSITIVE;
+            case "-":
+                return NEGATIVE;
+            case ".":
+                return UNSTRANDED;
+            case "?":
+            default:
+                return UNKNOWN;
+        }
+    }
 
     public boolean isPositive() {
         return this == POSITIVE;
@@ -26,5 +40,9 @@ public enum Strand {
             default:
                 return this;
         }
+    }
+
+    static int compare(Strand x, Strand y) {
+        return x.compareTo(y);
     }
 }
