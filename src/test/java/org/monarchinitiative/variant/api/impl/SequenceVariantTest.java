@@ -254,7 +254,7 @@ public class SequenceVariantTest {
         assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
         assertTrue(largeIns.contains(SequenceVariant.zeroBased(chr1, 0, "A", "T")));
         assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));
-        assertTrue(largeIns.contains(PartialBreakend.oneBased(chr1, "T", Strand.POSITIVE, Position.of(1))));
+        assertTrue(largeIns.contains(PartialBreakend.oneBased("bnd_A", chr1, Strand.POSITIVE, Position.of(1))));
     }
 
 }

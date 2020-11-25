@@ -7,58 +7,34 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PartialBreakend implements Breakend {
+public final class PartialBreakend extends GenomicPositionDefault implements Breakend {
 
-    private final Contig contig;
     private final String id;
-    private final Strand strand;
-    private final CoordinateSystem coordinateSystem;
-    private final Position position;
 
-    public PartialBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        this.contig = Objects.requireNonNull(contig);
-        this.coordinateSystem = coordinateSystem;
-        this.position = Objects.requireNonNull(position);
-        this.strand = Objects.requireNonNull(strand);
-        this.id = Objects.requireNonNull(id);
+    public static PartialBreakend oneBased(String id, Contig contig, Strand strand, Position position) {
+        return of(id, contig, strand, CoordinateSystem.ONE_BASED, position);
     }
 
-    public static PartialBreakend oneBased(Contig contig, String id, Strand strand, Position position) {
-        return new PartialBreakend(contig, id, strand, CoordinateSystem.ONE_BASED, position);
+    public static PartialBreakend zeroBased(String id, Contig contig, Strand strand, Position position) {
+        return of(id, contig, strand, CoordinateSystem.ZERO_BASED, position);
     }
 
-    @Override
-    public Contig contig() {
-        return contig;
+    public static PartialBreakend of(String id, Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        return new PartialBreakend(id, contig, strand, coordinateSystem, position);
     }
 
-    @Override
-    public Position position() {
-        return position;
-    }
-
-    @Override
-    public Strand strand() {
-        return strand;
+    private PartialBreakend(String id,
+                              Contig contig,
+                              Strand strand,
+                              CoordinateSystem coordinateSystem,
+                              Position position) {
+        super(contig, strand, coordinateSystem, position);
+        this.id = Objects.requireNonNull(id, "Id must not be null");
     }
 
     @Override
     public String id() {
         return id;
-    }
-
-    @Override
-    public CoordinateSystem coordinateSystem() {
-        return coordinateSystem;
-    }
-
-    @Override
-    public PartialBreakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (this.coordinateSystem == coordinateSystem) {
-            return this;
-        }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new PartialBreakend(contig, id, strand, coordinateSystem, position.shiftPos(startDelta));
     }
 
     @Override
@@ -68,33 +44,35 @@ public class PartialBreakend implements Breakend {
         } else {
             Position pos = Position.of(contig.length() - position.pos() + 1,
                     position.confidenceInterval().toOppositeStrand());
-            return new PartialBreakend(contig, id, strand, coordinateSystem, pos);
+            return new PartialBreakend(id, contig, strand, coordinateSystem, pos);
         }
+    }
+
+    @Override
+    public PartialBreakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (this.coordinateSystem == coordinateSystem) {
+            return this;
+        }
+        int startDelta = this.coordinateSystem.delta(coordinateSystem);
+        return new PartialBreakend(id, contig, strand, coordinateSystem, position.shiftPos(startDelta));
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PartialBreakend)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         PartialBreakend that = (PartialBreakend) o;
-        return contig.equals(that.contig) &&
-                position.equals(that.position) &&
-                strand == that.strand &&
-                id.equals(that.id);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, position, strand, id);
+        return Objects.hash(super.hashCode(), id);
     }
 
     @Override
     public String toString() {
-        return "PartialBreakend{" +
-                "contig=" + contig.id() +
-                ", position=" + position +
-                ", strand=" + strand +
-                ", id='" + id + '\'' +
-                '}';
+        return "BND(" + id + ")[" + contig.name() + ":" + position + ']' + strand;
     }
 }

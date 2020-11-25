@@ -6,12 +6,15 @@ import java.util.Objects;
 
 public class GenomicPositionDefault implements GenomicPosition {
 
-    private final Contig contig;
-    private final Position position;
-    private final CoordinateSystem coordinateSystem;
-    private final Strand strand;
+    protected final Contig contig;
+    protected final Position position;
+    protected final CoordinateSystem coordinateSystem;
+    protected final Strand strand;
 
-    private GenomicPositionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+    protected GenomicPositionDefault(Contig contig,
+                                     Strand strand,
+                                     CoordinateSystem coordinateSystem,
+                                     Position position) {
         if ((coordinateSystem.isOneBased() && position.minPos() <= 0)
                 || (coordinateSystem.isZeroBased() && position.minPos() < 0)) {
             throw new IllegalArgumentException("Cannot create genomic position " + position + " that extends beyond first contig base");

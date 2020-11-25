@@ -17,8 +17,8 @@ public class BreakendVariantTest {
     @Test
     public void matedBreakend() {
         // 2       4150333 28382_1 N       N]13:33423926]  284.1   PASS    SVTYPE=BND;POS=4150333;STRANDS=++:31;CIPOS=-8,10;CIEND=-2,1;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_2;EVENT=28382;
-        Breakend left = PartialBreakend.oneBased(chr2, "28382_1", Strand.POSITIVE, Position.of(4150333, -8, 10));
-        Breakend right = PartialBreakend.oneBased(chr13, "28382_2", Strand.POSITIVE, Position.of(33423926, -2, 1));
+        Breakend left = PartialBreakend.oneBased("28382_1", chr2, Strand.POSITIVE, Position.of(4150333, -8, 10));
+        Breakend right = PartialBreakend.oneBased("28382_2", chr13, Strand.POSITIVE, Position.of(33423926, -2, 1));
         BreakendVariant instance = new BreakendVariant("28382", left, right, "N", "N");
         assertThat(instance.contig(), equalTo(chr2));
         assertThat(instance.startPosition().pos(), equalTo(4150333));
@@ -31,8 +31,8 @@ public class BreakendVariantTest {
 
         System.out.println(instance.withStrand(Strand.NEGATIVE));
         // 13      33423926        28382_2 N       N]2:4150333]    284.1   PASS    SVTYPE=BND;POS=33423926;STRANDS=++:31;CIPOS=-2,1;CIEND=-8,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_1;EVENT=28382;
-        Breakend matedLeft = PartialBreakend.oneBased(chr13, "28382_2", Strand.POSITIVE, Position.of(33423926, -2, 1));
-        Breakend matedRight = PartialBreakend.oneBased(chr2, "28382_1", Strand.POSITIVE, Position.of(4150333, -8, 10));
+        Breakend matedLeft = PartialBreakend.oneBased("28382_2", chr13, Strand.POSITIVE, Position.of(33423926, -2, 1));
+        Breakend matedRight = PartialBreakend.oneBased("28382_1", chr2, Strand.POSITIVE, Position.of(4150333, -8, 10));
         BreakendVariant matedInstance = new BreakendVariant("28382", matedLeft, matedRight, "N", "N");
 
         // these can be combined using their id and mateids to recreate the full SequenceRearrangement
@@ -43,8 +43,8 @@ public class BreakendVariantTest {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 2  321682  bndV  T  ]13:123456]AGTNNNNNCAT  6  PASS  SVTYPE=BND;MATEID=bndU
         // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
-        Breakend left = PartialBreakend.oneBased(chr2, "bndV", Strand.POSITIVE, Position.of(321682));
-        Breakend right = PartialBreakend.oneBased(chr13, "bndU", Strand.POSITIVE, Position.of(123456));
+        Breakend left = PartialBreakend.oneBased("bndV", chr2, Strand.POSITIVE, Position.of(321682));
+        Breakend right = PartialBreakend.oneBased("bndU", chr13, Strand.POSITIVE, Position.of(123456));
         // TODO: parse strands and partial breakends from record
 
         BreakendVariant first = new BreakendVariant("", left, right, "T", "AGTNNNNNCAT");
