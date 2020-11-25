@@ -1,8 +1,8 @@
 package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
-
-import java.util.Objects;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -59,200 +59,88 @@ public class GenomicRegionTest {
         assertThat(instance.toOppositeStrand().toOneBased(), equalTo(ContigRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
-    @Test
-    public void containsPosition() {
-        GenomicPosition three = new GenomicPositionDefault(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
-        GenomicPosition four = new GenomicPositionDefault(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(4));
-        GenomicPosition five = new GenomicPositionDefault(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(5));
-        GenomicPosition otherContig = new GenomicPositionDefault(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(4));
+    @ParameterizedTest
+    @CsvSource({
+            "3,false",
+            "4,true",
+            "5,false",
+            "3,false"})
+    public void containsPosition(int pos, boolean expected) {
+        GenomicPosition gp = new GenomicPositionDefault(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
 
         // 0-based region
         GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
-
-        assertThat(zeroBasedFour.contains(three), equalTo(false));
-        assertThat(zeroBasedFour.contains(four), equalTo(true));
-        assertThat(zeroBasedFour.contains(five), equalTo(false));
-        assertThat(zeroBasedFour.contains(otherContig), equalTo(false));
+        assertThat(zeroBasedFour.contains(gp), equalTo(expected));
 
         // 1-based region
         GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
-
-        assertThat(oneBasedFour.contains(three), equalTo(false));
-        assertThat(oneBasedFour.contains(four), equalTo(true));
-        assertThat(oneBasedFour.contains(five), equalTo(false));
-        assertThat(oneBasedFour.contains(otherContig), equalTo(false));
+        assertThat(oneBasedFour.contains(gp), equalTo(expected));
     }
 
     @Test
-    public void containsRegion() {
-        GenomicRegion three = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(3));
-        GenomicRegion four = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
-        GenomicRegion five = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(5), Position.of(5));
-        GenomicRegion threeToFive = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(5));
-        GenomicRegion otherContig = ContigRegion.oneBased(chr2, Strand.POSITIVE, Position.of(4), Position.of(4));
+    public void containsPositionOnDifferentContig() {
+        GenomicPosition gp = new GenomicPositionDefault(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(4));
+
+        GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
+        assertThat(zeroBasedFour.contains(gp), equalTo(false));
+
+        GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
+        assertThat(oneBasedFour.contains(gp), equalTo(false));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "3,3,false",
+            "4,4,true",
+            "5,5,false",
+            "3,5,false"})
+    public void containsRegion(int start, int end, boolean expected) {
+        GenomicRegion gr = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(start), Position.of(end));
 
         // 0-based region
         GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
-
-        assertThat(zeroBasedFour.contains(three), equalTo(false));
-        assertThat(zeroBasedFour.contains(four), equalTo(true));
-        assertThat(zeroBasedFour.contains(five), equalTo(false));
-        assertThat(zeroBasedFour.contains(threeToFive), equalTo(false));
-        assertThat(zeroBasedFour.contains(otherContig), equalTo(false));
+        assertThat(zeroBasedFour.contains(gr), equalTo(expected));
 
         // 1-based region
         GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
-
-        assertThat(oneBasedFour.contains(three), equalTo(false));
-        assertThat(oneBasedFour.contains(four), equalTo(true));
-        assertThat(oneBasedFour.contains(five), equalTo(false));
-        assertThat(oneBasedFour.contains(threeToFive), equalTo(false));
-        assertThat(oneBasedFour.contains(otherContig), equalTo(false));
+        assertThat(oneBasedFour.contains(gr), equalTo(expected));
     }
 
     @Test
-    public void overlapsWith() {
-        GenomicRegion three = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(3));
-        GenomicRegion four = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
-        GenomicRegion five = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(5), Position.of(5));
-        GenomicRegion threeToFive = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(5));
-        GenomicRegion otherContig = ContigRegion.oneBased(chr2, Strand.POSITIVE, Position.of(4), Position.of(4));
+    public void containsRegionOnDifferentContig() {
+        GenomicRegion gr = ContigRegion.oneBased(chr2, Strand.POSITIVE, Position.of(4), Position.of(4));
 
-        // 0-based region
         GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
+        assertThat(zeroBasedFour.contains(gr), equalTo(false));
 
-        assertThat(zeroBasedFour.overlapsWith(three), equalTo(false));
-        assertThat(zeroBasedFour.overlapsWith(four), equalTo(true));
-        assertThat(zeroBasedFour.overlapsWith(five), equalTo(false));
-        assertThat(zeroBasedFour.overlapsWith(threeToFive), equalTo(true));
-        assertThat(zeroBasedFour.overlapsWith(otherContig), equalTo(false));
-
-
-        // 1-based region
         GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
-
-        assertThat(oneBasedFour.overlapsWith(three), equalTo(false));
-        assertThat(oneBasedFour.overlapsWith(four), equalTo(true));
-        assertThat(oneBasedFour.overlapsWith(five), equalTo(false));
-        assertThat(oneBasedFour.overlapsWith(threeToFive), equalTo(true));
-        assertThat(oneBasedFour.overlapsWith(otherContig), equalTo(false));
+        assertThat(oneBasedFour.contains(gr), equalTo(false));
     }
 
-    /**
-     * 0- or 1-based region e.g. half-open [a,b) or fully closed [a,b] as indicated by the {@link CoordinateSystem}
-     */
-    static class ContigRegion implements GenomicRegion {
+    @ParameterizedTest
+    @CsvSource({
+            "3,3,false",
+            "4,4,true",
+            "5,5,false",
+            "3,5,true"})
+    public void overlapsWith(int start, int end, boolean expected) {
+        GenomicRegion gr = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(start), Position.of(end));
 
-        private final Contig contig;
-        private final Strand strand;
-        private final CoordinateSystem coordinateSystem;
-        private final Position startPosition;
-        private final Position endPosition;
+        GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
+        assertThat(zeroBasedFour.overlapsWith(gr), equalTo(expected));
 
-        private final int startZeroBased;
+        GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
+        assertThat(oneBasedFour.overlapsWith(gr), equalTo(expected));
+    }
 
-        private ContigRegion(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-            this.contig = Objects.requireNonNull(contig);
-            this.strand = Objects.requireNonNull(strand);
-            this.coordinateSystem = coordinateSystem;
-            this.startPosition = Objects.requireNonNull(startPosition);
-            this.endPosition = Objects.requireNonNull(endPosition);
-            this.startZeroBased = coordinateSystem == CoordinateSystem.ZERO_BASED ? startPosition.pos() : startPosition.pos() - 1;
-        }
+    @Test
+    public void overlapsWithOnDifferentContig() {
+        GenomicRegion gr = ContigRegion.oneBased(chr2, Strand.POSITIVE, Position.of(4), Position.of(4));
 
-        public static ContigRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-            return new ContigRegion(contig, strand, coordinateSystem, startPosition, endPosition);
-        }
+        GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
+        assertThat(zeroBasedFour.overlapsWith(gr), equalTo(false));
 
-        public static ContigRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-            return new ContigRegion(contig, strand, CoordinateSystem.ONE_BASED, startPosition, endPosition);
-        }
-
-        public static ContigRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-            return new ContigRegion(contig, strand, CoordinateSystem.ZERO_BASED, startPosition, endPosition);
-        }
-
-
-        @Override
-        public Contig contig() {
-            return contig;
-        }
-
-
-        @Override
-        public int startZeroBased() {
-            return startZeroBased;
-        }
-
-        @Override
-        public CoordinateSystem coordinateSystem() {
-            return coordinateSystem;
-        }
-
-        @Override
-        public ContigRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
-            if (this.coordinateSystem == coordinateSystem) {
-                return this;
-            }
-            int startDelta = this.coordinateSystem.delta(coordinateSystem);
-            return new ContigRegion(contig, strand, coordinateSystem, startPosition.shiftPos(startDelta), endPosition);
-        }
-
-        @Override
-        public Position startPosition() {
-            return startPosition;
-        }
-
-        @Override
-        public Position endPosition() {
-            return endPosition;
-        }
-
-        @Override
-        public Strand strand() {
-            return strand;
-        }
-
-        @Override
-        public ContigRegion withStrand(Strand strand) {
-            if (this.strand == strand) {
-                return this;
-            } else if (coordinateSystem.isOneBased()) {
-                Position start = Position.of(contig.length() - start() + 1, startPosition.confidenceInterval().toOppositeStrand());
-                Position end = Position.of(contig.length() - end() + 1, endPosition.confidenceInterval().toOppositeStrand());
-                return new ContigRegion(contig, strand, coordinateSystem, end, start);
-            }
-            Position start = Position.of(contig.length() - start(), startPosition.confidenceInterval().toOppositeStrand());
-            Position end = Position.of(contig.length() - end(), endPosition.confidenceInterval().toOppositeStrand());
-            return new ContigRegion(contig, strand, coordinateSystem, end, start);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContigRegion)) return false;
-            ContigRegion that = (ContigRegion) o;
-            return contig.equals(that.contig) &&
-                    strand == that.strand &&
-                    coordinateSystem == that.coordinateSystem &&
-                    startPosition.equals(that.startPosition) &&
-                    endPosition.equals(that.endPosition);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(contig, strand, coordinateSystem, startPosition, endPosition);
-        }
-
-        @Override
-        public String toString() {
-            return "ContigRegion{" +
-                    "contig=" + contig.id() +
-                    ", strand=" + strand +
-                    ", coordinateSystem=" + coordinateSystem +
-                    ", startPosition=" + startPosition +
-                    ", endPosition=" + endPosition +
-                    '}';
-        }
+        GenomicRegion oneBasedFour = ContigRegion.oneBased(chr1, Strand.POSITIVE, Position.of(4), Position.of(4));
+        assertThat(oneBasedFour.overlapsWith(gr), equalTo(false));
     }
 }
