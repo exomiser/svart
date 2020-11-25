@@ -66,7 +66,7 @@ public class GenomicRegionTest {
             "5,false",
             "3,false"})
     public void containsPosition(int pos, boolean expected) {
-        GenomicPosition gp = new GenomicPositionDefault(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
+        GenomicPosition gp = GenomicPosition.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
 
         // 0-based region
         GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
@@ -79,7 +79,7 @@ public class GenomicRegionTest {
 
     @Test
     public void containsPositionOnDifferentContig() {
-        GenomicPosition gp = new GenomicPositionDefault(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(4));
+        GenomicPosition gp = GenomicPosition.of(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(4));
 
         GenomicRegion zeroBasedFour = ContigRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(3), Position.of(4));
         assertThat(zeroBasedFour.contains(gp), equalTo(false));

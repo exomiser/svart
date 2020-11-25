@@ -1,26 +1,41 @@
-package org.monarchinitiative.variant.api;
+package org.monarchinitiative.variant.api.impl;
+
+import org.monarchinitiative.variant.api.*;
 
 import java.util.Objects;
 
-class GenomicPositionDefault implements GenomicPosition {
+public class GenomicPositionDefault implements GenomicPosition {
 
     private final Contig contig;
     private final Position position;
     private final CoordinateSystem coordinateSystem;
     private final Strand strand;
 
-    GenomicPositionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        if (position.minPos() < 0) {
-            throw new IllegalArgumentException("Cannot create genomic position " + position + "that extends beyond first contig base");
+    private GenomicPositionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        if ((coordinateSystem.isOneBased() && position.minPos() <= 0)
+                || (coordinateSystem.isZeroBased() && position.minPos() < 0)) {
+            throw new IllegalArgumentException("Cannot create genomic position " + position + " that extends beyond first contig base");
         }
         if (position.maxPos() > contig.length()) {
-            throw new IllegalArgumentException("Cannot create genomic position " + position + "that extends beyond contig end " + contig.length());
+            throw new IllegalArgumentException("Cannot create genomic position " + position + " that extends beyond contig end " + contig.length());
         }
 
         this.contig = contig;
         this.position = position;
         this.coordinateSystem = coordinateSystem;
         this.strand = strand;
+    }
+
+    public static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
+        return of(contig, strand, CoordinateSystem.ONE_BASED, position);
+    }
+
+    public static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
+        return of(contig, strand, CoordinateSystem.ZERO_BASED, position);
+    }
+
+    public static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        return new GenomicPositionDefault(contig, strand, coordinateSystem, position);
     }
 
     @Override
@@ -49,15 +64,11 @@ class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.hasComplement()) {
-            if (this.strand == strand) {
-                return this;
-            } else {
-                Position pos = coordinateSystem.isOneBased()
-                        ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
-                        : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand());
-                return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
-            }
+        if (this.strand.hasComplement() && this.strand != strand) {
+            Position pos = coordinateSystem.isOneBased()
+                    ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
+                    : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand());
+            return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
         }
         return this;
     }

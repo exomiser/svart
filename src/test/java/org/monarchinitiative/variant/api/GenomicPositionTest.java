@@ -18,9 +18,9 @@ public class GenomicPositionTest {
 
     @BeforeEach
     public void setUp() {
-        zeroBasedSeven = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
-        oneBasedThree = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3, ConfidenceInterval.of(-2, 3)));
-        oneBasedThreePrecise = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
+        zeroBasedSeven = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
+        oneBasedThree = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3, ConfidenceInterval.of(-2, 3)));
+        oneBasedThreePrecise = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class GenomicPositionTest {
     @Test
     public void differenceToPositionWhenOnDifferentContig() {
         Contig ctg2 = new ContigDefault(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20, "", "", "");
-        GenomicPosition other = new GenomicPositionDefault(ctg2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(2));
+        GenomicPosition other = GenomicPosition.of(ctg2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(2));
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> zeroBasedSeven.differenceTo(other));
         assertThat(e.getMessage(), equalTo("Coordinates are on different chromosomes: 1 vs. 2"));
     }
@@ -121,9 +121,9 @@ public class GenomicPositionTest {
         Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr2");
         Contig ctg3 = Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr3");
 
-        GenomicPosition two = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
-        GenomicPosition three = new GenomicPositionDefault(ctg2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
-        GenomicPosition four = new GenomicPositionDefault(ctg3, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
+        GenomicPosition two = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
+        GenomicPosition three = GenomicPosition.of(ctg2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
+        GenomicPosition four = GenomicPosition.of(ctg3, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
 
         assertThat(three.compareTo(two), equalTo(1));
         assertThat(three.compareTo(three), equalTo(0));
@@ -136,7 +136,7 @@ public class GenomicPositionTest {
             "3,0",
             "4,-1"})
     public void compareToWhenDifferingPositions(int pos, int expected) {
-        GenomicPosition gp = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
+        GenomicPosition gp = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
 
         assertThat(oneBasedThreePrecise.compareTo(gp), equalTo(expected));
     }
@@ -152,7 +152,7 @@ public class GenomicPositionTest {
             "3,false",
             "4,true"})
     public void isUpstreamOfPosition(int pos, boolean expected) {
-        GenomicPosition gp = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
+        GenomicPosition gp =  GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
         assertThat(oneBasedThree.isUpstreamOf(gp), equalTo(expected));
     }
 
@@ -174,7 +174,7 @@ public class GenomicPositionTest {
             "3,false",
             "4,false"})
     public void isDownstreamOfPosition(int pos, boolean expected) {
-        GenomicPosition gp = new GenomicPositionDefault(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
+        GenomicPosition gp = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos));
         assertThat(oneBasedThree.isDownstreamOf(gp), equalTo(expected));
     }
 
@@ -187,5 +187,49 @@ public class GenomicPositionTest {
     public void isDownstreamOfRegion(int start, int end, boolean expected) {
         GenomicRegion region = ContigRegion.oneBased(ctg1, Strand.POSITIVE, Position.of(start), Position.of(end));
         assertThat(oneBasedThree.isDownstreamOf(region), equalTo(expected));
+    }
+
+    @Test
+    public void illegalPositionPastContigStart() {
+        IllegalArgumentException eo = assertThrows(IllegalArgumentException.class,
+                () -> GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(1, -1, 1)));
+        assertThat(eo.getMessage(), equalTo("Cannot create genomic position 1(±1,1) that extends beyond first contig base"));
+
+
+        IllegalArgumentException ez = assertThrows(IllegalArgumentException.class,
+                () -> GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(0, -1, 1)));
+        assertThat(ez.getMessage(), equalTo("Cannot create genomic position 0(±1,1) that extends beyond first contig base"));
+    }
+
+    @Test
+    public void illegalPositionPastContigEnd() {
+        IllegalArgumentException eo = assertThrows(IllegalArgumentException.class,
+                () -> GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(10, -1, 1)));
+        assertThat(eo.getMessage(), equalTo("Cannot create genomic position 10(±1,1) that extends beyond contig end 10"));
+
+
+        IllegalArgumentException ez = assertThrows(IllegalArgumentException.class,
+                () -> GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(10, -1, 1)));
+        assertThat(ez.getMessage(), equalTo("Cannot create genomic position 10(±1,1) that extends beyond contig end 10"));
+    }
+
+    @Test
+    public void zeroBasedStaticConstructor() {
+        GenomicPosition gp = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(4));
+
+        assertThat(gp.contig(), equalTo(ctg1));
+        assertThat(gp.strand(), equalTo(Strand.POSITIVE));
+        assertThat(gp.position(), equalTo(Position.of(4)));
+        assertThat(gp.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+    }
+
+    @Test
+    public void oneBasedStaticConstructor() {
+        GenomicPosition gp = GenomicPosition.oneBased(ctg1, Strand.POSITIVE, Position.of(4));
+
+        assertThat(gp.contig(), equalTo(ctg1));
+        assertThat(gp.strand(), equalTo(Strand.POSITIVE));
+        assertThat(gp.position(), equalTo(Position.of(4)));
+        assertThat(gp.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 }

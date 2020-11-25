@@ -1,11 +1,40 @@
 package org.monarchinitiative.variant.api;
 
+import org.monarchinitiative.variant.api.impl.GenomicPositionDefault;
+
 /**
  * Represents a {@link Position} on a {@link Contig}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition>, CoordinateSystemed<GenomicPosition> {
+
+    /**
+     * Create genomic position using <em>one-based</em> coordinate system.
+     *
+     * @return one-based position
+     */
+    static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
+        return GenomicPositionDefault.oneBased(contig, strand, position);
+    }
+
+    /**
+     * Create genomic position using <em>zero-based</em> coordinate system.
+     *
+     * @return zero-based position
+     */
+    static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
+        return GenomicPositionDefault.zeroBased(contig, strand, position);
+    }
+
+    /**
+     * Create genomic position on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
+     *
+     * @return a position
+     */
+    static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        return GenomicPositionDefault.of(contig, strand, coordinateSystem, position);
+    }
 
     static int compare(GenomicPosition x, GenomicPosition y) {
         int result = Contig.compare(x.contig(), y.contig());
