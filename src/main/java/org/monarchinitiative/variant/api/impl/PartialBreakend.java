@@ -24,12 +24,16 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
     }
 
     private PartialBreakend(String id,
-                              Contig contig,
-                              Strand strand,
-                              CoordinateSystem coordinateSystem,
-                              Position position) {
+                            Contig contig,
+                            Strand strand,
+                            CoordinateSystem coordinateSystem,
+                            Position position) {
         super(contig, strand, coordinateSystem, position);
         this.id = Objects.requireNonNull(id, "Id must not be null");
+    }
+
+    private PartialBreakend(String id, GenomicPosition position) {
+        this(id, position.contig(), position.strand(), position.coordinateSystem(), position.position());
     }
 
     @Override
@@ -39,22 +43,18 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
 
     @Override
     public PartialBreakend withStrand(Strand strand) {
-        if (this.strand == strand) {
-            return this;
-        } else {
-            Position pos = Position.of(contig.length() - position.pos() + 1,
-                    position.confidenceInterval().toOppositeStrand());
-            return new PartialBreakend(id, contig, strand, coordinateSystem, pos);
+        if (this.strand.hasComplement() && this.strand != strand) {
+            return new PartialBreakend(id, super.withStrand(strand));
         }
+        return this;
     }
 
     @Override
     public PartialBreakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (this.coordinateSystem == coordinateSystem) {
-            return this;
+        if (this.coordinateSystem != coordinateSystem) {
+            return new PartialBreakend(id, super.withCoordinateSystem(coordinateSystem));
         }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new PartialBreakend(id, contig, strand, coordinateSystem, position.shiftPos(startDelta));
+        return this;
     }
 
     @Override

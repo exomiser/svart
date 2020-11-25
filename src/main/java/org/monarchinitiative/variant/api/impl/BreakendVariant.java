@@ -5,14 +5,27 @@ import org.monarchinitiative.variant.api.*;
 import java.util.Objects;
 
 /**
+ * Implementation of a structural variant that involves two different contigs.
+ * <p>
+ * Note: {@link BreakendVariant#ref} field is not altered during strand conversion.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public final class BreakendVariant implements Variant, Breakended {
 
     private final String eventId;
+
     private final Breakend left;
+
     private final Breakend right;
+
     private final String ref;
+
+    /**
+     * String representing the inserted sequence without the <em>ref</em> allele, as described in Section 5.4.1 of the
+     * <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF v4.2 specification</a>
+     */
     private final String alt;
 
     // Accept the standard VCF input fields, including mateId and eventId
@@ -26,24 +39,29 @@ public final class BreakendVariant implements Variant, Breakended {
     // 1       10567   2838_1  N       [15:102520406[N 47911.3 LOW     SVTYPE=BND;POS=10567;STRANDS=--:97;IMPRECISE;CIPOS=-205,24;CIEND=-104,42;CIPOS95=-20,20;CIEND95=-6,6;MATEID=2838_2;EVENT=2838;
     //15      102520406       2838_2  N       [1:10567[N      47911.3 LOW     SVTYPE=BND;POS=102520406;STRANDS=--:97;IMPRECISE;CIPOS=-104,42;CIEND=-205,24;CIPOS95=-6,6;CIEND95=-20,20;MATEID=2838_1;EVENT=2838;
 
-    public BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        this.eventId = eventId;
-        this.left = left;
-        this.right = right;
-        this.ref = ref;
-        this.alt = alt;
+    public BreakendVariant(String eventId,
+                           Breakend left,
+                           Breakend right,
+                           String ref,
+                           String alt) {
+        this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
+        this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
+        this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
+        this.ref = Objects.requireNonNull(ref, "Ref sequence cannot be null");
+        this.alt = Objects.requireNonNull(alt, "Alt sequence cannot be null");
     }
 
+    /**
+     * @return id of the breakend
+     */
     @Override
     public String id() {
         return left.id();
     }
 
-    @Override
-    public String mateId() {
-        return right.id();
-    }
-
+    /**
+     * @return event id of the breakend variant
+     */
     @Override
     public String eventId() {
         return eventId;
@@ -84,7 +102,29 @@ public final class BreakendVariant implements Variant, Breakended {
         if (left.coordinateSystem() == coordinateSystem) {
             return this;
         }
-        return new BreakendVariant(eventId, right.withCoordinateSystem(coordinateSystem), left.withCoordinateSystem(coordinateSystem), ref, alt);
+        return new BreakendVariant(eventId, left.withCoordinateSystem(coordinateSystem), right.withCoordinateSystem(coordinateSystem), ref, alt);
+    }
+
+    /**
+     * @return strand of the left breakend
+     */
+    @Override
+    public Strand strand() {
+        return left.strand();
+    }
+
+    public BreakendVariant withStrand(Strand strand) {
+        if (strand().hasComplement() && strand() != strand) {
+            Breakend l = right.toOppositeStrand();
+            Breakend r = left.toOppositeStrand();
+            return new BreakendVariant(eventId, l, r, ref, Seq.reverseComplement(alt));
+        }
+        return this;
+    }
+
+    @Override
+    public BreakendVariant toOppositeStrand() {
+        return withStrand(strand().opposite());
     }
 
     @Override
@@ -97,45 +137,42 @@ public final class BreakendVariant implements Variant, Breakended {
         return ref.length();
     }
 
+    /**
+     * @return always <code>0</code>
+     */
     @Override
     public int changeLength() {
         return 0;
     }
 
+    /**
+     * @return reference allele on {@link Strand#POSITIVE}
+     */
     @Override
     public String ref() {
         return ref;
     }
 
+    /**
+     * @return string with inserted sequence, as observed in <em>ALT</em> allele. The allele is trimmed to remove the
+     * bases shared with the <em>REF</em> allele
+     */
     @Override
     public String alt() {
         return alt;
     }
 
+    /**
+     * @return always {@link VariantType#BND}
+     */
     @Override
     public VariantType variantType() {
         return VariantType.BND;
     }
 
-    @Override
-    public Strand strand() {
-        return left.strand();
-    }
-
-    public BreakendVariant withStrand(Strand strand) {
-        if (left.strand() == strand) {
-            return this;
-        } else {
-            return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), ref, Seq
-                    .reverseComplement(alt));
-        }
-    }
-
-    @Override
-    public BreakendVariant toOppositeStrand() {
-        return withStrand(strand().opposite());
-    }
-
+    /**
+     * @return always <code>true</code>
+     */
     @Override
     public boolean isSymbolic() {
         return true;
@@ -149,21 +186,20 @@ public final class BreakendVariant implements Variant, Breakended {
         return eventId.equals(that.eventId) &&
                 left.equals(that.left) &&
                 right.equals(that.right) &&
+                ref.equals(that.ref) &&
                 alt.equals(that.alt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, left, right, alt);
+        return Objects.hash(eventId, left, right, ref, alt);
     }
 
     @Override
     public String toString() {
-        return "BreakendVariant{" +
-                "eventId='" + eventId + '\'' +
-                ", left=" + left +
-                ", right=" + right +
-                ", alt='" + alt + '\'' +
-                '}';
+        return "BV(" + eventId + ')' +
+                "[" + left +
+                ", " + right +
+                "] " + alt;
     }
 }
