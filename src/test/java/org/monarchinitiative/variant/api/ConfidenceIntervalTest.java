@@ -13,63 +13,63 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class ConfidenceIntervalTest {
+public class ConfidenceIntervalTest {
 
     @Test
-    void checkIllegalLowerBoundInput() {
+    public void checkIllegalLowerBoundInput() {
         assertThrows(IllegalArgumentException.class, () -> ConfidenceInterval.of(10, 0));
     }
 
     @Test
-    void checkIllegalUpperBoundInput() {
+    public void checkIllegalUpperBoundInput() {
         assertThrows(IllegalArgumentException.class, () -> ConfidenceInterval.of(0, -10));
     }
 
     @Test
-    void empty() {
+    public void empty() {
         assertThat(ConfidenceInterval.precise(), equalTo(ConfidenceInterval.of(0, 0)));
     }
 
     @Test
-    void getLowerBound() {
+    public void getLowerBound() {
         int lowerBound = -10;
         ConfidenceInterval instance = ConfidenceInterval.of(lowerBound, 0);
         assertThat(instance.lowerBound(), equalTo(lowerBound));
     }
 
     @Test
-    void getUpperBound() {
+    public void getUpperBound() {
         int upperBound = 20;
         ConfidenceInterval instance = ConfidenceInterval.of(0, upperBound);
         assertThat(instance.upperBound(), equalTo(upperBound));
     }
 
     @Test
-    void getMin() {
+    public void getMin() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
         assertThat(instance.minPos(200), equalTo(190));
     }
 
     @Test
-    void getMinFromPrecise() {
+    public void getMinFromPrecise() {
         ConfidenceInterval instance = ConfidenceInterval.precise();
         assertThat(instance.minPos(100), equalTo(100));
     }
 
     @Test
-    void getMax() {
+    public void getMax() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
         assertThat(instance.maxPos(200), equalTo(220));
     }
 
     @Test
-    void getMaxFromPrecise() {
+    public void getMaxFromPrecise() {
         ConfidenceInterval instance = ConfidenceInterval.precise();
         assertThat(instance.maxPos(100), equalTo(100));
     }
 
     @Test
-    void isPrecise() {
+    public void isPrecise() {
         assertThat(ConfidenceInterval.precise().isPrecise(), equalTo(true));
         assertThat(ConfidenceInterval.of(0, 0).isPrecise(), equalTo(true));
         assertThat(ConfidenceInterval.of(-1, 0).isPrecise(), equalTo(false));
@@ -78,19 +78,19 @@ class ConfidenceIntervalTest {
     }
 
     @Test
-    void toOppositeStrand() {
+    public void toOppositeStrand() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
         assertThat(instance.toOppositeStrand(), equalTo(ConfidenceInterval.of(-20, 10)));
         assertThat(ConfidenceInterval.precise().toOppositeStrand(), equalTo(ConfidenceInterval.precise()));
     }
 
     @Test
-    void lengthOfPreciseIsZero() {
+    public void lengthOfPreciseIsZero() {
         assertThat(ConfidenceInterval.precise().length(), equalTo(0));
     }
 
     @Test
-    void comparator() {
+    public void comparator() {
         ConfidenceInterval zero = ConfidenceInterval.precise();
         ConfidenceInterval one = ConfidenceInterval.of(0,1);
         ConfidenceInterval ten = ConfidenceInterval.of(-5,5);

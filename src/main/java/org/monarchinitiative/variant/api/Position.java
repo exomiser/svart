@@ -90,6 +90,10 @@ public class Position implements Comparable<Position> {
         return confidenceInterval().isPrecise();
     }
 
+    public Position toPrecise() {
+        return new Position(pos, ConfidenceInterval.precise());
+    }
+
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.
      *

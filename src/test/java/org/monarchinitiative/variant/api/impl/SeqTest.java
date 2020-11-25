@@ -10,10 +10,10 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class SeqTest {
+public class SeqTest {
 
     @Test
-    void reverseComplementByteArray() {
+    public void reverseComplementByteArray() {
         byte[] seq = "ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn".getBytes(StandardCharsets.US_ASCII);
         byte[] reversed = Seq.reverseComplement(seq);
         String rev = new String(reversed, StandardCharsets.US_ASCII);
@@ -21,7 +21,7 @@ class SeqTest {
     }
 
     @Test
-    void reverseComplementString() {
+    public void reverseComplementString() {
         assertThat(Seq.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn"),
                 is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
     }
