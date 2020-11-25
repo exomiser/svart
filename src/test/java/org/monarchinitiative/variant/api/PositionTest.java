@@ -97,4 +97,9 @@ public class PositionTest {
     public void shiftPosOneBased(int pos, int delta, int expect) {
         assertThat(Position.of(pos).shiftPos(delta), equalTo(Position.of(expect)));
     }
+
+    @Test
+    public void toPrecise() {
+        assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toPrecise(), equalTo(Position.of(1)));
+    }
 }
