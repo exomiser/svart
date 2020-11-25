@@ -70,6 +70,10 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
 
         other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
 
+        if (other.contains(this)) {
+            return 0;
+        }
+
         int s = pos() - other.start();
         int e = pos() - other.end();
         return Math.abs(s) < Math.abs(e) ? s : e;

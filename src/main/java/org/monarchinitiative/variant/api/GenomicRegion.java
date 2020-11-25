@@ -84,11 +84,15 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return true if the region shares at least 1 bp with the <code>other</code> region
      */
     default boolean overlapsWith(GenomicRegion other) {
-        if (this.contig().id() != other.contig().id()) {
+        if (contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.strand());
-        return start() <= onStrand.end() && end() >= onStrand.start();
+
+        other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
+
+        return isOneBased()
+                ? start() <= other.end() && other.start() <= end()
+                : start() < other.end() && other.start() < end();
     }
 
     /**
@@ -96,19 +100,23 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(GenomicRegion other) {
-        if (this.contig().id() != other.contig().id()) {
+        if (contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
-        return onStrand.start() >= start() && onStrand.end() <= end();
+        other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
+
+        return other.start() >= start() && other.end() <= end();
     }
 
-    default boolean contains(GenomicPosition genomicPosition) {
-        if (this.contig().id() != genomicPosition.contig().id()) {
+    default boolean contains(GenomicPosition position) {
+        if (this.contig().id() != position.contig().id()) {
             return false;
         }
-        GenomicPosition onStrand = genomicPosition.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
-        return start() >= onStrand.pos() && onStrand.pos() <= end();
+        position = position.withStrand(strand()).withCoordinateSystem(coordinateSystem());
+
+        return coordinateSystem().isOneBased()
+                ? start() <= position.pos() && position.pos() <= end()
+                : start() <= position.pos() && position.pos() < end();
     }
 
     @Override

@@ -4,10 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.variant.api.impl.ContigDefault;
 
-import java.util.Objects;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GenomicPositionTest {
@@ -30,6 +28,8 @@ public class GenomicPositionTest {
         assertThat(zeroBased.position(), equalTo(Position.of(7, ConfidenceInterval.of(-1, 2))));
         assertThat(zeroBased.pos(), equalTo(7));
         assertThat(zeroBased.ci(), equalTo(ConfidenceInterval.of(-1, 2)));
+        assertThat(zeroBased.min(), equalTo(6));
+        assertThat(zeroBased.max(), equalTo(9));
         assertThat(zeroBased.strand(), equalTo(Strand.POSITIVE));
         assertThat(zeroBased.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
         assertThat(zeroBased.toString(), equalTo("[1:7(±1,2))+"));
@@ -38,6 +38,8 @@ public class GenomicPositionTest {
         assertThat(oneBased.position(), equalTo(Position.of(3, ConfidenceInterval.of(-2, 3))));
         assertThat(oneBased.pos(), equalTo(3));
         assertThat(oneBased.ci(), equalTo(ConfidenceInterval.of(-2, 3)));
+        assertThat(oneBased.min(), equalTo(1));
+        assertThat(oneBased.max(), equalTo(6));
         assertThat(oneBased.strand(), equalTo(Strand.POSITIVE));
         assertThat(oneBased.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
         assertThat(oneBased.toString(), equalTo("(1:3(±2,3))+"));
@@ -63,6 +65,9 @@ public class GenomicPositionTest {
 
         assertThat(zeroBased.differenceTo(region), equalTo(1));
         assertThat(oneBased.differenceTo(region), equalTo(-2));
+
+        GenomicRegion containing = GenomicRegionTest.ContigRegion.oneBased(ctg1, Strand.POSITIVE, Position.of(2), Position.of(4));
+        assertThat(oneBased.differenceTo(containing), equalTo(0));
     }
 
     @Test
@@ -74,16 +79,37 @@ public class GenomicPositionTest {
     }
 
     @Test
-    public void toOppositeStrand() {
+    public void withStrand() {
+        assertThat(zeroBased.withStrand(Strand.POSITIVE), is(sameInstance(zeroBased)));
+
         GenomicPosition zeroNeg = zeroBased.withStrand(Strand.NEGATIVE);
         assertThat(zeroNeg.position(), equalTo(Position.of(3, ConfidenceInterval.of(-2, 1))));
         assertThat(zeroNeg.strand(), equalTo(Strand.NEGATIVE));
         assertThat(zeroNeg.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
 
-        GenomicPosition oneNeg = oneBased.toOppositeStrand();
+        assertThat(oneBased.withStrand(Strand.POSITIVE), is(sameInstance(oneBased)));
+
+        GenomicPosition oneNeg = oneBased.withStrand(Strand.NEGATIVE);
         assertThat(oneNeg.position(), equalTo(Position.of(8, ConfidenceInterval.of(-3, 2))));
         assertThat(oneNeg.strand(), equalTo(Strand.NEGATIVE));
         assertThat(oneNeg.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+    }
+
+    @Test
+    public void withCoordinateSystem() {
+        assertThat(zeroBased.withCoordinateSystem(CoordinateSystem.ZERO_BASED), is(sameInstance(zeroBased)));
+
+        GenomicPosition zpos = zeroBased.withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        assertThat(zpos.pos(), equalTo(8));
+        assertThat(zpos.ci(), equalTo(zeroBased.ci()));
+        assertThat(zpos.coordinateSystem(), is(CoordinateSystem.ONE_BASED));
+
+        assertThat(oneBased.withCoordinateSystem(CoordinateSystem.ONE_BASED), is(sameInstance(oneBased)));
+
+        GenomicPosition opos = oneBased.withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        assertThat(opos.pos(), equalTo(2));
+        assertThat(opos.ci(), equalTo(oneBased.ci()));
+        assertThat(opos.coordinateSystem(), is(CoordinateSystem.ZERO_BASED));
     }
 
     @Test
@@ -115,95 +141,6 @@ public class GenomicPositionTest {
     @Test
     public void compareToWhenDifferingStrands() {
         // TODO: 25. 11. 2020 implement
-    }
-
-    static class GenomicPositionDefault implements GenomicPosition {
-
-        private final Contig contig;
-        private final Position position;
-        private final CoordinateSystem coordinateSystem;
-        private final Strand strand;
-
-        private GenomicPositionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-            if (position.minPos() < 0) {
-                throw new IllegalArgumentException("Cannot create genomic position " + position + "that extends beyond first contig base");
-            }
-            if (position.maxPos() > contig.length()) {
-                throw new IllegalArgumentException("Cannot create genomic position " + position + "that extends beyond contig end " + contig.length());
-            }
-
-            this.contig = contig;
-            this.position = position;
-            this.coordinateSystem = coordinateSystem;
-            this.strand = strand;
-        }
-
-        @Override
-        public Contig contig() {
-            return contig;
-        }
-
-        @Override
-        public Position position() {
-            return position;
-        }
-
-        @Override
-        public CoordinateSystem coordinateSystem() {
-            return coordinateSystem;
-        }
-
-        @Override
-        public GenomicPositionDefault withCoordinateSystem(CoordinateSystem coordinateSystem) {
-            if (this.coordinateSystem == coordinateSystem) {
-                return this;
-            }
-            int startDelta = this.coordinateSystem.delta(coordinateSystem);
-            return new GenomicPositionDefault(contig, strand, coordinateSystem, position().shiftPos(startDelta));
-        }
-
-        @Override
-        public GenomicPositionDefault withStrand(Strand strand) {
-            if (this.strand.hasComplement()) {
-                if (this.strand == strand) {
-                    return this;
-                } else {
-                    Position pos = coordinateSystem.isOneBased()
-                            ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
-                            : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand());
-                    return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public Strand strand() {
-            return strand;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            GenomicPositionDefault that = (GenomicPositionDefault) o;
-            return Objects.equals(contig, that.contig) &&
-                    Objects.equals(position, that.position) &&
-                    coordinateSystem == that.coordinateSystem &&
-                    strand == that.strand;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(contig, position, coordinateSystem, strand);
-        }
-
-        @Override
-        public String toString() {
-            return coordinateSystem.isOneBased()
-                    ? '(' + contig.name() + ':' + position + ')' + strand
-                    : '[' + contig.name() + ':' + position + ')' + strand;
-        }
     }
 
 
