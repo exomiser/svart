@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class PositionTest {
+public class PositionTest {
 
     @Test
-    void properties() {
+    public void properties() {
         assertThat(Position.of(101).pos(), is(101));
         assertThat(Position.of(101).confidenceInterval(), is(ConfidenceInterval.precise()));
 
@@ -23,26 +23,26 @@ class PositionTest {
     }
 
     @Test
-    void withPos() {
+    public void withPos() {
         Position one = Position.of(1);
         Position two = Position.of(2);
         assertThat(one.withPos(2), equalTo(two));
     }
 
     @Test
-    void isPrecise() {
+    public void isPrecise() {
         assertThat(Position.of(1).isPrecise(), is(true));
         assertThat(Position.of(1, ConfidenceInterval.of(-20, 10)).isPrecise(), is(false));
     }
 
     @Test
-    void errorThrownWhenInvalidInput() {
+    public void errorThrownWhenInvalidInput() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> Position.of(-1));
         assertThat(exception.getMessage(), is("Cannot create position `-1` with negative value"));
     }
 
     @Test
-    void toZeroBasedFromOneBased() {
+    public void toZeroBasedFromOneBased() {
         Position oneBasedStart = Position.of(1);
         Position zeroBasedStart = Position.of(0);
         int delta = CoordinateSystem.ONE_BASED.delta(CoordinateSystem.ZERO_BASED);
@@ -51,7 +51,7 @@ class PositionTest {
     }
 
     @Test
-    void toOneBasedFromZeroBased() {
+    public void toOneBasedFromZeroBased() {
         Position zeroBased = Position.of(0);
         Position oneBased = Position.of(1);
         assertThat(zeroBased.shiftPos(CoordinateSystem.ZERO_BASED.delta(CoordinateSystem.ONE_BASED)), equalTo(oneBased));
@@ -63,12 +63,12 @@ class PositionTest {
             "1, 0, 1",
             "0, 0, 0",
     })
-    void compare(int x , int y, int expected) {
+    public void compare(int x , int y, int expected) {
         assertThat(Position.compare(Position.of(x), Position.of(y)), equalTo(expected));
     }
 
     @Test
-    void comparePositionsWithDifferentCIs() {
+    public void comparePositionsWithDifferentCIs() {
         // precise is higher/better than imprecise
         Position precise = Position.of(1);
         Position imprecise = Position.of(1, ConfidenceInterval.of(-20, 10));
@@ -81,7 +81,7 @@ class PositionTest {
             "2, 2, 0",
             "3, 2, 1",
     })
-    void comparePrecisePositions(int leftPos, int rightPos, int expected) {
+    public void comparePrecisePositions(int leftPos, int rightPos, int expected) {
         Position left = Position.of(leftPos);
         Position right = Position.of(rightPos);
 
@@ -94,7 +94,7 @@ class PositionTest {
             "2, 0, 2",
             "2, 1, 3",
     })
-    void shiftPosOneBased(int pos, int delta, int expect) {
+    public void shiftPosOneBased(int pos, int delta, int expect) {
         assertThat(Position.of(pos).shiftPos(delta), equalTo(Position.of(expect)));
     }
 }

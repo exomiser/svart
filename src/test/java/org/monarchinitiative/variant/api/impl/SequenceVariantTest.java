@@ -10,28 +10,28 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class SequenceVariantTest {
+public class SequenceVariantTest {
 
     private final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 1000, "", "", "chr1");
 
     @Test
-    void throwsIllegalArgumentWithSymbolicAllele() {
+    public void throwsIllegalArgumentWithSymbolicAllele() {
         assertThrows(IllegalArgumentException.class, () -> SequenceVariant.oneBased(chr1, 1, "A", "<INS>"));
     }
 
     @Test
-    void throwsIllegalArgumentWithBreakendAllele() {
+    public void throwsIllegalArgumentWithBreakendAllele() {
         assertThrows(IllegalArgumentException.class, () -> SequenceVariant.oneBased(chr1, 1, "A", "A[1:2]"));
     }
 
     @Test
-    void shouldNotBeSymbolic() {
+    public void shouldNotBeSymbolic() {
         Variant instance = SequenceVariant.oneBased(chr1, 1, "A", "T");
         assertThat(instance.isSymbolic(), equalTo(false));
     }
 
     @Test
-    void snvOneBased() {
+    public void snvOneBased() {
         Variant snv = SequenceVariant.oneBased(chr1, 1, "A", "T");
 
         assertThat(snv.startPosition(), equalTo(snv.endPosition()));
@@ -41,7 +41,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void snvZeroBased() {
+    public void snvZeroBased() {
         // BED / UCSC
         // https://www.genome.ucsc.edu/FAQ/FAQformat.html#format1
         // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
@@ -99,7 +99,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void mnv() {
+    public void mnv() {
         Variant mnv = SequenceVariant.oneBased(chr1, 1, "AT", "TG");
 
         assertThat(mnv.startPosition(), equalTo(Position.of(1)));
@@ -110,7 +110,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void mnvZeroBased() {
+    public void mnvZeroBased() {
         Variant mnv = SequenceVariant.zeroBased(chr1, 0, "AT", "TG");
 
         assertThat(mnv.startPosition(), equalTo(Position.of(0)));
@@ -121,7 +121,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void del() {
+    public void del() {
         Variant del = SequenceVariant.oneBased(chr1, 1, "AG", "A");
 
         assertThat(del.startPosition(), equalTo(Position.of(1)));
@@ -131,7 +131,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void delZeroBased() {
+    public void delZeroBased() {
         Variant del = SequenceVariant.zeroBased(chr1, 0, "AG", "A");
 
         assertThat(del.startPosition(), equalTo(Position.of(0)));
@@ -141,7 +141,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void ins() {
+    public void ins() {
         Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
 
         assertThat(ins.startPosition(), equalTo(Position.of(1)));
@@ -153,7 +153,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void insZeroBased() {
+    public void insZeroBased() {
         Variant ins = SequenceVariant.zeroBased(chr1, 0, "A", "AG");
 
         assertThat(ins.startPosition(), equalTo(Position.of(0)));
@@ -165,13 +165,13 @@ class SequenceVariantTest {
     }
 
     @Test
-    void insWithSameStrand() {
+    public void insWithSameStrand() {
         Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
         assertSame(ins, ins.withStrand(Strand.POSITIVE));
     }
 
     @Test
-    void insWithNegativeStrand() {
+    public void insWithNegativeStrand() {
         Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
         Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
@@ -222,7 +222,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void delLenSvLen() {
+    public void delLenSvLen() {
         Variant del = SequenceVariant.oneBased(chr1, "rs2376870", 2827694, "CGTGGATGCGGGGAC", "C");
        //.    PASS   SVTYPE=DEL;LEN=15;HOMLEN=1;HOMSEQ=G;SVLEN=-14
         assertThat(del.variantType(), equalTo(VariantType.DEL));
@@ -232,7 +232,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void snvToOppositeStrand() {
+    public void snvToOppositeStrand() {
         Variant snv = SequenceVariant.oneBased(chr1, 1, "A", "T");
         assertThat(snv.strand(), equalTo(Strand.POSITIVE));
         Variant oppositeSnv = snv.toOppositeStrand();
@@ -249,7 +249,7 @@ class SequenceVariantTest {
     }
 
     @Test
-    void symbolicVariantContainsSnv() {
+    public void symbolicVariantContainsSnv() {
         Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
         assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
         assertTrue(largeIns.contains(SequenceVariant.zeroBased(chr1, 0, "A", "T")));
