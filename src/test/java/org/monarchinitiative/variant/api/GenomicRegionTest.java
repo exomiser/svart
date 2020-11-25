@@ -1,8 +1,6 @@
 package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.variant.api.impl.Seq;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import java.util.Objects;
 
