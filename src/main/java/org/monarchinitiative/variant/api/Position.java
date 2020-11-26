@@ -6,7 +6,7 @@ package org.monarchinitiative.variant.api;
 public interface Position extends Comparable<Position> {
 
     /**
-     * Create precise position using given coordinate system.
+     * Create precise position.
      *
      * @param pos position coordinate
      * @return precise position
@@ -20,9 +20,9 @@ public interface Position extends Comparable<Position> {
     }
 
     /**
-     * @param pos                The position in the stated coordinate system
+     * @param pos                The numeric position - this should be an unsigned integer.
      * @param confidenceInterval confidence interval around the given position
-     * @return a {@link Position} in the given coordinateSystem with the specified confidenceInterval
+     * @return a {@link Position} with the specified confidenceInterval
      */
     static Position of(int pos, ConfidenceInterval confidenceInterval) {
         return confidenceInterval.isPrecise() ? PrecisePosition.of(pos) : ImprecisePosition.of(pos, confidenceInterval);
@@ -68,14 +68,21 @@ public interface Position extends Comparable<Position> {
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.
      *
-     * @param o
-     * @return a natural ordering of positions IN ZERO-BASED COORDINATES.
+     * @param o other {@link Position} to compare with.
+     * @return a natural ordering of positions.
      */
     @Override
     default int compareTo(Position o) {
         return compare(this, o);
     }
 
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     *
+     * @param x first {@link Position} to compare.
+     * @param y second {@link Position} to compare.
+     * @return a natural ordering of positions with more precise positions being ordered before less precise ones.
+     */
     static int compare(Position x, Position y) {
         int result = Integer.compare(x.pos(), y.pos());
         if (result == 0) {
