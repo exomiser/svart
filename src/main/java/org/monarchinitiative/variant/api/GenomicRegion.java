@@ -2,6 +2,8 @@
 package org.monarchinitiative.variant.api;
 
 
+import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -11,6 +13,14 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return contig where the region is located
      */
     Contig contig();
+
+    default int contigId() {
+        return contig().id();
+    }
+
+    default String contigName() {
+        return contig().name();
+    }
 
     /**
      * @return start coordinate
@@ -78,7 +88,11 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             return false;
         }
         GenomicRegion onStrand = other.withStrand(this.strand());
-        return start() <= onStrand.end() && end() >= onStrand.start();
+//        return start() <= onStrand.end() && end() >= onStrand.start();
+        // TODO: test this thoroughly
+        return isOneBased()
+                ? start() <= onStrand.end() && onStrand.start() <= end()
+                : start() < onStrand.end() && onStrand.start() < end();
     }
 
     /**
@@ -90,6 +104,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             return false;
         }
         GenomicRegion onStrand = other.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
+        // TODO: test this thoroughly
         return onStrand.start() >= start() && onStrand.end() <= end();
     }
 
@@ -98,7 +113,11 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             return false;
         }
         GenomicPosition onStrand = genomicPosition.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
-        return start() >= onStrand.pos() && onStrand.pos() <= end();
+//        return start() >= onStrand.pos() && onStrand.pos() <= end();
+        // TODO: test this thoroughly
+        return coordinateSystem().isOneBased()
+                ? start() <= onStrand.pos() && onStrand.pos() <= end()
+                : start() <= onStrand.pos() && onStrand.pos() < end();
     }
 
     @Override
@@ -109,6 +128,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     static int compare(GenomicRegion x, GenomicRegion y) {
         int result = Contig.compare(x.contig(), y.contig());
         if (result == 0) {
+            // TODO: test this thoroughly with mixed systems. Don't want to penalize 1-based if 0-based never used in a system
             // calculate normalization delta for start positions
             int delta = x.coordinateSystem().delta(y.coordinateSystem());
             result = Position.compare(x.startPosition(), y.startPosition().shiftPos(delta));
@@ -125,4 +145,31 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     int hashCode();
 
     boolean equals(Object o);
+
+    /**
+     * Create genomic position using <em>one-based</em> coordinate system.
+     *
+     * @return one-based position
+     */
+    static GenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
+        return GenomicRegionDefault.oneBased(contig, strand, startPosition, endPosition);
+    }
+
+    /**
+     * Create genomic position using <em>zero-based</em> coordinate system.
+     *
+     * @return zero-based position
+     */
+    static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
+        return GenomicRegionDefault.zeroBased(contig, strand, startPosition, endPosition);
+    }
+
+    /**
+     * Create genomic position on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
+     *
+     * @return a position
+     */
+    static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+        return GenomicRegionDefault.of(contig, strand, coordinateSystem, startPosition, endPosition);
+    }
 }
