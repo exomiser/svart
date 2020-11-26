@@ -18,7 +18,7 @@ public final class ContigDefault implements Contig {
     private final String refSeqAccession;
     private final String ucscName;
 
-    public ContigDefault(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+    private ContigDefault(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
         this.id = id;
         this.name = Objects.requireNonNull(name);
         this.sequenceRole = sequenceRole;
@@ -26,6 +26,10 @@ public final class ContigDefault implements Contig {
         this.genbankAccession = Objects.requireNonNull(genbankAccession);
         this.refSeqAccession = Objects.requireNonNull(refSeqAccession);
         this.ucscName = Objects.requireNonNull(ucscName);
+    }
+
+    public static ContigDefault of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+        return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
     }
 
     @Override

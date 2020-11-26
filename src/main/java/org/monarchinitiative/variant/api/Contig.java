@@ -73,7 +73,7 @@ public interface Contig extends Comparable<Contig> {
     boolean equals(Object o);
 
     static Contig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
-        return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
+        return ContigDefault.of(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
     }
 
     static Contig unknown() {
