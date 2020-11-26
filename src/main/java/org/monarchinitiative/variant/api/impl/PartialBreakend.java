@@ -11,6 +11,15 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
 
     private final String id;
 
+    private PartialBreakend(String id,
+                            Contig contig,
+                            Strand strand,
+                            CoordinateSystem coordinateSystem,
+                            Position position) {
+        super(contig, strand, coordinateSystem, position);
+        this.id = Objects.requireNonNull(id, "Id must not be null");
+    }
+
     public static PartialBreakend oneBased(String id, Contig contig, Strand strand, Position position) {
         return of(id, contig, strand, CoordinateSystem.ONE_BASED, position);
     }
@@ -23,19 +32,6 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
         return new PartialBreakend(id, contig, strand, coordinateSystem, position);
     }
 
-    private PartialBreakend(String id,
-                            Contig contig,
-                            Strand strand,
-                            CoordinateSystem coordinateSystem,
-                            Position position) {
-        super(contig, strand, coordinateSystem, position);
-        this.id = Objects.requireNonNull(id, "Id must not be null");
-    }
-
-    private PartialBreakend(String id, GenomicPosition position) {
-        this(id, position.contig(), position.strand(), position.coordinateSystem(), position.position());
-    }
-
     @Override
     public String id() {
         return id;
@@ -43,18 +39,25 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
 
     @Override
     public PartialBreakend withStrand(Strand strand) {
-        if (this.strand.hasComplement() && this.strand != strand) {
-            return new PartialBreakend(id, super.withStrand(strand));
+        if (this.strand.isConvertibleTo(strand)) {
+            Position pos = this.strand.opposite() == strand
+                    ? coordinateSystem.isOneBased()
+                      ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
+                      : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand())
+                    : position;
+
+            return new PartialBreakend(id, contig, strand, coordinateSystem, pos);
         }
         return this;
     }
 
     @Override
     public PartialBreakend withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (this.coordinateSystem != coordinateSystem) {
-            return new PartialBreakend(id, super.withCoordinateSystem(coordinateSystem));
+        if (this.coordinateSystem == coordinateSystem) {
+            return this;
         }
-        return this;
+        int startDelta = this.coordinateSystem.delta(coordinateSystem);
+        return new PartialBreakend(id, contig, strand, coordinateSystem, position().shiftPos(startDelta));
     }
 
     @Override

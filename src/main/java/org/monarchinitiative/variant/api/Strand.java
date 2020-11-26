@@ -51,6 +51,20 @@ public enum Strand {
         }
     }
 
+    /**
+     * Find out if conversion from current strand to <code>target</code> strand is legal, as specified in
+     * {@link Stranded#withStrand(Strand)}.
+     *
+     * @param target target strand
+     * @return <code>true</code> if conversion from the current strand to <code>target</code> strand is legal
+     */
+    public boolean isConvertibleTo(Strand target) {
+        if (this == target || this == UNKNOWN) {
+            return false;
+        }
+        return hasComplement() || (this == UNSTRANDED && target == UNKNOWN);
+    }
+
     public Strand opposite() {
         switch (this) {
             case POSITIVE:

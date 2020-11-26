@@ -67,10 +67,13 @@ public class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.hasComplement() && this.strand != strand) {
-            Position pos = coordinateSystem.isOneBased()
-                    ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
-                    : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand());
+        if (this.strand.isConvertibleTo(strand)) {
+            Position pos = this.strand.opposite() == strand
+                    ? coordinateSystem.isOneBased()
+                      ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())
+                      : Position.of(contig.length() - pos(), position.confidenceInterval().toOppositeStrand())
+                    : position;
+
             return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
         }
         return this;

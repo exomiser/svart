@@ -98,6 +98,36 @@ public class GenomicPositionTest {
         assertThat(oneNeg.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            // source     target     expected   pos
+            "POSITIVE,   POSITIVE,   POSITIVE,   3",
+            "POSITIVE,   NEGATIVE,   NEGATIVE,   8",
+            "POSITIVE,   UNSTRANDED, UNSTRANDED, 3",
+            "POSITIVE,   UNKNOWN,    UNKNOWN,    3",
+
+            "NEGATIVE,   POSITIVE,   POSITIVE,   8",
+            "NEGATIVE,   NEGATIVE,   NEGATIVE,   3",
+            "NEGATIVE,   UNSTRANDED, UNSTRANDED, 3",
+            "NEGATIVE,   UNKNOWN,    UNKNOWN,    3",
+
+            "UNSTRANDED, POSITIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, NEGATIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, UNSTRANDED, UNSTRANDED, 3",
+            "UNSTRANDED, UNKNOWN,    UNKNOWN,    3",
+
+            "UNKNOWN,    POSITIVE,   UNKNOWN,    3",
+            "UNKNOWN,    NEGATIVE,   UNKNOWN,    3",
+            "UNKNOWN,    UNSTRANDED, UNKNOWN,    3",
+            "UNKNOWN,    UNKNOWN,    UNKNOWN,    3"})
+    public void withStrand_strandConversions(Strand source, Strand target, Strand expected, int expectedPosition) {
+        GenomicPosition gp = GenomicPosition.oneBased(ctg1, source, Position.of(3));
+
+        GenomicPosition pos = gp.withStrand(target);
+        assertThat(pos.strand(), equalTo(expected));
+        assertThat(pos.pos(), equalTo(expectedPosition));
+    }
+
     @Test
     public void withCoordinateSystem() {
         assertThat(zeroBasedSeven.withCoordinateSystem(CoordinateSystem.ZERO_BASED), is(sameInstance(zeroBasedSeven)));
