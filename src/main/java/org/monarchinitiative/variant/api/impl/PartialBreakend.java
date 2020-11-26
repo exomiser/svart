@@ -15,7 +15,7 @@ public class PartialBreakend implements Breakend {
     private final CoordinateSystem coordinateSystem;
     private final Position position;
 
-    public PartialBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+    private PartialBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
         this.contig = Objects.requireNonNull(contig);
         this.coordinateSystem = coordinateSystem;
         this.position = Objects.requireNonNull(position);
@@ -25,6 +25,10 @@ public class PartialBreakend implements Breakend {
 
     public static PartialBreakend oneBased(Contig contig, String id, Strand strand, Position position) {
         return new PartialBreakend(contig, id, strand, CoordinateSystem.ONE_BASED, position);
+    }
+
+    public static PartialBreakend zeroBased(Contig contig, String id, Strand strand, Position position) {
+        return new PartialBreakend(contig, id, strand, CoordinateSystem.ZERO_BASED, position);
     }
 
     @Override
@@ -63,13 +67,11 @@ public class PartialBreakend implements Breakend {
 
     @Override
     public PartialBreakend withStrand(Strand strand) {
-        if (this.strand == strand) {
+        if (this.strand.notComplementOf(strand)) {
             return this;
-        } else {
-            Position pos = Position.of(contig.length() - position.pos() + 1,
-                    position.confidenceInterval().toOppositeStrand());
-            return new PartialBreakend(contig, id, strand, coordinateSystem, pos);
         }
+        Position pos = position.switchEnd(contig, coordinateSystem);
+        return new PartialBreakend(contig, id, strand, coordinateSystem, pos);
     }
 
     @Override
@@ -92,9 +94,9 @@ public class PartialBreakend implements Breakend {
     public String toString() {
         return "PartialBreakend{" +
                 "contig=" + contig.id() +
+                ", id='" + id +
                 ", position=" + position +
-                ", strand=" + strand +
-                ", id='" + id + '\'' +
+                ", strand=" + strand + '\'' +
                 '}';
     }
 }

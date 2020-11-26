@@ -21,7 +21,7 @@ public class SequenceVariant implements Variant {
 
     private final int startZeroBased;
 
-    public SequenceVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt) {
+    private SequenceVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
@@ -36,24 +36,22 @@ public class SequenceVariant implements Variant {
         this.alt = Objects.requireNonNull(alt);
     }
 
-    public static SequenceVariant oneBased(Contig contig, String id, int pos, String ref, String alt) {
+    public static SequenceVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
+        Position end = calculateEnd(start, coordinateSystem, ref, alt);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, start, end, ref, alt);
+    }
+
+    public static SequenceVariant oneBased(Contig contig, String id, int pos, String ref, String alt) {
         Position start = Position.of(pos);
-        CoordinateSystem oneBased = CoordinateSystem.ONE_BASED;
-        Position end = calculateEnd(start, oneBased, ref, alt);
-        return new SequenceVariant(contig, id, Strand.POSITIVE, oneBased, start, end, ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt);
     }
 
     public static SequenceVariant zeroBased(Contig contig, String id, int pos, String ref, String alt) {
-        if (VariantType.isSymbolic(alt)) {
-            throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
-        }
         Position start = Position.of(pos);
-        CoordinateSystem zeroBased = CoordinateSystem.ZERO_BASED;
-        Position end = calculateEnd(start, zeroBased, ref, alt);
-        return new SequenceVariant(contig, id, Strand.POSITIVE, zeroBased, start, end, ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, start, ref, alt);
     }
 
     public static SequenceVariant oneBased(Contig contig, int pos, String ref, String alt) {
@@ -133,15 +131,11 @@ public class SequenceVariant implements Variant {
 
     @Override
     public SequenceVariant withStrand(Strand strand) {
-        if (this.strand == strand) {
+        if (this.strand.notComplementOf(strand)) {
             return this;
-        } else if (coordinateSystem.isOneBased()) {
-            Position start = Position.of(contig.length() - start() + 1, startPosition.confidenceInterval().toOppositeStrand());
-            Position end = Position.of(contig.length() - end() + 1, endPosition.confidenceInterval().toOppositeStrand());
-            return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
         }
-        Position start = Position.of(contig.length() - start(), startPosition.confidenceInterval().toOppositeStrand());
-        Position end = Position.of(contig.length() - end(), endPosition.confidenceInterval().toOppositeStrand());
+        Position start = startPosition.switchEnd(contig, coordinateSystem);
+        Position end = endPosition.switchEnd(contig, coordinateSystem);
         return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 

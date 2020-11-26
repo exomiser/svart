@@ -123,12 +123,10 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     public BreakendVariant withStrand(Strand strand) {
-        if (left.strand() == strand) {
+        if (left.strand().notComplementOf(strand)) {
             return this;
-        } else {
-            return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), ref, Seq
-                    .reverseComplement(alt));
         }
+        return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), ref, Seq.reverseComplement(alt));
     }
 
     @Override
