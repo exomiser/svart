@@ -85,6 +85,9 @@ public enum VariantType {
     }
 
     public static VariantType parseType(String value) {
+        if (value.isEmpty()) {
+            return UNKNOWN;
+        }
         String stripped = trimAngleBrackets(Objects.requireNonNull(value));
         switch (stripped) {
             case "SNP":
@@ -145,12 +148,14 @@ public enum VariantType {
             default:
                 // fall-through
         }
+        if (stripped.startsWith("BND")) {
+            return BND;
+        }
+        if (isBreakend(stripped)) {
+            return BND;
+        }
         // in other cases where we don't recognise the exact type, use the closest type or sub-type
         // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN
-        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
-        if (stripped.startsWith("STR")) {
-            return STR;
-        }
         if (stripped.startsWith("DEL:ME")) {
             return DEL_ME;
         }
@@ -169,8 +174,9 @@ public enum VariantType {
         if (stripped.startsWith("CNV")) {
             return CNV;
         }
-        if (stripped.startsWith("BND")) {
-            return BND;
+        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
+        if (stripped.startsWith("STR")) {
+            return STR;
         }
         if (isSymbolic(value)) {
             return SYMBOLIC;
@@ -215,7 +221,7 @@ public enum VariantType {
     }
 
     public static boolean isMatedBreakend(String allele) {
-        return allele.length() > 1 && allele.contains("[") || allele.length() > 1 && allele.contains("]");
+        return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
     private static String trimAngleBrackets(String value) {
