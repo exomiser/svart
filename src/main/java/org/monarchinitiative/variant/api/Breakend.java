@@ -28,4 +28,11 @@ public interface Breakend extends GenomicPosition {
     default Breakend toOppositeStrand() {
         return withStrand(strand().opposite());
     }
+
+    /**
+     * @return <code>true</code> if the breakend is unresolved
+     */
+    default boolean isUnresolved() {
+        return this.equals(unresolved());
+    }
 }

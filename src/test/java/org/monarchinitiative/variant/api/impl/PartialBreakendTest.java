@@ -30,6 +30,7 @@ public class PartialBreakendTest {
         assertThat(oneBasedThree.max(), equalTo(4));
         assertThat(oneBasedThree.strand(), equalTo(Strand.POSITIVE));
         assertThat(oneBasedThree.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(oneBasedThree.isUnresolved(), equalTo(false));
         assertThat(oneBasedThree.toString(), equalTo("BND(a)[1:3(±2,1)]+"));
     }
 
@@ -73,5 +74,16 @@ public class PartialBreakendTest {
         assertThat(pos.strand(), equalTo(Strand.POSITIVE));
         assertThat(pos.position(), equalTo(Position.of(3)));
         assertThat(pos.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+    }
+
+    @Test
+    public void unresolved() {
+        Breakend unresolved = Breakend.unresolved();
+        assertThat(unresolved.isUnresolved(), equalTo(true));
+        assertThat(unresolved.contig(), equalTo(Contig.unknown()));
+        assertThat(unresolved.strand(), equalTo(Strand.UNKNOWN));
+        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(unresolved.id(), equalTo(""));
+        assertThat(unresolved.toString(), equalTo("BND(UNRESOLVED)"));
     }
 }

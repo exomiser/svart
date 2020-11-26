@@ -36,6 +36,11 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
+    public Strand strand() {
+        return STRAND;
+    }
+
+    @Override
     public CoordinateSystem coordinateSystem() {
         return COORDINATE_SYSTEM;
     }
@@ -62,12 +67,6 @@ final class UnresolvedBreakend implements Breakend {
 
     @Override
     public String toString() {
-        return "UnresolvedBreakend{" +
-                "id='" + ID + '\'' +
-                ", strand=" + STRAND +
-                ", coordinateSystem=" + COORDINATE_SYSTEM +
-                ", position=" + POSITION +
-                ", contig=" + CONTIG +
-                '}';
+        return "BND(UNRESOLVED)";
     }
 }
