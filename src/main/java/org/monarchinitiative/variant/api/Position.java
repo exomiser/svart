@@ -129,9 +129,6 @@ public class Position implements Comparable<Position> {
 
     @Override
     public String toString() {
-        return "Position{" +
-                "pos=" + pos +
-                ", confidenceInterval=" + confidenceInterval +
-                '}';
+        return pos + " " + confidenceInterval.toString();
     }
 }

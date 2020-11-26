@@ -102,4 +102,10 @@ public class PositionTest {
     public void toPrecise() {
         assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toPrecise(), equalTo(Position.of(1)));
     }
+
+    @Test
+    public void string() {
+        System.out.println(Position.of(1));
+        System.out.println(Position.of(1, ConfidenceInterval.of(-1, 1)));
+    }
 }

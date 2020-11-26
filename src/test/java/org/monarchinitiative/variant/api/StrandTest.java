@@ -55,4 +55,28 @@ public class StrandTest {
     public void parseStrand(String value, Strand expected) {
         assertThat(Strand.parseStrand(value), equalTo(expected));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, true",
+            "NEGATIVE, true",
+            "UNKNOWN, false",
+            "UNSTRANDED, false",
+    })
+    public void hasComplement(Strand strand, boolean expected) {
+        assertThat(strand.hasComplement(), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, +",
+            "NEGATIVE, -",
+            "UNKNOWN, ?",
+            "UNSTRANDED, .",
+    })
+    public void toString(Strand strand, String expected) {
+        assertThat(strand.toString(), equalTo(expected));
+    }
+
+
 }

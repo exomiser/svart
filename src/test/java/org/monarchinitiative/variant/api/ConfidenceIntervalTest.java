@@ -102,4 +102,13 @@ public class ConfidenceIntervalTest {
         Collections.sort(intervals);
         assertThat(intervals, equalTo(List.of(zero, one, ten)));
     }
+
+    @Test
+    public void toStringTest() {
+        ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
+        assertThat(instance.toString(), equalTo("(-10, +20)"));
+
+        ConfidenceInterval precise = ConfidenceInterval.precise();
+        assertThat(precise.toString(), equalTo(""));
+    }
 }

@@ -102,9 +102,6 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
 
     @Override
     public String toString() {
-        return "ConfidenceInterval{" +
-                "lowerBound=" + lowerBound +
-                ", upperBound=" + upperBound +
-                '}';
+        return isPrecise() ? "" : "(-" + -lowerBound + ", +" + upperBound + ')';
     }
 }

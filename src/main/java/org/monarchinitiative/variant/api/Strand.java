@@ -7,7 +7,14 @@ package org.monarchinitiative.variant.api;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public enum Strand {
-    UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE;
+
+    UNSTRANDED("."), UNKNOWN("?"), POSITIVE("+"), NEGATIVE("-");
+
+    private final String symbol;
+
+    Strand(String symbol) {
+        this.symbol = symbol;
+    }
 
     public static Strand parseStrand(String value) {
         switch (value) {
@@ -42,7 +49,22 @@ public enum Strand {
         }
     }
 
+    public boolean hasComplement() {
+        switch (this) {
+            case NEGATIVE:
+            case POSITIVE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     static int compare(Strand x, Strand y) {
         return x.compareTo(y);
+    }
+
+    @Override
+    public String toString() {
+        return symbol;
     }
 }
