@@ -69,6 +69,25 @@ public class StrandTest {
 
     @ParameterizedTest
     @CsvSource({
+            "POSITIVE, NEGATIVE, true",
+            "NEGATIVE, POSITIVE, true",
+            "POSITIVE, POSITIVE, false",
+            "NEGATIVE, NEGATIVE, false",
+            "UNKNOWN, UNKNOWN, false",
+            "UNSTRANDED, UNSTRANDED, false",
+            "UNKNOWN, POSITIVE, false",
+            "UNKNOWN, NEGATIVE, false",
+            "UNSTRANDED, POSITIVE, false",
+            "UNSTRANDED, NEGATIVE, false",
+            "UNKNOWN, UNSTRANDED, false",
+            "UNSTRANDED, UNKNOWN, false",
+    })
+    public void isComplementOf(Strand strand, Strand other,boolean expected) {
+        assertThat(strand.isComplementOf(other), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "POSITIVE, +",
             "NEGATIVE, -",
             "UNKNOWN, ?",
