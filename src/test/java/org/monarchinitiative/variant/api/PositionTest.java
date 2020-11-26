@@ -142,4 +142,16 @@ public class PositionTest {
         assertThat(Position.of(1).toString(), equalTo("1"));
         assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toString(), equalTo("1 (-1, +1)"));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "1, ONE_BASED, 100",
+            "0, ZERO_BASED, 100",
+            "100, ZERO_BASED, 0",
+            "100, ONE_BASED, 1",
+    })
+    void toOppositeEnd(int pos, CoordinateSystem coordinateSystem, int expected) {
+        Contig contig = Contig.of(1, "1", SequenceRole.UNKNOWN, 100, "", "", "");
+        assertThat(Position.of(pos).switchEnd(contig, coordinateSystem), equalTo(Position.of(expected)));
+    }
 }

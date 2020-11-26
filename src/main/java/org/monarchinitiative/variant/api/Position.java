@@ -6,29 +6,6 @@ package org.monarchinitiative.variant.api;
 public interface Position extends Comparable<Position> {
 
     /**
-     * Create precise position.
-     *
-     * @param pos position coordinate
-     * @return precise position
-     */
-    static Position of(int pos) {
-        return PrecisePosition.of(pos);
-    }
-
-    static Position of(int pos, int ciUpstream, int ciDownstream) {
-        return of(pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
-    }
-
-    /**
-     * @param pos                The numeric position - this should be an unsigned integer.
-     * @param confidenceInterval confidence interval around the given position
-     * @return a {@link Position} with the specified confidenceInterval
-     */
-    static Position of(int pos, ConfidenceInterval confidenceInterval) {
-        return confidenceInterval.isPrecise() ? PrecisePosition.of(pos) : ImprecisePosition.of(pos, confidenceInterval);
-    }
-
-    /**
      * Creates a new {@link Position} using the pos argument with the same {@link ConfidenceInterval} around the point.
      *
      * @param pos numeric position for the new instance
@@ -66,6 +43,16 @@ public interface Position extends Comparable<Position> {
     Position toPrecise();
 
     /**
+     * Shifts the current {@link Position} to the opposite strand of the given {@link Contig} using the
+     * {@link CoordinateSystem} provided.
+     *
+     * @param contig  {@link Contig} on which the position is located
+     * @param coordinateSystem {@link CoordinateSystem} the Position is being used in
+     * @return a new position on the opposite strand of the {@link Contig} on which the current {@link Position} is located
+     */
+    Position switchEnd(Contig contig, CoordinateSystem coordinateSystem);
+
+    /**
      * Note: this class has a natural ordering that is inconsistent with equals.
      *
      * @param o other {@link Position} to compare with.
@@ -89,5 +76,28 @@ public interface Position extends Comparable<Position> {
             result = ConfidenceInterval.compare(x.confidenceInterval(), y.confidenceInterval());
         }
         return result;
+    }
+
+    /**
+     * Create precise position.
+     *
+     * @param pos position coordinate
+     * @return precise position
+     */
+    static Position of(int pos) {
+        return PrecisePosition.of(pos);
+    }
+
+    static Position of(int pos, int ciUpstream, int ciDownstream) {
+        return of(pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
+    }
+
+    /**
+     * @param pos                The numeric position - this should be an unsigned integer.
+     * @param confidenceInterval confidence interval around the given position
+     * @return a {@link Position} with the specified confidenceInterval
+     */
+    static Position of(int pos, ConfidenceInterval confidenceInterval) {
+        return confidenceInterval.isPrecise() ? PrecisePosition.of(pos) : ImprecisePosition.of(pos, confidenceInterval);
     }
 }

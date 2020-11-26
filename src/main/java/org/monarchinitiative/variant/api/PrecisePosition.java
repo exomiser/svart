@@ -61,6 +61,14 @@ class PrecisePosition implements Position {
     }
 
     @Override
+    public Position switchEnd(Contig contig, CoordinateSystem coordinateSystem) {
+        if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+            return new PrecisePosition(contig.length() - pos + 1);
+        }
+        return new PrecisePosition(contig.length() - pos);
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(pos);
     }
