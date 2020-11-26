@@ -30,9 +30,37 @@ public class PositionTest {
     }
 
     @Test
+    public void withPosImprecise() {
+        Position aboutOne = Position.of(1, -1, 1);
+        Position aboutTwo = Position.of(2, -1, 1);
+        assertThat(aboutOne.withPos(2), equalTo(aboutTwo));
+    }
+
+    @Test
+    void confidenceInterval() {
+        assertThat(Position.of(100).confidenceInterval(), equalTo(ConfidenceInterval.precise()));
+        ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
+        assertThat(Position.of(100, ci).confidenceInterval(), equalTo(ci));
+    }
+
+    @Test
+    void minPos() {
+        assertThat(Position.of(100).minPos(), equalTo(100));
+        ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
+        assertThat(Position.of(100, ci).minPos(), equalTo(80));
+    }
+
+    @Test
+    void maxPos() {
+        assertThat(Position.of(100).maxPos(), equalTo(100));
+        ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
+        assertThat(Position.of(100, ci).maxPos(), equalTo(110));
+    }
+
+    @Test
     public void isPrecise() {
-        assertThat(Position.of(1).isPrecise(), is(true));
-        assertThat(Position.of(1, ConfidenceInterval.of(-20, 10)).isPrecise(), is(false));
+        assertThat(Position.of(100).isPrecise(), is(true));
+        assertThat(Position.of(100, ConfidenceInterval.of(-20, 10)).isPrecise(), is(false));
     }
 
     @Test
@@ -70,8 +98,8 @@ public class PositionTest {
     @Test
     public void comparePositionsWithDifferentCIs() {
         // precise is higher/better than imprecise
-        Position precise = Position.of(1);
-        Position imprecise = Position.of(1, ConfidenceInterval.of(-20, 10));
+        Position precise = Position.of(100);
+        Position imprecise = Position.of(100, ConfidenceInterval.of(-20, 10));
         assertThat(precise.compareTo(imprecise), is(-1));
     }
 
@@ -94,18 +122,24 @@ public class PositionTest {
             "2, 0, 2",
             "2, 1, 3",
     })
-    public void shiftPosOneBased(int pos, int delta, int expect) {
+    public void shiftPosPrecise(int pos, int delta, int expect) {
         assertThat(Position.of(pos).shiftPos(delta), equalTo(Position.of(expect)));
     }
 
     @Test
+    public void shiftPosImprecise() {
+        assertThat(Position.of(10, ConfidenceInterval.of(-5, 7)).shiftPos(5), equalTo(Position.of(15, ConfidenceInterval.of(-5, 7))));
+    }
+
+    @Test
     public void toPrecise() {
+        assertThat(Position.of(1).toPrecise(), equalTo(Position.of(1)));
         assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toPrecise(), equalTo(Position.of(1)));
     }
 
     @Test
     public void string() {
-        System.out.println(Position.of(1));
-        System.out.println(Position.of(1, ConfidenceInterval.of(-1, 1)));
+        assertThat(Position.of(1).toString(), equalTo("1"));
+        assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toString(), equalTo("1 (-1, +1)"));
     }
 }
