@@ -25,9 +25,9 @@ class ImprecisePosition implements Position {
     @Override
     public Position switchEnd(Contig contig, CoordinateSystem coordinateSystem) {
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
-            return Position.of(contig.length() - pos + 1, confidenceInterval().toOppositeStrand());
+            return Position.of(contig.length() - pos + 1, confidenceInterval().invert());
         }
-        return Position.of(contig.length() - pos, confidenceInterval().toOppositeStrand());
+        return Position.of(contig.length() - pos, confidenceInterval().invert());
     }
 
     @Override

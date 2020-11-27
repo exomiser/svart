@@ -80,8 +80,8 @@ public class ConfidenceIntervalTest {
     @Test
     public void toOppositeStrand() {
         ConfidenceInterval instance = ConfidenceInterval.of(-10, 20);
-        assertThat(instance.toOppositeStrand(), equalTo(ConfidenceInterval.of(-20, 10)));
-        assertThat(ConfidenceInterval.precise().toOppositeStrand(), equalTo(ConfidenceInterval.precise()));
+        assertThat(instance.invert(), equalTo(ConfidenceInterval.of(-20, 10)));
+        assertThat(ConfidenceInterval.precise().invert(), equalTo(ConfidenceInterval.precise()));
     }
 
     @Test
