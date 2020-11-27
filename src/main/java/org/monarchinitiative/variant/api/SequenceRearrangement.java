@@ -1,5 +1,8 @@
 package org.monarchinitiative.variant.api;
 
+import org.monarchinitiative.variant.api.impl.SequenceRearrangementDefault;
+
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,5 +60,13 @@ public interface SequenceRearrangement extends Stranded<SequenceRearrangement> {
     default Position rightmostPosition() {
         int n = adjacencies().size();
         return adjacencies().get(n - 1).right().position();
+    }
+
+    static SequenceRearrangement of(Adjacency... adjacencies) {
+        return SequenceRearrangementDefault.of(Arrays.asList(adjacencies));
+    }
+
+    static SequenceRearrangement of(List<Adjacency> adjacencies) {
+        return SequenceRearrangementDefault.of(adjacencies);
     }
 }
