@@ -2,21 +2,9 @@ package org.monarchinitiative.variant.api;
 
 /**
  * The <code>Stranded</code> interface is implemented by classes that are aware of nucleic acid {@link Strand}.
- * <p>
- * When performing conversion to desired {@link Strand} using {@link #withStrand(Strand)}, the {@link Strand}
- * conversion is performed by the following rules:
- *
- * <table>
- *     <tr><th>From</th><th>To</th><th>Supported</th></tr>
- *     <tr><th rowspan="3">POSITIVE}</th><td>NEGATIVE}</td><td>Yes</td></tr>
- *     <tr><td>UNSTRANDED}</td><td>Yes</td></tr>
- *     <tr><td>UNKNOWN}</td><td>Yes</td></tr>
- *     <tr><th rowspan="3">NEGATIVE}</th><td>POSITIVE}</td><td>Yes</td></tr>
- *     <tr><td>UNSTRANDED}</td><td>Yes</td></tr>
- *     <tr><td>UNKNOWN}</td><td>Yes</td></tr>
- * </table>
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface Stranded<T> {
 
