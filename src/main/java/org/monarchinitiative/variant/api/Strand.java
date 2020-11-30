@@ -76,7 +76,7 @@ public enum Strand {
      * {@link #conversionIsLegal(Strand)}  returns <code>true</code> while this method returns <code>false</code>.
      *
      * @param target strand to convert to
-     * @return <code>true</code> if coordinate change is required and the conversion is legal, as specified in {@link #conversionIsLegal(Strand)}
+     * @return <code>true</code> if coordinate change is required and the conversion is legal, as specified in {@link Stranded#withStrand(Strand)}
      */
     public boolean needsConversion(Strand target) {
         return this != target && conversionIsLegal(target);
