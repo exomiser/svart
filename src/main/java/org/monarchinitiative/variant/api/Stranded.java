@@ -17,22 +17,22 @@ public interface Stranded<T> {
      *
      * <table>
      *     <tr><th>Current</th><th>Target</th><th>Legal</th></tr>
-     *     <tr><td rowspan="4" valign="top">POSITIVE</td><td>POSITIVE</td><td>No</td></tr>
+     *     <tr><td rowspan="4" valign="top">POSITIVE</td><td>POSITIVE</td><td>Yes</td></tr>
      *     <tr><td>NEGATIVE</td><td>Yes</td></tr>
      *     <tr><td>UNSTRANDED</td><td>Yes</td></tr>
      *     <tr><td>UNKNOWN</td><td>Yes</td></tr>
      *     <tr style="border-top: dashed 1px"><td rowspan="4" valign="top">NEGATIVE</td><td>POSITIVE</td><td>Yes</td></tr>
-     *     <tr><td>NEGATIVE</td><td>No</td></tr>
+     *     <tr><td>NEGATIVE</td><td>Yes</td></tr>
      *     <tr><td>UNSTRANDED</td><td>Yes</td></tr>
      *     <tr><td>UNKNOWN</td><td>Yes</td></tr>
      *     <tr style="border-top: dashed 1px"><td rowspan="4" valign="top">UNSTRANDED</td><td>POSITIVE</td><td>No</td></tr>
      *     <tr><td>NEGATIVE</td><td>No</td></tr>
-     *     <tr><td>UNSTRANDED</td><td>No</td></tr>
+     *     <tr><td>UNSTRANDED</td><td>Yes</td></tr>
      *     <tr><td>UNKNOWN</td><td>Yes</td></tr>
      *     <tr style="border-top: dashed 1px"><td rowspan="4" valign="top">UNKNOWN</td><td>POSITIVE</td><td>No</td></tr>
      *     <tr><td>NEGATIVE</td><td>No</td></tr>
      *     <tr><td>UNSTRANDED</td><td>No</td></tr>
-     *     <tr><td>UNKNOWN</td><td>No</td></tr>
+     *     <tr><td>UNKNOWN</td><td>Yes</td></tr>
      * </table>
      *
      * @param strand target strand

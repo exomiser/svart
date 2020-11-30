@@ -69,6 +69,31 @@ public class StrandTest {
 
     @ParameterizedTest
     @CsvSource({
+            "POSITIVE,   POSITIVE,   true",
+            "POSITIVE,   NEGATIVE,   true",
+            "POSITIVE,   UNSTRANDED, true",
+            "POSITIVE,   UNKNOWN,    true",
+
+            "NEGATIVE,   POSITIVE,   true",
+            "NEGATIVE,   NEGATIVE,   true",
+            "NEGATIVE,   UNSTRANDED, true",
+            "NEGATIVE,   UNKNOWN,    true",
+
+            "UNSTRANDED, POSITIVE,   false",
+            "UNSTRANDED, NEGATIVE,   false",
+            "UNSTRANDED, UNSTRANDED, true",
+            "UNSTRANDED, UNKNOWN,    true",
+
+            "UNKNOWN,    POSITIVE,   false",
+            "UNKNOWN,    NEGATIVE,   false",
+            "UNKNOWN,    UNSTRANDED, false",
+            "UNKNOWN,    UNKNOWN,    true"})
+    public void conversionIsLegal(Strand source, Strand target, boolean expected) {
+        assertThat(source.conversionIsLegal(target), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "POSITIVE,   POSITIVE,   false",
             "POSITIVE,   NEGATIVE,   true",
             "POSITIVE,   UNSTRANDED, true",
@@ -88,8 +113,8 @@ public class StrandTest {
             "UNKNOWN,    NEGATIVE,   false",
             "UNKNOWN,    UNSTRANDED, false",
             "UNKNOWN,    UNKNOWN,    false"})
-    public void isConvertibleTo(Strand source, Strand target, boolean expected) {
-        assertThat(source.isConvertibleTo(target), equalTo(expected));
+    public void needsConversion(Strand source, Strand target, boolean expected) {
+        assertThat(source.needsConversion(target), equalTo(expected));
     }
 
 }

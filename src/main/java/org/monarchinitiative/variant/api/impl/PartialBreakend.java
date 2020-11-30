@@ -39,7 +39,7 @@ public final class PartialBreakend extends GenomicPositionDefault implements Bre
 
     @Override
     public PartialBreakend withStrand(Strand strand) {
-        if (this.strand.isConvertibleTo(strand)) {
+        if (this.strand.needsConversion(strand)) {
             Position pos = this.strand.opposite() == strand
                     ? coordinateSystem.isOneBased()
                       ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())

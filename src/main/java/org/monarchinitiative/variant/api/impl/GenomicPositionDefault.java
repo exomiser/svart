@@ -67,7 +67,7 @@ public class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.isConvertibleTo(strand)) {
+        if (this.strand.needsConversion(strand)) {
             Position pos = this.strand.opposite() == strand
                     ? coordinateSystem.isOneBased()
                       ? Position.of(contig.length() - pos() + 1, position.confidenceInterval().toOppositeStrand())

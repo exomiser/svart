@@ -58,11 +58,28 @@ public enum Strand {
      * @param target target strand
      * @return <code>true</code> if conversion from the current strand to <code>target</code> strand is legal
      */
-    public boolean isConvertibleTo(Strand target) {
-        if (this == target || this == UNKNOWN) {
-            return false;
+    public boolean conversionIsLegal(Strand target) {
+        if (this == UNSTRANDED) {
+            return !target.hasComplement();
         }
-        return hasComplement() || (this == UNSTRANDED && target == UNKNOWN);
+        if (this == UNKNOWN) {
+            return target != UNSTRANDED && !target.hasComplement();
+        }
+        return true;
+    }
+
+    /**
+     * Find out if coordinate change is required in order to convert strand from <code>this</code> to
+     * <code>target</code> strand.
+     * <p>
+     * The difference between {@link #conversionIsLegal(Strand)} and this method is that when <code>this==target</code>
+     * {@link #conversionIsLegal(Strand)}  returns <code>true</code> while this method returns <code>false</code>.
+     *
+     * @param target strand to convert to
+     * @return <code>true</code> if coordinate change is required and the conversion is legal, as specified in {@link #conversionIsLegal(Strand)}
+     */
+    public boolean needsConversion(Strand target) {
+        return this != target && conversionIsLegal(target);
     }
 
     public Strand opposite() {
