@@ -1,12 +1,12 @@
 package org.monarchinitiative.variant.api.impl;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.variant.api.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
-
+import static org.hamcrest.Matchers.*;
 import static org.monarchinitiative.variant.api.impl.TestVariants.*;
 
 /**
@@ -21,7 +21,7 @@ public class BreakendVariantTest {
 
     @Test
     public void properties() {
-        BreakendVariant bnd_U = TestVariants.bnd_U();
+        BreakendVariant bnd_U = bnd_U();
         assertThat(bnd_U.isSymbolic(), equalTo(true));
         assertThat(bnd_U.variantType(), equalTo(VariantType.BND));
         assertThat(bnd_U.id(), equalTo("bnd_U"));
@@ -32,7 +32,7 @@ public class BreakendVariantTest {
     @Test
     public void tra2_bnd_U() {
         // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        BreakendVariant bnd_U = TestVariants.bnd_U();
+        BreakendVariant bnd_U = bnd_U();
         assertThat(bnd_U.eventId(), equalTo("tra2"));
         assertThat(bnd_U.ref(), equalTo("C"));
         assertThat(bnd_U.alt(), equalTo(""));
@@ -58,7 +58,7 @@ public class BreakendVariantTest {
     @Test
     public void tra1_bnd_W() {
         // 2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1
-        BreakendVariant bnd_W = TestVariants.bnd_W();
+        BreakendVariant bnd_W = bnd_W();
         assertThat(bnd_W.eventId(), equalTo("tra1"));
         assertThat(bnd_W.ref(), equalTo("G"));
         assertThat(bnd_W.alt(), equalTo(""));
@@ -84,7 +84,7 @@ public class BreakendVariantTest {
     @Test
     public void tra2_bnd_V() {
         // 2	321682	bnd_V	T	]13:123456]T	6	PASS	SVTYPE=BND;MATEID=bnd_U;EVENT=tra2
-        BreakendVariant bnd_V = TestVariants.bnd_V();
+        BreakendVariant bnd_V = bnd_V();
         assertThat(bnd_V.eventId(), equalTo("tra2"));
         assertThat(bnd_V.ref(), equalTo("T"));
         assertThat(bnd_V.alt(), equalTo(""));
@@ -110,7 +110,7 @@ public class BreakendVariantTest {
     @Test
     public void tra3_bnd_X() {
         // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
-        BreakendVariant bnd_X = TestVariants.bnd_X();
+        BreakendVariant bnd_X = bnd_X();
         assertThat(bnd_X.eventId(), equalTo("tra3"));
         assertThat(bnd_X.ref(), equalTo("A"));
         assertThat(bnd_X.alt(), equalTo(""));
@@ -137,14 +137,14 @@ public class BreakendVariantTest {
     public void withStrand() {
         // test conversion of the NEGATIVE->POSITIVE case as this is the most complicated case
         // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
-        BreakendVariant bnd_X = TestVariants.bnd_X();
+        BreakendVariant bnd_X = bnd_X();
         assertThat(bnd_X.withStrand(Strand.NEGATIVE), sameInstance(bnd_X));
 
         BreakendVariant breakendVariant = bnd_X.withStrand(Strand.POSITIVE);
         assertThat(breakendVariant.eventId(), equalTo("tra3"));
-        assertThat(breakendVariant.ref(), equalTo("A")); // stays the same!!
+        assertThat(breakendVariant.ref(), equalTo(""));
         assertThat(breakendVariant.alt(), equalTo(""));
-        assertThat(breakendVariant.refLength(), equalTo(1));
+        assertThat(breakendVariant.refLength(), equalTo(0));
         assertThat(breakendVariant.length(), equalTo(0));
         assertThat(breakendVariant.changeLength(), equalTo(0));
 
@@ -163,9 +163,48 @@ public class BreakendVariantTest {
         assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "NEGATIVE,   NEGATIVE,   POSITIVE,   115046422, 198983", // no-op
+            "POSITIVE,   NEGATIVE,   POSITIVE,    83058459, 123457",
+            "UNSTRANDED, UNSTRANDED, UNSTRANDED, 115046422, 198983",
+            "UNKNOWN,    UNKNOWN,    UNKNOWN,    115046422, 198983"})
+    public void withStrand_allStrands(Strand target,
+                                      Strand expectedLeftStrand, Strand expectedRightStrand,
+                                      int expectedLeftPos, int expectedRightPos) {
+        // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
+        BreakendVariant variant = bnd_X();
+
+        BreakendVariant stranded = variant.withStrand(target);
+        assertThat(stranded.left().position(), equalTo(Position.of(expectedLeftPos)));
+        assertThat(stranded.left().strand(), equalTo(expectedLeftStrand));
+        assertThat(stranded.right().position(), equalTo(Position.of(expectedRightPos)));
+        assertThat(stranded.right().strand(), equalTo(expectedRightStrand));
+    }
+
+    @Test
+    public void withStrand_checkRefAndAlt() {
+        // 13  123456  bnd_U   C   CAGTNNNNNCA[2:321682[    6   PASS    SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        BreakendVariant variant = bnd_U_withInserted();
+
+        BreakendVariant positive = variant.withStrand(Strand.POSITIVE);
+        assertThat(positive, sameInstance(variant));
+        assertThat(positive.ref(), equalTo("C"));
+        assertThat(positive.alt(), equalTo("AGTNNNNNCA"));
+
+        BreakendVariant negative = positive.withStrand(Strand.NEGATIVE);
+        assertThat(negative.ref(), equalTo(""));
+        assertThat(negative.alt(), equalTo("TGNNNNNACT"));
+
+        BreakendVariant positiveAgain = negative.withStrand(Strand.POSITIVE);
+        assertThat(positiveAgain, not(sameInstance(positive)));
+        assertThat(positiveAgain.ref(), equalTo("C"));
+        assertThat(positiveAgain.alt(), equalTo("AGTNNNNNCA"));
+    }
+
     @Test
     public void withCoordinateSystem() {
-        BreakendVariant bnd_X = TestVariants.bnd_X();
+        BreakendVariant bnd_X = bnd_X();
         assertThat(bnd_X.withCoordinateSystem(CoordinateSystem.ONE_BASED), sameInstance(bnd_X));
 
         BreakendVariant breakendVariant = bnd_X.withCoordinateSystem(CoordinateSystem.ZERO_BASED);
@@ -184,7 +223,7 @@ public class BreakendVariantTest {
         // See section 5.4.9 of VCF v4.2 specs for more info.
 
         // 2  321681  bnd_W   G   G.    6   PASS    SVTYPE=BND
-        BreakendVariant instance = TestVariants.bnd_W_rightUnresolved();
+        BreakendVariant instance = bnd_W_rightUnresolved();
 
         Breakend l = instance.left();
         assertThat(l.contig(), equalTo(chr2));
@@ -228,12 +267,10 @@ public class BreakendVariantTest {
         assertThat(variant.alt(), equalTo("AGTNNNNNCA"));
 
         assertThat(variant.withStrand(Strand.POSITIVE), sameInstance(variant));
-//        assertThat(variant.withStrand(Strand.UNKNOWN), sameInstance(variant));
-//        assertThat(variant.withStrand(Strand.UNSTRANDED), sameInstance(variant));
 
         variant = variant.withStrand(Strand.NEGATIVE);
         assertThat(variant.eventId(), equalTo(""));
-        assertThat(variant.ref(), equalTo("C")); // stays the same!!
+        assertThat(variant.ref(), equalTo(""));
         assertThat(variant.alt(), equalTo("TGNNNNNACT")); // reverse complement
 
         Breakend l = variant.left();
@@ -266,12 +303,10 @@ public class BreakendVariantTest {
         assertThat(variant.alt(), equalTo("TGNNNNNACT"));
 
         assertThat(variant.withStrand(Strand.NEGATIVE), sameInstance(variant));
-//        assertThat(variant.withStrand(Strand.UNKNOWN), sameInstance(variant));
-//        assertThat(variant.withStrand(Strand.UNSTRANDED), sameInstance(variant));
 
         variant = variant.withStrand(Strand.POSITIVE);
         assertThat(variant.eventId(), equalTo(""));
-        assertThat(variant.ref(), equalTo("T")); // stays the same!!
+        assertThat(variant.ref(), equalTo(""));
         assertThat(variant.alt(), equalTo("AGTNNNNNCA")); // reverse complement
 
         Breakend l = variant.left();

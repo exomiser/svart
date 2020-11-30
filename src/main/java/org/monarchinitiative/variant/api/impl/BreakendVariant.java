@@ -6,8 +6,6 @@ import java.util.Objects;
 
 /**
  * Implementation of a structural variant that involves two different contigs.
- * <p>
- * Note: {@link BreakendVariant#ref} field is not altered during strand conversion.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
@@ -20,7 +18,17 @@ public final class BreakendVariant implements Variant, Breakended {
 
     private final Breakend right;
 
-    private final String ref;
+    /**
+     * Ref allele from the VCF record
+     */
+    private final String leadingRef;
+
+    /**
+     * When variant is converted to the opposite strand, then the reverse complemented ref allele is stored here.
+     * We need to store the allele in order to reconstruct the original ref allele if variant is converted again to the
+     * original strand.
+     */
+    private final String trailingRef;
 
     /**
      * String representing the inserted sequence without the <em>ref</em> allele, as described in Section 5.4.1 of the
@@ -28,26 +36,25 @@ public final class BreakendVariant implements Variant, Breakended {
      */
     private final String alt;
 
-    // Accept the standard VCF input fields, including mateId and eventId
-
-    // 1       28681758        gnomAD-SV_v2.1_BND_1_1117       N       <BND>   965     UNRESOLVED      END=28681759;SVTYPE=BND;SVLEN=1725;CHR2=1;POS2=28683483;END2=28683484;ALGORITHMS=delly,manta;EVIDENCE=PE,SR;UNRESOLVED_TYPE=SINGLE_ENDER_-+;
-    //
-    // 2       4150333 28382_1 N       N]13:33423926]  284.1   PASS    SVTYPE=BND;POS=4150333;STRANDS=++:31;CIPOS=-8,10;CIEND=-2,1;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_2;EVENT=28382;
-    // 13      33423926        28382_2 N       N]2:4150333]    284.1   PASS    SVTYPE=BND;POS=33423926;STRANDS=++:31;CIPOS=-2,1;CIEND=-8,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_1;EVENT=28382;
-    // 2       135592459       28388_1 N       N[13:36400702[  2049.07 LOW     SVTYPE=BND;POS=135592459;STRANDS=+-:125;CIPOS=-2,10;CIEND=-9,9;CIPOS95=0,0;CIEND95=0,0;MATEID=28388_2;EVENT=28388;
-    // 13      36400702        28388_2 N       ]2:135592459]N  2049.07 LOW     SVTYPE=BND;POS=36400702;STRANDS=+-:125;CIPOS=-9,9;CIEND=-2,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28388_1;EVENT=28388;
-    // 1       10567   2838_1  N       [15:102520406[N 47911.3 LOW     SVTYPE=BND;POS=10567;STRANDS=--:97;IMPRECISE;CIPOS=-205,24;CIEND=-104,42;CIPOS95=-20,20;CIEND95=-6,6;MATEID=2838_2;EVENT=2838;
-    //15      102520406       2838_2  N       [1:10567[N      47911.3 LOW     SVTYPE=BND;POS=102520406;STRANDS=--:97;IMPRECISE;CIPOS=-104,42;CIEND=-205,24;CIPOS95=-6,6;CIEND95=-20,20;MATEID=2838_1;EVENT=2838;
-
     public BreakendVariant(String eventId,
                            Breakend left,
                            Breakend right,
                            String ref,
                            String alt) {
+        this(eventId, left, right, ref, "", alt);
+    }
+
+    private BreakendVariant(String eventId,
+                            Breakend left,
+                            Breakend right,
+                            String leadingRef,
+                            String trailingRef,
+                            String alt) {
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
-        this.ref = Objects.requireNonNull(ref, "Ref sequence cannot be null");
+        this.leadingRef = Objects.requireNonNull(leadingRef, "Ref sequence cannot be null");
+        this.trailingRef = Objects.requireNonNull(trailingRef, "Ref sequence cannot be null");
         this.alt = Objects.requireNonNull(alt, "Alt sequence cannot be null");
     }
 
@@ -102,7 +109,7 @@ public final class BreakendVariant implements Variant, Breakended {
         if (left.coordinateSystem() == coordinateSystem) {
             return this;
         }
-        return new BreakendVariant(eventId, left.withCoordinateSystem(coordinateSystem), right.withCoordinateSystem(coordinateSystem), ref, alt);
+        return new BreakendVariant(eventId, left.withCoordinateSystem(coordinateSystem), right.withCoordinateSystem(coordinateSystem), leadingRef, trailingRef, alt);
     }
 
     /**
@@ -113,11 +120,32 @@ public final class BreakendVariant implements Variant, Breakended {
         return left.strand();
     }
 
-    public BreakendVariant withStrand(Strand strand) {
-        if (strand().hasComplement() && strand() != strand) {
-            Breakend l = right.toOppositeStrand();
-            Breakend r = left.toOppositeStrand();
-            return new BreakendVariant(eventId, l, r, ref, Seq.reverseComplement(alt));
+    /**
+     * Convert the breakend variant into <code>target</code> strand. The conversion is only performed if it is
+     * <em>legal</em>. Otherwise, <code>this</code> is returned.
+     * <p>
+     * See {@link Stranded#withStrand(Strand)} to learn more about when a conversion is <em>legal</em>.
+     *
+     * @param target strand to convert the variant into
+     * @return converted variant or <code>this</code>
+     */
+    public BreakendVariant withStrand(Strand target) {
+        // we cannot convert if e.g. left==UNSTRANDED && target==POSITIVE
+        if (left.strand().conversionIsLegal(target) && right.strand().conversionIsLegal(target)) {
+
+            // we do nothing if left==POSITIVE && target==POSITIVE
+            if (left.strand().needsConversion(target)) {
+                if (target.hasComplement()) {
+                    // Convert between POSITIVE and NEGATIVE.
+                    return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), // reverse order
+                            Seq.reverseComplement(trailingRef), Seq.reverseComplement(leadingRef), // here as well
+                            Seq.reverseComplement(alt));
+                } else {
+                    // Convert into UNSTRANDED or UNKNOWN. Here, there is no need to use trailing ref anymore since
+                    // the conversion to POSITIVE or NEGATIVE is not possible anymore.
+                    return new BreakendVariant(eventId, left.withStrand(target), right.withStrand(target), leadingRef, alt);
+                }
+            }
         }
         return this;
     }
@@ -134,7 +162,7 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public int refLength() {
-        return ref.length();
+        return leadingRef.length();
     }
 
     /**
@@ -150,7 +178,7 @@ public final class BreakendVariant implements Variant, Breakended {
      */
     @Override
     public String ref() {
-        return ref;
+        return leadingRef;
     }
 
     /**
@@ -186,13 +214,14 @@ public final class BreakendVariant implements Variant, Breakended {
         return eventId.equals(that.eventId) &&
                 left.equals(that.left) &&
                 right.equals(that.right) &&
-                ref.equals(that.ref) &&
+                leadingRef.equals(that.leadingRef) &&
+                trailingRef.equals(that.trailingRef) &&
                 alt.equals(that.alt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, left, right, ref, alt);
+        return Objects.hash(eventId, left, right, leadingRef, trailingRef, alt);
     }
 
     @Override
