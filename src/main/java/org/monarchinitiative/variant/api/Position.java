@@ -19,7 +19,7 @@ public interface Position extends Comparable<Position> {
      * @param delta amount by which to shift the position. Positive inputs will increase the value of pos, negative decrease it.
      * @return a Position shifted by the provided delta
      */
-    Position shiftPos(int delta);
+    Position shift(int delta);
 
     /**
      * @return the numeric position
@@ -43,14 +43,14 @@ public interface Position extends Comparable<Position> {
     Position toPrecise();
 
     /**
-     * Shifts the current {@link Position} to the opposite strand of the given {@link Contig} using the
+     * Inverts the current {@link Position} to the opposite end of the given {@link Contig} using the
      * {@link CoordinateSystem} provided.
      *
      * @param contig  {@link Contig} on which the position is located
      * @param coordinateSystem {@link CoordinateSystem} the Position is being used in
-     * @return a new position on the opposite strand of the {@link Contig} on which the current {@link Position} is located
+     * @return a new position at the opposite end of the {@link Contig} on which the current {@link Position} is located
      */
-    Position switchEnd(Contig contig, CoordinateSystem coordinateSystem);
+    Position invert(Contig contig, CoordinateSystem coordinateSystem);
 
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.

@@ -37,21 +37,21 @@ public class PositionTest {
     }
 
     @Test
-    void confidenceInterval() {
+    public void confidenceInterval() {
         assertThat(Position.of(100).confidenceInterval(), equalTo(ConfidenceInterval.precise()));
         ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
         assertThat(Position.of(100, ci).confidenceInterval(), equalTo(ci));
     }
 
     @Test
-    void minPos() {
+    public void minPos() {
         assertThat(Position.of(100).minPos(), equalTo(100));
         ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
         assertThat(Position.of(100, ci).minPos(), equalTo(80));
     }
 
     @Test
-    void maxPos() {
+    public void maxPos() {
         assertThat(Position.of(100).maxPos(), equalTo(100));
         ConfidenceInterval ci = ConfidenceInterval.of(-20, 10);
         assertThat(Position.of(100, ci).maxPos(), equalTo(110));
@@ -75,14 +75,14 @@ public class PositionTest {
         Position zeroBasedStart = Position.of(0);
         int delta = CoordinateSystem.ONE_BASED.delta(CoordinateSystem.ZERO_BASED);
         assertThat(delta, equalTo(-1));
-        assertThat(oneBasedStart.shiftPos(delta), equalTo(zeroBasedStart));
+        assertThat(oneBasedStart.shift(delta), equalTo(zeroBasedStart));
     }
 
     @Test
     public void toOneBasedFromZeroBased() {
         Position zeroBased = Position.of(0);
         Position oneBased = Position.of(1);
-        assertThat(zeroBased.shiftPos(CoordinateSystem.ZERO_BASED.delta(CoordinateSystem.ONE_BASED)), equalTo(oneBased));
+        assertThat(zeroBased.shift(CoordinateSystem.ZERO_BASED.delta(CoordinateSystem.ONE_BASED)), equalTo(oneBased));
     }
 
     @ParameterizedTest
@@ -123,12 +123,12 @@ public class PositionTest {
             "2, 1, 3",
     })
     public void shiftPosPrecise(int pos, int delta, int expect) {
-        assertThat(Position.of(pos).shiftPos(delta), equalTo(Position.of(expect)));
+        assertThat(Position.of(pos).shift(delta), equalTo(Position.of(expect)));
     }
 
     @Test
     public void shiftPosImprecise() {
-        assertThat(Position.of(10, ConfidenceInterval.of(-5, 7)).shiftPos(5), equalTo(Position.of(15, ConfidenceInterval.of(-5, 7))));
+        assertThat(Position.of(10, ConfidenceInterval.of(-5, 7)).shift(5), equalTo(Position.of(15, ConfidenceInterval.of(-5, 7))));
     }
 
     @Test
@@ -150,8 +150,8 @@ public class PositionTest {
             "100, ZERO_BASED, 0",
             "100, ONE_BASED, 1",
     })
-    void toOppositeEnd(int pos, CoordinateSystem coordinateSystem, int expected) {
+    public void invert(int pos, CoordinateSystem coordinateSystem, int expected) {
         Contig contig = Contig.of(1, "1", SequenceRole.UNKNOWN, 100, "", "", "");
-        assertThat(Position.of(pos).switchEnd(contig, coordinateSystem), equalTo(Position.of(expected)));
+        assertThat(Position.of(pos).invert(contig, coordinateSystem), equalTo(Position.of(expected)));
     }
 }

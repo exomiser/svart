@@ -65,7 +65,7 @@ public class SequenceVariant implements Variant {
     private static Position calculateEnd(Position start, CoordinateSystem coordinateSystem, String ref, String alt) {
         // SNV case
         if ((ref.length() | alt.length()) == 1) {
-            return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.shiftPos(1) : start;
+            return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.shift(1) : start;
         }
         return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
     }
@@ -106,7 +106,7 @@ public class SequenceVariant implements Variant {
             return this;
         }
         int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new SequenceVariant(contig, id, strand, coordinateSystem, startPosition.shiftPos(startDelta), endPosition, ref, alt);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, startPosition.shift(startDelta), endPosition, ref, alt);
     }
 
     @Override
@@ -134,8 +134,8 @@ public class SequenceVariant implements Variant {
         if (this.strand.notComplementOf(strand)) {
             return this;
         }
-        Position start = startPosition.switchEnd(contig, coordinateSystem);
-        Position end = endPosition.switchEnd(contig, coordinateSystem);
+        Position start = startPosition.invert(contig, coordinateSystem);
+        Position end = endPosition.invert(contig, coordinateSystem);
         return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 

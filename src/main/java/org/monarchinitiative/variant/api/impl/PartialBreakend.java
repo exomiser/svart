@@ -62,7 +62,7 @@ public class PartialBreakend implements Breakend {
             return this;
         }
         int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new PartialBreakend(contig, id, strand, coordinateSystem, position.shiftPos(startDelta));
+        return new PartialBreakend(contig, id, strand, coordinateSystem, position.shift(startDelta));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class PartialBreakend implements Breakend {
         if (this.strand.notComplementOf(strand)) {
             return this;
         }
-        Position pos = position.switchEnd(contig, coordinateSystem);
+        Position pos = position.invert(contig, coordinateSystem);
         return new PartialBreakend(contig, id, strand, coordinateSystem, pos);
     }
 

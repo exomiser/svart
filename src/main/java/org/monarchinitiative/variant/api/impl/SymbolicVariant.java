@@ -132,7 +132,7 @@ public final class SymbolicVariant implements Variant {
         }
         int startDelta = this.coordinateSystem.delta(coordinateSystem);
         // TODO check changelength doesnt need altering
-        return new SymbolicVariant(contig, id, strand, coordinateSystem, startPosition.shiftPos(startDelta), endPosition, ref, alt, changeLength);
+        return new SymbolicVariant(contig, id, strand, coordinateSystem, startPosition.shift(startDelta), endPosition, ref, alt, changeLength);
     }
 
     @Override
@@ -165,8 +165,8 @@ public final class SymbolicVariant implements Variant {
         if (this.strand.notComplementOf(strand)) {
             return this;
         }
-        Position start = startPosition.switchEnd(contig, coordinateSystem);
-        Position end = endPosition.switchEnd(contig, coordinateSystem);
+        Position start = startPosition.invert(contig, coordinateSystem);
+        Position end = endPosition.invert(contig, coordinateSystem);
         return new SymbolicVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), alt, changeLength);
     }
 

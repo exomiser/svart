@@ -131,7 +131,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
             // TODO: test this thoroughly with mixed systems. Don't want to penalize 1-based if 0-based never used in a system
             // calculate normalization delta for start positions
             int delta = x.coordinateSystem().delta(y.coordinateSystem());
-            result = Position.compare(x.startPosition(), y.startPosition().shiftPos(delta));
+            result = Position.compare(x.startPosition(), y.startPosition().shift(delta));
         }
         if (result == 0) {
             result = Position.compare(x.endPosition(), y.endPosition());

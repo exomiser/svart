@@ -61,7 +61,7 @@ public class GenomicPositionDefault implements GenomicPosition {
             return this;
         }
         int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new GenomicPositionDefault(contig, strand, coordinateSystem, position().shiftPos(startDelta));
+        return new GenomicPositionDefault(contig, strand, coordinateSystem, position().shift(startDelta));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class GenomicPositionDefault implements GenomicPosition {
         if (this.strand.notComplementOf(strand)) {
             return this;
         }
-        Position pos = position.switchEnd(contig, coordinateSystem);
+        Position pos = position.invert(contig, coordinateSystem);
         return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
     }
 

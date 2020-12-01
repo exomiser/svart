@@ -125,7 +125,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
             // or this...
             // calculate normalization delta for start positions
             int delta = x.coordinateSystem().delta(y.coordinateSystem());
-            result = Position.compare(x.position(), y.position().shiftPos(delta));
+            result = Position.compare(x.position(), y.position().shift(delta));
         }
         if (result == 0) {
             result = Strand.compare(x.strand(), y.strand());

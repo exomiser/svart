@@ -23,7 +23,7 @@ class ImprecisePosition implements Position {
     }
 
     @Override
-    public Position switchEnd(Contig contig, CoordinateSystem coordinateSystem) {
+    public Position invert(Contig contig, CoordinateSystem coordinateSystem) {
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
             return Position.of(contig.length() - pos + 1, confidenceInterval().invert());
         }
@@ -36,7 +36,7 @@ class ImprecisePosition implements Position {
     }
 
     @Override
-    public Position shiftPos(int delta) {
+    public Position shift(int delta) {
         return delta == 0 ? this : new ImprecisePosition(pos + delta, confidenceInterval);
     }
 

@@ -26,7 +26,7 @@ class PrecisePosition implements Position {
     }
 
     @Override
-    public Position shiftPos(int delta) {
+    public Position shift(int delta) {
         return delta == 0 ? this : new PrecisePosition(pos + delta);
     }
 
@@ -61,7 +61,7 @@ class PrecisePosition implements Position {
     }
 
     @Override
-    public Position switchEnd(Contig contig, CoordinateSystem coordinateSystem) {
+    public Position invert(Contig contig, CoordinateSystem coordinateSystem) {
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
             return new PrecisePosition(contig.length() - pos + 1);
         }
