@@ -50,66 +50,66 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
     }
 
 
-        default int differenceTo(GenomicRegion other) {
-            if (contigId() != other.contigId()) {
-                    throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
+    default int differenceTo(GenomicRegion other) {
+        if (contigId() != other.contigId()) {
+            throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
 
-            }
-            other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
+        }
+        other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
 
-            if (other.contains(this)) {
-                return 0;
-            }
-
-            int s = pos() - other.start();
-            int e = pos() - other.end();
-            return Math.abs(s) < Math.abs(e) ? s : e;
+        if (other.contains(this)) {
+            return 0;
         }
 
-        /**
-         * Test if <code>this</code> position is upstream (5' direction) of the <code>other</code>. The <code>other</code> position is
-         * flipped to <code>this</code>'s strand before testing.
-         *
-         * @param other position to test
-         * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> position
-         */
-        default boolean isUpstreamOf(GenomicPosition other) {
-            return differenceTo(other) < 0;
-        }
+        int s = pos() - other.start();
+        int e = pos() - other.end();
+        return Math.abs(s) < Math.abs(e) ? s : e;
+    }
+
+    /**
+     * Test if <code>this</code> position is upstream (5' direction) of the <code>other</code>. The <code>other</code> position is
+     * flipped to <code>this</code>'s strand before testing.
+     *
+     * @param other position to test
+     * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> position
+     */
+    default boolean isUpstreamOf(GenomicPosition other) {
+        return differenceTo(other) < 0;
+    }
 
 
-        /**
-         * Test if <code>this</code> position is upstream (5' direction) of the <code>other</code>. The <code>other</code>
-         * region is flipped to <code>this</code>'s strand before testing.
-         *
-         * @param other region to test
-         * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> region
-         */
-        default boolean isUpstreamOf(GenomicRegion other) {
-            return differenceTo(other) < 0;
-        }
+    /**
+     * Test if <code>this</code> position is upstream (5' direction) of the <code>other</code>. The <code>other</code>
+     * region is flipped to <code>this</code>'s strand before testing.
+     *
+     * @param other region to test
+     * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> region
+     */
+    default boolean isUpstreamOf(GenomicRegion other) {
+        return differenceTo(other) < 0;
+    }
 
-        /**
-         * Test if <code>this</code> position is downstream (3' direction) of the <code>other</code>. The <code>other</code>
-         * position is flipped to <code>this</code>'s strand before testing.
-         *
-         * @param other position to test
-         * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> position
-         */
-        default boolean isDownstreamOf(GenomicPosition other) {
-            return differenceTo(other) > 0;
-        }
+    /**
+     * Test if <code>this</code> position is downstream (3' direction) of the <code>other</code>. The <code>other</code>
+     * position is flipped to <code>this</code>'s strand before testing.
+     *
+     * @param other position to test
+     * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> position
+     */
+    default boolean isDownstreamOf(GenomicPosition other) {
+        return differenceTo(other) > 0;
+    }
 
-        /**
-         * Test if <code>this</code> position is downstream (3' direction) of the <code>other</code>. The <code>other</code>
-         * region is flipped to <code>this</code>'s strand before testing.
-         *
-         * @param other region to test
-         * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> region
-         */
-        default boolean isDownstreamOf(GenomicRegion other) {
-            return differenceTo(other) > 0;
-        }
+    /**
+     * Test if <code>this</code> position is downstream (3' direction) of the <code>other</code>. The <code>other</code>
+     * region is flipped to <code>this</code>'s strand before testing.
+     *
+     * @param other region to test
+     * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> region
+     */
+    default boolean isDownstreamOf(GenomicRegion other) {
+        return differenceTo(other) > 0;
+    }
 
 
     @Override
