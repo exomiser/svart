@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class GenomicRegionTest {
 
 
-    private final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 5, "", "", "chr1");
+    private final Contig chr1 = new TestContig(1, "1", 5);
 
     @Test
     public void oneBasedSingleBase() {
