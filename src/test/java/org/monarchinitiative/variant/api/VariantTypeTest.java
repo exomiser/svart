@@ -14,17 +14,17 @@ import static org.junit.jupiter.api.Assertions.*;
 public class VariantTypeTest {
 
     @Test
-    void nullInput() {
+    public void nullInput() {
         assertThrows(NullPointerException.class, () -> VariantType.parseType(null));
     }
 
     @Test
-    void emptyInput() {
+    public void emptyInput() {
         assertThat(VariantType.parseType(""), equalTo(VariantType.UNKNOWN));
     }
 
     @Test
-    void testParseUnknown() {
+    public void testParseUnknown() {
         assertThat(VariantType.parseType("WIBBLE"), equalTo(VariantType.UNKNOWN));
     }
 
@@ -35,17 +35,17 @@ public class VariantTypeTest {
             "<INS:ME:ALU>, INS_ME_ALU",
             "<ILLEGAL:VALUE>, SYMBOLIC"
     })
-    void testParseAngleBracketValue(String input, VariantType expected) {
+    public void testParseAngleBracketValue(String input, VariantType expected) {
         assertThat(VariantType.parseType(input), equalTo(expected));
     }
 
     @Test
-    void testParseStrippedValue() {
+    public void testParseStrippedValue() {
         assertThat(VariantType.parseType("DEL"), equalTo(VariantType.DEL));
     }
 
     @Test
-    void testGetBaseMethodFromBaseType() {
+    public void testGetBaseMethodFromBaseType() {
         assertThat(VariantType.DEL.baseType(), equalTo(VariantType.DEL));
     }
 
@@ -56,12 +56,12 @@ public class VariantTypeTest {
             "INS_ME_ALU, INS",
             "BND, BND"
     })
-    void testGetBaseTypeFromSubType(VariantType subType, VariantType baseType) {
+    public void testGetBaseTypeFromSubType(VariantType subType, VariantType baseType) {
         assertThat(subType.baseType(), equalTo(baseType));
     }
 
     @Test
-    void testGetSubType() {
+    public void testGetSubType() {
         assertThat(VariantType.DEL.subType(), equalTo(VariantType.DEL));
         assertThat(VariantType.DEL_ME.subType(), equalTo(VariantType.DEL_ME));
         assertThat(VariantType.DEL_ME_ALU.subType(), equalTo(VariantType.DEL_ME));
@@ -71,7 +71,7 @@ public class VariantTypeTest {
     }
 
     @Test
-    void testNonCanonicalDelMobileElementSubType() {
+    public void testNonCanonicalDelMobileElementSubType() {
         assertThat(VariantType.parseType("DEL:ME:SINE"), equalTo(VariantType.DEL_ME));
     }
 
@@ -81,7 +81,7 @@ public class VariantTypeTest {
             "STR27",
             "<STR27>"
     })
-    void testStrWithNumRepeats(String input) {
+    public void testStrWithNumRepeats(String input) {
         assertThat(VariantType.parseType(input), equalTo(VariantType.STR));
     }
 
@@ -92,37 +92,37 @@ public class VariantTypeTest {
             "CNV_LOH",
             "CNV_COMPLEX",
     })
-    void testBaseTypeForCanvasTypes(VariantType variantType) {
+    public void testBaseTypeForCanvasTypes(VariantType variantType) {
         assertThat(variantType.baseType(), equalTo(VariantType.CNV));
     }
 
     @Test
-    void parseTypeSymbolic() {
+    public void parseTypeSymbolic() {
         assertThat(VariantType.parseType("A", "<INS>"), equalTo(VariantType.INS));
     }
 
     @Test
-    void parseTypeSnv() {
+    public void parseTypeSnv() {
         assertThat(VariantType.parseType("A", "T"), equalTo(VariantType.SNV));
     }
 
     @Test
-    void parseTypeMnv() {
+    public void parseTypeMnv() {
         assertThat(VariantType.parseType("ATG", "TCA"), equalTo(VariantType.MNV));
     }
 
     @Test
-    void parseTypeInsertion() {
+    public void parseTypeInsertion() {
         assertThat(VariantType.parseType("A", "TC"), equalTo(VariantType.INS));
     }
 
     @Test
-    void parseTypeDeletion() {
+    public void parseTypeDeletion() {
         assertThat(VariantType.parseType("AT", "C"), equalTo(VariantType.DEL));
     }
 
     @Test
-    void parseTypeRearrangement() {
+    public void parseTypeRearrangement() {
         assertThat(VariantType.parseType("A", "C[2:12345["), equalTo(VariantType.BND));
     }
 
