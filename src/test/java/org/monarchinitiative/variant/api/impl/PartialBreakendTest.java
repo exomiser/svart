@@ -72,4 +72,15 @@ public class PartialBreakendTest {
         assertThat(pos.position(), equalTo(Position.of(3)));
         assertThat(pos.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
+
+    @Test
+    public void unresolved() {
+        Breakend unresolved = Breakend.unresolved();
+        assertThat(unresolved.isUnresolved(), equalTo(true));
+        assertThat(unresolved.contig(), equalTo(Contig.unknown()));
+        assertThat(unresolved.strand(), equalTo(Strand.UNKNOWN));
+        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(unresolved.id(), equalTo(""));
+        assertThat(unresolved.toString(), equalTo("UnresolvedBreakend{id='', strand=?, coordinateSystem=ONE_BASED, position=1, contig=0}"));
+    }
 }
