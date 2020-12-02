@@ -66,10 +66,10 @@ public class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+        if (!this.strand.needsConversion(strand)) {
             return this;
         }
-        Position pos = position.invert(contig, coordinateSystem);
+        Position pos = this.strand.isComplementOf(strand) ? position.invert(contig, coordinateSystem) : position;
         return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
     }
 

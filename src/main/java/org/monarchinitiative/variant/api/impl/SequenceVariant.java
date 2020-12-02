@@ -131,12 +131,15 @@ public class SequenceVariant implements Variant {
 
     @Override
     public SequenceVariant withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+        if (!this.strand.needsConversion(strand)) {
             return this;
         }
-        Position start = startPosition.invert(contig, coordinateSystem);
-        Position end = endPosition.invert(contig, coordinateSystem);
-        return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+        if (this.strand.isComplementOf(strand)) {
+            Position start = startPosition.invert(contig, coordinateSystem);
+            Position end = endPosition.invert(contig, coordinateSystem);
+            return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+        }
+        return new SequenceVariant(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt);
     }
 
     @Override

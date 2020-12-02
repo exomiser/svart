@@ -16,8 +16,8 @@ public class SymbolicVariantTest {
 
     @Test
     public void symbolicVariantOverlapsOther() {
-        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
-        Variant otherIns = SymbolicVariant.of(chr1, 99, 299, "C", "<INS>", 200);
+        Variant largeIns = SymbolicVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
+        Variant otherIns = SymbolicVariant.oneBased(chr1, 99, 299, "C", "<INS>", 200);
         assertTrue(largeIns.overlapsWith(otherIns));
         assertTrue(otherIns.overlapsWith(largeIns));
     }
@@ -25,23 +25,23 @@ public class SymbolicVariantTest {
     @Test
     public void throwsIllegalArgumentWithNonSymbolicAllele() {
         // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
-        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "T", 1));
+        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.oneBased(chr1, 1, 1, "A", "T", 1));
     }
 
     @Test
     public void symbolicThrowsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.of(chr1, 1, 1, "A", "A[1:2]", 1));
+        assertThrows(IllegalArgumentException.class, () -> SymbolicVariant.oneBased(chr1, 1, 1, "A", "A[1:2]", 1));
     }
 
     @Test
     public void shouldBeSymbolic() {
-        Variant instance = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
+        Variant instance = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
         assertThat(instance.isSymbolic(), equalTo(true));
     }
 
     @Test
     public void symbolicDel() {
-        Variant del = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", -99);
+        Variant del = SymbolicVariant.oneBased(chr1, 1, 100, "A", "<DEL>", -99);
 
         assertThat(del.contig(), equalTo(chr1));
         assertThat(del.startPosition(), equalTo(Position.of(1)));
@@ -88,7 +88,7 @@ public class SymbolicVariantTest {
     @Test
     public void symbolicDelLenSvLen() {
         //1       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
-        Variant del = SymbolicVariant.of(chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
+        Variant del = SymbolicVariant.oneBased(chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
         assertThat(del.length(), equalTo(206));
         assertThat(del.refLength(), equalTo(206));
         assertThat(del.changeLength(), equalTo(-205));
@@ -96,7 +96,7 @@ public class SymbolicVariantTest {
 
     @Test
     public void symbolicIns() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
+        Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
 
         assertThat(ins.contig(), equalTo(chr1));
         assertThat(ins.startPosition(), equalTo(Position.of(1)));
@@ -111,13 +111,21 @@ public class SymbolicVariantTest {
 
     @Test
     public void symbolicInsWithSameStrand() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
+        Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
         assertSame(ins, ins.withStrand(Strand.POSITIVE));
     }
 
     @Test
+    public void symbolicInsWithUnknownStrand() {
+        Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+        Variant expected = SymbolicVariant.of(chr1, "", Strand.UNKNOWN, CoordinateSystem.ONE_BASED, Position.of(1), Position.of(1), "A", "<INS>", 100);
+        assertThat(ins.withStrand(Strand.UNKNOWN), equalTo(expected));
+        assertSame(expected, expected.withStrand(Strand.POSITIVE));
+    }
+
+    @Test
     public void symbolicInsWithNegativeStrand() {
-        Variant ins = SymbolicVariant.of(chr1, 1, 1, "A", "<INS>", 100);
+        Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
         Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
         assertThat(negativeIns.contig(), equalTo(chr1));
@@ -133,7 +141,7 @@ public class SymbolicVariantTest {
 
     @Test
     public void symbolicDelWithNegativeStrand() {
-        Variant instance = SymbolicVariant.of(chr1, 1, 100, "A", "<DEL>", -99);
+        Variant instance = SymbolicVariant.oneBased(chr1, 1, 100, "A", "<DEL>", -99);
         Variant negative = instance.withStrand(Strand.NEGATIVE);
 
         assertThat(negative.contig(), equalTo(chr1));

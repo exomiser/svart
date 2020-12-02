@@ -1,6 +1,5 @@
 package org.monarchinitiative.variant.api;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,14 +12,9 @@ public class GenomicPositionTest {
 
     private final Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
 
-    private GenomicPosition oneBasedThree, zeroBasedSeven, oneBasedThreePrecise;
-
-    @BeforeEach
-    public void setUp() {
-        zeroBasedSeven = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
-        oneBasedThree = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3, ConfidenceInterval.of(-2, 3)));
-        oneBasedThreePrecise = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
-    }
+    private final GenomicPosition oneBasedThree = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3, ConfidenceInterval.of(-2, 3)));
+    private final GenomicPosition zeroBasedSeven = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
+    private final GenomicPosition oneBasedThreePrecise = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3));
 
     @Test
     public void properties() {
@@ -95,6 +89,37 @@ public class GenomicPositionTest {
         assertThat(oneNeg.position(), equalTo(Position.of(8, ConfidenceInterval.of(-3, 2))));
         assertThat(oneNeg.strand(), equalTo(Strand.NEGATIVE));
         assertThat(oneNeg.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // source  pos   target     expected   pos
+            "POSITIVE, 3,  POSITIVE,   POSITIVE,   3",
+            "POSITIVE, 3,   NEGATIVE,   NEGATIVE,   8",
+            "POSITIVE, 3,   UNSTRANDED, UNSTRANDED, 3",
+            "POSITIVE, 3,   UNKNOWN,    UNKNOWN,    3",
+
+            "NEGATIVE, 3,   POSITIVE,   POSITIVE,   8",
+            "NEGATIVE, 3,   NEGATIVE,   NEGATIVE,   3",
+            "NEGATIVE, 3,   UNSTRANDED, UNSTRANDED, 3",
+            "NEGATIVE, 3,   UNKNOWN,    UNKNOWN,    3",
+
+            "UNSTRANDED, 3, POSITIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, 3, NEGATIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, 3, UNSTRANDED, UNSTRANDED, 3",
+            "UNSTRANDED, 3, UNKNOWN,    UNKNOWN,    3",
+
+            "UNKNOWN, 3,    POSITIVE,   UNKNOWN,    3",
+            "UNKNOWN, 3,    NEGATIVE,   UNKNOWN,    3",
+            "UNKNOWN, 3,    UNSTRANDED, UNKNOWN,    3",
+            "UNKNOWN, 3,    UNKNOWN,    UNKNOWN,    3"})
+    public void withStrand_strandConversions(Strand source, int pos, Strand target, Strand expected, int expectedPosition) {
+        GenomicPosition initial = GenomicPosition.oneBased(ctg1, source, Position.of(pos));
+
+        GenomicPosition actual = initial.withStrand(target);
+        assertThat(actual.strand(), equalTo(expected));
+        assertThat(actual.pos(), equalTo(expectedPosition));
+        assertThat(actual.coordinateSystem(), equalTo(initial.coordinateSystem()));
     }
 
     @Test
