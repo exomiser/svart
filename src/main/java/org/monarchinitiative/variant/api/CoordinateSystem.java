@@ -5,6 +5,7 @@ package org.monarchinitiative.variant.api;
  * e.g. http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public enum CoordinateSystem {
     /**

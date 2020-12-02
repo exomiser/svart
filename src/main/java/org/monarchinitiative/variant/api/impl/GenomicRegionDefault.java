@@ -6,6 +6,9 @@ import java.util.Objects;
 
 /**
  * 0- or 1-based region e.g. half-open [a,b) or fully closed [a,b] as indicated by the {@link CoordinateSystem}
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class GenomicRegionDefault implements GenomicRegion {
 
@@ -82,12 +85,15 @@ public class GenomicRegionDefault implements GenomicRegion {
 
     @Override
     public GenomicRegionDefault withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+        if (!this.strand.needsConversion(strand)) {
             return this;
         }
-        Position start = startPosition.invert(contig, coordinateSystem);
-        Position end = endPosition.invert(contig, coordinateSystem);
-        return new GenomicRegionDefault(contig, strand, coordinateSystem, end, start);
+        if (this.strand.isComplementOf(strand)) {
+            Position start = startPosition.invert(contig, coordinateSystem);
+            Position end = endPosition.invert(contig, coordinateSystem);
+            return new GenomicRegionDefault(contig, strand, coordinateSystem, end, start);
+        }
+        return new GenomicRegionDefault(contig, strand, coordinateSystem, startPosition, endPosition);
     }
 
     @Override

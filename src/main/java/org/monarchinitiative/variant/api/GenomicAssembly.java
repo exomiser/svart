@@ -24,6 +24,7 @@ import java.util.SortedSet;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface GenomicAssembly {
 

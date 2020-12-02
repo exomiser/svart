@@ -6,6 +6,7 @@ import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class GenomicPositionDefault implements GenomicPosition {
 
@@ -66,10 +67,10 @@ public class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+        if (!this.strand.needsConversion(strand)) {
             return this;
         }
-        Position pos = position.invert(contig, coordinateSystem);
+        Position pos = this.strand.isComplementOf(strand) ? position.invert(contig, coordinateSystem) : position;
         return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
     }
 

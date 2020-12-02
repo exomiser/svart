@@ -186,6 +186,13 @@ public class SequenceVariantTest {
     }
 
     @Test
+    public void insWithUnknownStrand() {
+        Variant ins = SequenceVariant.oneBased(chr1, 1, "A", "AG");
+        Variant expected = SequenceVariant.of(chr1, "", Strand.UNKNOWN, CoordinateSystem.ONE_BASED, Position.of(1), "A", "AG");
+        assertThat(ins.withStrand(Strand.UNKNOWN), equalTo(expected));
+    }
+
+    @Test
     public void delWithNegativeStrand() {
         Contig chr5 = Contig.of(5, "5", SequenceRole.UNKNOWN, 5, "", "", "");
         Variant del = SequenceVariant.oneBased(chr5, 1, "AG", "A");
@@ -250,7 +257,7 @@ public class SequenceVariantTest {
 
     @Test
     public void symbolicVariantContainsSnv() {
-        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
+        Variant largeIns = SymbolicVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
         assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
         assertTrue(largeIns.contains(SequenceVariant.zeroBased(chr1, 0, "A", "T")));
         assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));

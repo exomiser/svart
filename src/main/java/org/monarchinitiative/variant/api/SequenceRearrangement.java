@@ -13,6 +13,8 @@ import java.util.List;
  *     <li>at least one adjacency is present</li>
  *     <li>adjacencies are stored in representative order for the variant</li>
  * </ul>
+ *
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface SequenceRearrangement extends Stranded<SequenceRearrangement> {
 

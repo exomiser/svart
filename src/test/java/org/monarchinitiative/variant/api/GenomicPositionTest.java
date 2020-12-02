@@ -1,6 +1,5 @@
 package org.monarchinitiative.variant.api;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -105,6 +104,37 @@ public class GenomicPositionTest {
         assertThat(oneNeg.position(), equalTo(Position.of(8, ConfidenceInterval.of(-3, 2))));
         assertThat(oneNeg.strand(), equalTo(Strand.NEGATIVE));
         assertThat(oneNeg.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // source  pos   target     expected   pos
+            "POSITIVE, 3,  POSITIVE,   POSITIVE,   3",
+            "POSITIVE, 3,   NEGATIVE,   NEGATIVE,   8",
+            "POSITIVE, 3,   UNSTRANDED, UNSTRANDED, 3",
+            "POSITIVE, 3,   UNKNOWN,    UNKNOWN,    3",
+
+            "NEGATIVE, 3,   POSITIVE,   POSITIVE,   8",
+            "NEGATIVE, 3,   NEGATIVE,   NEGATIVE,   3",
+            "NEGATIVE, 3,   UNSTRANDED, UNSTRANDED, 3",
+            "NEGATIVE, 3,   UNKNOWN,    UNKNOWN,    3",
+
+            "UNSTRANDED, 3, POSITIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, 3, NEGATIVE,   UNSTRANDED, 3",
+            "UNSTRANDED, 3, UNSTRANDED, UNSTRANDED, 3",
+            "UNSTRANDED, 3, UNKNOWN,    UNKNOWN,    3",
+
+            "UNKNOWN, 3,    POSITIVE,   UNKNOWN,    3",
+            "UNKNOWN, 3,    NEGATIVE,   UNKNOWN,    3",
+            "UNKNOWN, 3,    UNSTRANDED, UNKNOWN,    3",
+            "UNKNOWN, 3,    UNKNOWN,    UNKNOWN,    3"})
+    public void withStrand_strandConversions(Strand source, int pos, Strand target, Strand expected, int expectedPosition) {
+        GenomicPosition initial = GenomicPosition.oneBased(ctg1, source, Position.of(pos));
+
+        GenomicPosition actual = initial.withStrand(target);
+        assertThat(actual.strand(), equalTo(expected));
+        assertThat(actual.pos(), equalTo(expectedPosition));
+        assertThat(actual.coordinateSystem(), equalTo(initial.coordinateSystem()));
     }
 
     @Test

@@ -2,6 +2,9 @@ package org.monarchinitiative.variant.api;
 
 /**
  * Position with a confidence level expressed using a {@link ConfidenceInterval}.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface Position extends Comparable<Position> {
 
