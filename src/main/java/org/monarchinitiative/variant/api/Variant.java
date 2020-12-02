@@ -2,6 +2,7 @@ package org.monarchinitiative.variant.api;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface Variant extends GenomicRegion {
 

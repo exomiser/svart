@@ -5,6 +5,7 @@ package org.monarchinitiative.variant.api;
  * Contains the 4 strand types from GFF3. This is a superset of BED which only defines [+, -, .]
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public enum Strand {
 

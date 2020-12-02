@@ -7,6 +7,9 @@ import java.util.Objects;
 /**
  * Represents a simple genomic variation of known sequence. Here simple is defined as not being a symbolic and/or
  * breakend re-arrangement.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class SequenceVariant implements Variant {
 

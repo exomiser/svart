@@ -6,6 +6,9 @@ import java.util.Objects;
 
 /**
  * 0- or 1-based region e.g. half-open [a,b) or fully closed [a,b] as indicated by the {@link CoordinateSystem}
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class GenomicRegionDefault implements GenomicRegion {
 

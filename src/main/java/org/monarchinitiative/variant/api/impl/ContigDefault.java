@@ -7,6 +7,7 @@ import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public final class ContigDefault implements Contig {
 

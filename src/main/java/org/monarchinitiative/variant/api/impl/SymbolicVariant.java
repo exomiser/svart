@@ -5,7 +5,10 @@ import org.monarchinitiative.variant.api.*;
 import java.util.Objects;
 
 /**
- * Represents a large (or small)
+ * Represents a large (or small) variant with a 'symbolic' alt allele as defined in the VCF specifications.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public final class SymbolicVariant implements Variant {
 

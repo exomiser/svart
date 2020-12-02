@@ -6,6 +6,7 @@ import org.monarchinitiative.variant.api.impl.GenomicPositionDefault;
  * Represents a {@link Position} on a {@link Contig}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition>, CoordinateSystemed<GenomicPosition> {
 
