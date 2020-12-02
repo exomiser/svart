@@ -147,19 +147,16 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * Note that if the position is <em>zero based</em>, the returned region has length
      * <code>upstream + downstream</code>.
      * If the position is <em>one based</em>, the returned region has length <code>upstream + downstream + 1</code>.
-     * <p>
-     * The method may throw {@link IllegalArgumentException} if the padded region (including CI) would extend the
-     * contig boundaries. TODO - check
      *
      * @param upstream non-negative number of padding bases to add upstream from the position
      * @param downstream non-negative number of padding bases to add downstream from the position
-     * @return the padded region or <code>null</code> if <code>upstream < 0</code> or <code>downstream < 0</code>
-     * TODO - update docs if we do not create the null region
+     * @return the padded region
+     * @throws IllegalArgumentException if <code>upstream</code> or <code>downstream</code> is negative, or if the
+     * padded region (including CI) would extend the contig boundaries
      */
     default GenomicRegion withPadding(int upstream, int downstream) {
         if (upstream < 0 || downstream < 0) {
-            // TODO - update to return the null region after the null region is added
-            return null;
+            throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
         } else if (upstream == 0 && downstream == 0) {
             return asRegion();
         }

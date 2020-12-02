@@ -158,11 +158,11 @@ public class GenomicPositionTest {
 
     @Test
     public void withPadding_singleNegativePadding() {
-        GenomicRegion oneBased = oneBasedThree.withPadding(-1);
-        assertThat(oneBased, nullValue());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> oneBasedThree.withPadding(-1));
+        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1, -1"));
 
-        GenomicRegion zeroBased = zeroBasedSeven.withPadding(-1);
-        assertThat(zeroBased, nullValue());
+        e = assertThrows(IllegalArgumentException.class, () -> zeroBasedSeven.withPadding(-1));
+        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1, -1"));
     }
 
     @ParameterizedTest
@@ -190,11 +190,11 @@ public class GenomicPositionTest {
 
     @Test
     public void withPadding_upstreamDownstreamNegativePadding() {
-        GenomicRegion oneBased = oneBasedThree.withPadding(-1, 1);
-        assertThat(oneBased, nullValue());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> oneBasedThree.withPadding(-1, 1));
+        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1, 1"));
 
-        GenomicRegion zeroBased = zeroBasedSeven.withPadding(-1, 0);
-        assertThat(zeroBased, nullValue());
+        e = assertThrows(IllegalArgumentException.class, () -> zeroBasedSeven.withPadding(-1, 0));
+        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1, 0"));
     }
 
     @Test
