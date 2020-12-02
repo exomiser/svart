@@ -21,9 +21,25 @@ public class GenomicRegionDefault implements GenomicRegion {
         this.contig = Objects.requireNonNull(contig);
         this.strand = Objects.requireNonNull(strand);
         this.coordinateSystem = coordinateSystem;
-        this.startPosition = Objects.requireNonNull(startPosition);
-        this.endPosition = Objects.requireNonNull(endPosition);
+        this.startPosition = checkNotBeyondContigCoordinates(startPosition, coordinateSystem, contig.length());
+        this.endPosition = checkNotBeyondContigCoordinates(endPosition, coordinateSystem, contig.length());
         this.startZeroBased = coordinateSystem == CoordinateSystem.ZERO_BASED ? startPosition.pos() : startPosition.pos() - 1;
+    }
+
+    private static Position checkNotBeyondContigCoordinates(Position position, CoordinateSystem coordinateSystem, int contigLength) {
+        if (position == null) {
+            throw new NullPointerException("Position cannot be null");
+        }
+        // adjust contig start to the coordinate system in use
+        int contigStart = 1 - coordinateSystem.delta(CoordinateSystem.ONE_BASED);
+        if (position.minPos() + coordinateSystem.delta(CoordinateSystem.ONE_BASED) < contigStart) {
+            throw new IllegalArgumentException("Cannot create genomic region with a position " + position + " that extends beyond contig start " + contigStart);
+        }
+        // no need to adjust contig end since it is one-based for all coordinate systems that we have
+        if (position.maxPos() > contigLength) {
+            throw new IllegalArgumentException("Cannot create genomic region with a position " + position + " that extends beyond contig end " + contigLength);
+        }
+        return position;
     }
 
     public static GenomicRegionDefault of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
@@ -31,11 +47,11 @@ public class GenomicRegionDefault implements GenomicRegion {
     }
 
     public static GenomicRegionDefault oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return new GenomicRegionDefault(contig, strand, CoordinateSystem.ONE_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.ONE_BASED, startPosition, endPosition);
     }
 
     public static GenomicRegionDefault zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return new GenomicRegionDefault(contig, strand, CoordinateSystem.ZERO_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.ZERO_BASED, startPosition, endPosition);
     }
 
 

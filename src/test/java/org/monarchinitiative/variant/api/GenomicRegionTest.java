@@ -5,6 +5,7 @@ import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -57,4 +58,35 @@ public class GenomicRegionTest {
         assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegionDefault.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
+    @Test
+    public void illegalRegionPastContigStart() {
+        // We cannot make this to fail for zero-based position since calling `Position.of(-1)` throws an exception
+
+        // one-based region
+        IllegalArgumentException eo = assertThrows(IllegalArgumentException.class,
+                () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(0), Position.of(2)));
+        assertThat(eo.getMessage(), equalTo("Cannot create genomic region with a position 0 that extends beyond contig start 1"));
+    }
+
+    @Test
+    public void illegalRegionPastContigEnd() {
+        IllegalArgumentException ez = assertThrows(IllegalArgumentException.class,
+                () -> GenomicRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(5), Position.of(6)));
+        assertThat(ez.getMessage(), equalTo("Cannot create genomic region with a position 6 that extends beyond contig end 5"));
+
+        IllegalArgumentException eo = assertThrows(IllegalArgumentException.class,
+                () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(5), Position.of(6)));
+        assertThat(eo.getMessage(), equalTo("Cannot create genomic region with a position 6 that extends beyond contig end 5"));
+    }
+
+    @Test
+    public void illegalNullPosition() {
+        NullPointerException ez = assertThrows(NullPointerException.class,
+                () -> GenomicRegion.zeroBased(chr1, Strand.POSITIVE, null, Position.of(6)));
+        assertThat(ez.getMessage(), equalTo("Position cannot be null"));
+
+        NullPointerException eo = assertThrows(NullPointerException.class,
+                () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, null, Position.of(6)));
+        assertThat(eo.getMessage(), equalTo("Position cannot be null"));
+    }
 }
