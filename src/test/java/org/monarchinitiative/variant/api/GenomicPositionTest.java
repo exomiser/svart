@@ -154,30 +154,20 @@ public class GenomicPositionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "0,   7, 7, 0,   3, 3, 1",
-            "1,   6, 8, 2,   2, 4, 3",
-            "2,   5, 9, 4,   1, 5, 5"})
-    public void withPadding_singlePadding(int padding,
-                                                int zeroExpectedStart, int zeroExpectedEnd, int zeroExpectedLength,
-                                                int oneExpectedStart, int oneExpectedEnd, int oneExpectedLength) {
-        GenomicPosition zeroBasedSeven = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
+            "ZERO_BASED, 3,  0,  3, 3",
+            "ZERO_BASED, 3,  1,  2, 4",
+            "ZERO_BASED, 3,  2,  1, 5",
 
-        GenomicRegion zeroBased = zeroBasedSeven.withPadding(padding);
-        assertThat(zeroBased.length(), equalTo(zeroExpectedLength));
-        assertThat(zeroBased.start(), equalTo(zeroExpectedStart));
-        assertThat(zeroBased.startPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
-        assertThat(zeroBased.end(), equalTo(zeroExpectedEnd));
-        assertThat(zeroBased.endPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
-
-
-        GenomicPosition oneBasedThree = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(3, ConfidenceInterval.of(-2, 3)));
-
-        GenomicRegion oneBased = oneBasedThree.withPadding(padding);
-        assertThat(oneBased.length(), equalTo(oneExpectedLength));
-        assertThat(oneBased.start(), equalTo(oneExpectedStart));
-        assertThat(oneBased.startPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
-        assertThat(oneBased.end(), equalTo(oneExpectedEnd));
-        assertThat(oneBased.endPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
+            "ONE_BASED,  3,  0,  3, 3",
+            "ONE_BASED,  3,  1,  2, 4",
+            "ONE_BASED,  3,  2,  1, 5"
+    })
+    public void withPadding_singlePadding(CoordinateSystem coordinateSystem, int pos,
+                                          int padding,
+                                          int expectedStart, int expectedEnd) {
+        GenomicRegion actual = GenomicPosition.of(ctg1, Strand.POSITIVE, coordinateSystem, Position.of(pos)).withPadding(padding);
+        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, coordinateSystem, Position.of(expectedStart), Position.of(expectedEnd));
+        assertThat(actual, equalTo(expected));
     }
 
     @Test
@@ -189,6 +179,24 @@ public class GenomicPositionTest {
         GenomicPosition zeroBasedSeven = GenomicPosition.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(7, ConfidenceInterval.of(-1, 2)));
         e = assertThrows(IllegalArgumentException.class, () -> zeroBasedSeven.withPadding(-1));
         assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1, -1"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "ZERO_BASED, 3,  0, 0,  3, 3",
+            "ZERO_BASED, 3,  1, 0,  2, 3",
+            "ZERO_BASED, 3,  2, 1,  1, 4",
+
+            "ONE_BASED,  3,  0, 0,  3, 3",
+            "ONE_BASED,  3,  0, 1,  3, 4",
+            "ONE_BASED,  3,  1, 2,  2, 5"
+    })
+    public void withPadding_upDownPadding(CoordinateSystem coordinateSystem, int pos,
+                                          int upstream, int downstream,
+                                          int expectedStart, int expectedEnd) {
+        GenomicRegion actual = GenomicPosition.of(ctg1, Strand.POSITIVE, coordinateSystem, Position.of(pos)).withPadding(upstream, downstream);
+        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, coordinateSystem, Position.of(expectedStart), Position.of(expectedEnd));
+        assertThat(actual, equalTo(expected));
     }
 
     @ParameterizedTest
