@@ -1,6 +1,7 @@
 package org.monarchinitiative.variant.api;
 
 import org.monarchinitiative.variant.api.impl.GenomicPositionDefault;
+import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
 
 /**
  * Represents a {@link Position} on a {@link Contig}.
@@ -112,6 +113,56 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
         return differenceTo(other) > 0;
     }
 
+
+    /**
+     * Convert the position to a region. <em>Zero based</em> position is converted into a 0bp-long region, while
+     * <em>one based</em> position is converted into a 1bp-long region.
+     *
+     * @return the position as a region
+     */
+    default GenomicRegion asRegion() {
+        return GenomicRegionDefault.of(contig(), strand(), coordinateSystem(), position(), position());
+    }
+
+    /**
+     * Convert the position to a region by adding specified number of <code>padding</code> nucleotides upstream
+     * and downstream from the position.
+     * <p>
+     * Note that if the position is <em>zero based</em>, the returned region has length <code>2 * padding</code>.
+     * If the position is <em>one based</em>, the returned region has length <code>2 * padding + 1</code>.
+     * <p>
+     * The method may throw {@link IllegalArgumentException} if the padded region (including CI) would extend the
+     * contig boundaries. TODO - check
+     *
+     * @param padding non-negative number of padding bases to add upstream and downstream from the position
+     * @return the padded region or <code>null</code> if <code>padding < 0</code>
+     */
+    default GenomicRegion withPadding(int padding) {
+        return withPadding(padding, padding);
+    }
+
+    /**
+     * Convert the position to a region by adding specified number of nucleotides <code>upstream</code>
+     * and <code>downstream</code> from the position.
+     * <p>
+     * Note that if the position is <em>zero based</em>, the returned region has length
+     * <code>upstream + downstream</code>.
+     * If the position is <em>one based</em>, the returned region has length <code>upstream + downstream + 1</code>.
+     *
+     * @param upstream non-negative number of padding bases to add upstream from the position
+     * @param downstream non-negative number of padding bases to add downstream from the position
+     * @return the padded region
+     * @throws IllegalArgumentException if <code>upstream</code> or <code>downstream</code> is negative, or if the
+     * padded region (including CI) would extend the contig boundaries
+     */
+    default GenomicRegion withPadding(int upstream, int downstream) {
+        if (upstream < 0 || downstream < 0) {
+            throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
+        } else if (upstream == 0 && downstream == 0) {
+            return asRegion();
+        }
+        return GenomicRegionDefault.of(contig(), strand(), coordinateSystem(), position().shift(-upstream), position().shift(downstream));
+    }
 
     @Override
     default int compareTo(GenomicPosition o) {
