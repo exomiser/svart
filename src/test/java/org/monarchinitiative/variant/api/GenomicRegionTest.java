@@ -1,6 +1,8 @@
 package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -57,4 +59,38 @@ public class GenomicRegionTest {
         assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegionDefault.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "ZERO_BASED, 2, 3, 0, 2, 3",
+            "ONE_BASED, 2, 3, 0, 2, 3",
+            "ZERO_BASED, 2, 3, 1, 1, 4",
+            "ONE_BASED, 2, 3, 1, 1, 4",
+            "ZERO_BASED, 2, 3, 2, 0, 5",
+    })
+    public void withPadding_singlePadding(CoordinateSystem coordinateSystem,
+                                          int start, int end,
+                                          int padding,
+                                          int expectedStart, int expectedEnd) {
+        GenomicRegion actual = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(end)).withPadding(padding);
+        GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(expectedStart), Position.of(expectedEnd));
+        assertThat(actual, equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "ZERO_BASED, 2, 3, 0, 0, 2, 3",
+            "ONE_BASED, 2, 3, 0, 0, 2, 3",
+            "ZERO_BASED, 2, 3, 1, 2, 1, 5",
+            "ONE_BASED, 2, 3, 1, 2, 1, 5",
+            "ZERO_BASED, 2, 3, 2, 0, 0, 3",
+            "ONE_BASED, 2, 3, 1, 0, 1, 3",
+    })
+    public void withPadding_upDownPadding(CoordinateSystem coordinateSystem,
+                                          int start, int end,
+                                          int upPadding, int downPadding,
+                                          int expectedStart, int expectedEnd) {
+        GenomicRegion actual = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(end)).withPadding(upPadding, downPadding);
+        GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(expectedStart), Position.of(expectedEnd));
+        assertThat(actual, equalTo(expected));
+    }
 }

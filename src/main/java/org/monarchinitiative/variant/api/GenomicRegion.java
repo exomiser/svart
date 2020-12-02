@@ -120,6 +120,17 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
                 : start() <= onStrand.pos() && onStrand.pos() < end();
     }
 
+    default GenomicRegion withPadding(int padding) {
+        return withPadding(padding, padding);
+    }
+
+    default GenomicRegion withPadding(int upstream, int downstream) {
+        if (upstream == 0 && downstream == 0) {
+            return this;
+        }
+        return GenomicRegion.of(contig(), strand(), coordinateSystem(), startPosition().shift(-upstream), endPosition().shift(downstream));
+    }
+
     @Override
     default int compareTo(GenomicRegion other) {
         return compare(this, other);
@@ -147,12 +158,33 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     boolean equals(Object o);
 
     /**
+     * Create genomic position using <em>one-based</em> coordinate system with <em>precise</em> positions on the
+     * <em>forward</em> strand.
+     *
+     * @return one-based position
+     */
+    static GenomicRegion oneBased(Contig contig, int startPosition, int endPosition) {
+        return GenomicRegionDefault.oneBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
+    }
+
+    /**
      * Create genomic position using <em>one-based</em> coordinate system.
      *
      * @return one-based position
      */
     static GenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
         return GenomicRegionDefault.oneBased(contig, strand, startPosition, endPosition);
+    }
+
+
+    /**
+     * Create genomic position using <em>zero-based</em> coordinate system with <em>precise</em> positions on the
+     * <em>forward</em> strand.
+     *
+     * @return one-based position
+     */
+    static GenomicRegion zeroBased(Contig contig, int startPosition, int endPosition) {
+        return GenomicRegionDefault.zeroBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
