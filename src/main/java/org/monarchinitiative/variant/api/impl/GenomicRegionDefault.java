@@ -24,6 +24,7 @@ public class GenomicRegionDefault implements GenomicRegion {
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
         this.startZeroBased = coordinateSystem == CoordinateSystem.ZERO_BASED ? startPosition.pos() : startPosition.pos() - 1;
+        // TODO - check that the positions are valid wrt. contig
     }
 
     public static GenomicRegionDefault of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {

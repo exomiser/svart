@@ -115,6 +115,89 @@ public class GenomicPositionTest {
     }
 
     @Test
+    public void asRegion() {
+        // one-based position is turned into a region of length 1
+        GenomicRegion region = oneBasedThree.asRegion();
+        assertThat(region.length(), equalTo(1));
+        assertThat(region.startPosition(), equalTo(oneBasedThree.position()));
+        assertThat(region.endPosition(), equalTo(oneBasedThree.position()));
+        assertThat(region.coordinateSystem(), equalTo(oneBasedThree.coordinateSystem()));
+        assertThat(region.strand(), equalTo(oneBasedThree.strand()));
+
+        // zero-based position is turned into a region of length 0
+        region = zeroBasedSeven.asRegion();
+        assertThat(region.length(), equalTo(0));
+        assertThat(region.startPosition(), equalTo(zeroBasedSeven.position()));
+        assertThat(region.endPosition(), equalTo(zeroBasedSeven.position()));
+        assertThat(region.coordinateSystem(), equalTo(zeroBasedSeven.coordinateSystem()));
+        assertThat(region.strand(), equalTo(zeroBasedSeven.strand()));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "0,   7, 7, 0,   3, 3, 1",
+            "1,   6, 8, 2,   2, 4, 3",
+            "2,   5, 9, 4,   1, 5, 5"})
+    public void withPadding_singlePadding(int padding,
+                                                int zeroExpectedStart, int zeroExpectedEnd, int zeroExpectedLength,
+                                                int oneExpectedStart, int oneExpectedEnd, int oneExpectedLength) {
+        GenomicRegion zeroBased = zeroBasedSeven.withPadding(padding);
+        assertThat(zeroBased.length(), equalTo(zeroExpectedLength));
+        assertThat(zeroBased.start(), equalTo(zeroExpectedStart));
+        assertThat(zeroBased.startPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
+        assertThat(zeroBased.end(), equalTo(zeroExpectedEnd));
+        assertThat(zeroBased.endPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
+
+        GenomicRegion oneBased = oneBasedThree.withPadding(padding);
+        assertThat(oneBased.length(), equalTo(oneExpectedLength));
+        assertThat(oneBased.start(), equalTo(oneExpectedStart));
+        assertThat(oneBased.startPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
+        assertThat(oneBased.end(), equalTo(oneExpectedEnd));
+        assertThat(oneBased.endPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
+    }
+
+    @Test
+    public void withPadding_singleNegativePadding() {
+        GenomicRegion oneBased = oneBasedThree.withPadding(-1);
+        assertThat(oneBased, nullValue());
+
+        GenomicRegion zeroBased = zeroBasedSeven.withPadding(-1);
+        assertThat(zeroBased, nullValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "0, 0,   7, 7, 0,   3, 3, 1", // no change
+            "1, 2,   6, 9, 3,   2, 5, 4",
+            "2, 1,   5, 8, 3,   1, 4, 4"})
+    public void withPadding_upstreamDownstreamPadding(int upstream, int downstream,
+                                          int zeroExpectedStart, int zeroExpectedEnd, int zeroExpectedLength,
+                                          int oneExpectedStart, int oneExpectedEnd, int oneExpectedLength) {
+        GenomicRegion zeroBased = zeroBasedSeven.withPadding(upstream, downstream);
+        assertThat(zeroBased.length(), equalTo(zeroExpectedLength));
+        assertThat(zeroBased.start(), equalTo(zeroExpectedStart));
+        assertThat(zeroBased.startPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
+        assertThat(zeroBased.end(), equalTo(zeroExpectedEnd));
+        assertThat(zeroBased.endPosition().confidenceInterval(), equalTo(zeroBasedSeven.ci()));
+
+        GenomicRegion oneBased = oneBasedThree.withPadding(upstream, downstream);
+        assertThat(oneBased.length(), equalTo(oneExpectedLength));
+        assertThat(oneBased.start(), equalTo(oneExpectedStart));
+        assertThat(oneBased.startPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
+        assertThat(oneBased.end(), equalTo(oneExpectedEnd));
+        assertThat(oneBased.endPosition().confidenceInterval(), equalTo(oneBasedThree.ci()));
+    }
+
+    @Test
+    public void withPadding_upstreamDownstreamNegativePadding() {
+        GenomicRegion oneBased = oneBasedThree.withPadding(-1, 1);
+        assertThat(oneBased, nullValue());
+
+        GenomicRegion zeroBased = zeroBasedSeven.withPadding(-1, 0);
+        assertThat(zeroBased, nullValue());
+    }
+
+    @Test
     public void compareToWhenDifferingContigs() {
         Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
         Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr2");
