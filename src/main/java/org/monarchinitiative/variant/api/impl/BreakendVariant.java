@@ -35,7 +35,7 @@ public final class BreakendVariant implements Variant, Breakended {
         this(eventId, left, right, ref, "", alt);
     }
 
-    public BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+    private BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
