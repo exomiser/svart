@@ -13,64 +13,31 @@ public class PartialBreakendTest {
 
     private static final Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
 
-    private final PartialBreakend oneBasedThree = PartialBreakend.oneBased(ctg1, "a", Strand.POSITIVE, Position.of(3, -2, 1));
-
     @Test
     public void properties() {
-        assertThat(oneBasedThree.contig(), equalTo(ctg1));
-        assertThat(oneBasedThree.contigId(), equalTo(1));
-        assertThat(oneBasedThree.contigName(), equalTo("1"));
-        assertThat(oneBasedThree.position(), equalTo(Position.of(3, ConfidenceInterval.of(-2, 1))));
-        assertThat(oneBasedThree.pos(), equalTo(3));
-        assertThat(oneBasedThree.ci(), equalTo(ConfidenceInterval.of(-2, 1)));
-        assertThat(oneBasedThree.min(), equalTo(1));
-        assertThat(oneBasedThree.max(), equalTo(4));
-        assertThat(oneBasedThree.strand(), equalTo(Strand.POSITIVE));
-        assertThat(oneBasedThree.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
-        // "PartialBreakend{contig=1, position=3 (-2, +1), strand=+, id='a'}"
-//        assertThat(oneBasedThree.toString(), equalTo("BND(a)[1:3(±2,1)]+"));
+        PartialBreakend three = PartialBreakend.zeroBased(ctg1, "a", Strand.POSITIVE, Position.of(3, -2, 1));
+
+        assertThat(three.contig(), equalTo(ctg1));
+        assertThat(three.contigId(), equalTo(1));
+        assertThat(three.contigName(), equalTo("1"));
+        assertThat(three.position(), equalTo(Position.of(3, ConfidenceInterval.of(-2, 1))));
+        assertThat(three.pos(), equalTo(3));
+        assertThat(three.ci(), equalTo(ConfidenceInterval.of(-2, 1)));
+        assertThat(three.min(), equalTo(1));
+        assertThat(three.max(), equalTo(4));
+        assertThat(three.strand(), equalTo(Strand.POSITIVE));
     }
 
     @Test
     public void withStrand() {
-        assertThat(oneBasedThree.withStrand(Strand.POSITIVE), is(sameInstance(oneBasedThree)));
+        PartialBreakend three = PartialBreakend.zeroBased(ctg1, "a", Strand.POSITIVE, Position.of(3, -2, 1));
 
-        PartialBreakend breakend = oneBasedThree.withStrand(Strand.NEGATIVE);
+        assertThat(three.withStrand(Strand.POSITIVE), is(sameInstance(three)));
+
+        PartialBreakend breakend = three.withStrand(Strand.NEGATIVE);
         assertThat(breakend.contig(), equalTo(ctg1));
-        assertThat(breakend.position(), equalTo(Position.of(8, -1, 2)));
+        assertThat(breakend.position(), equalTo(Position.of(7, -1, 2)));
         assertThat(breakend.id(), is("a"));
-    }
-
-    @Test
-    public void withCoordinateSystem() {
-        assertThat(oneBasedThree.withCoordinateSystem(CoordinateSystem.ONE_BASED), is(sameInstance(oneBasedThree)));
-
-        PartialBreakend breakend = oneBasedThree.withCoordinateSystem(CoordinateSystem.ZERO_BASED);
-        assertThat(breakend.contig(), equalTo(ctg1));
-        assertThat(breakend.position(), equalTo(Position.of(2, -2, 1)));
-        assertThat(breakend.id(), is("a"));
-    }
-
-    @Test
-    public void zeroBasedPartialBreakend() {
-        PartialBreakend pos = PartialBreakend.zeroBased(ctg1, "a", Strand.POSITIVE, Position.of(2));
-
-        assertThat(pos.id(), equalTo("a"));
-        assertThat(pos.contig(), equalTo(ctg1));
-        assertThat(pos.strand(), equalTo(Strand.POSITIVE));
-        assertThat(pos.position(), equalTo(Position.of(2)));
-        assertThat(pos.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
-    }
-
-    @Test
-    public void oneBasedPartialBreakend() {
-        PartialBreakend pos = PartialBreakend.oneBased(ctg1, "a", Strand.POSITIVE, Position.of(3));
-
-        assertThat(pos.id(), equalTo("a"));
-        assertThat(pos.contig(), equalTo(ctg1));
-        assertThat(pos.strand(), equalTo(Strand.POSITIVE));
-        assertThat(pos.position(), equalTo(Position.of(3)));
-        assertThat(pos.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
     @Test
@@ -78,9 +45,7 @@ public class PartialBreakendTest {
         Breakend unresolved = Breakend.unresolved();
         assertThat(unresolved.isUnresolved(), equalTo(true));
         assertThat(unresolved.contig(), equalTo(Contig.unknown()));
-        assertThat(unresolved.strand(), equalTo(Strand.UNKNOWN));
-        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+        assertThat(unresolved.strand(), equalTo(Strand.POSITIVE));
         assertThat(unresolved.id(), equalTo(""));
-        assertThat(unresolved.toString(), equalTo("UnresolvedBreakend{id='', strand=?, coordinateSystem=ONE_BASED, position=1, contig=0}"));
     }
 }

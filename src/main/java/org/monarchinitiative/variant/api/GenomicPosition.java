@@ -4,12 +4,13 @@ import org.monarchinitiative.variant.api.impl.GenomicPositionDefault;
 import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
 
 /**
- * Represents a {@link Position} on a {@link Contig}.
+ * Represents a {@link Position} on a {@link Contig} and a {@link Strand}. The position is always zero-based for ease
+ * of calculations.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition>, CoordinateSystemed<GenomicPosition> {
+public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition> {
 
     Contig contig();
 
@@ -25,6 +26,11 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
 
     default int pos() {
         return position().pos();
+    }
+
+    default int posOneBased() {
+        // since GenomicPosition is always in ZERO_BASED, we need to correct the position to get the ONE_BASED position
+        return pos() + CoordinateSystem.startDelta(CoordinateSystem.ZERO_BASED, CoordinateSystem.ONE_BASED);
     }
 
     default Strand strand() {
@@ -43,28 +49,28 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
         return position().maxPos();
     }
 
-    default int differenceTo(GenomicPosition other) {
+    default int distanceTo(GenomicPosition other) {
         if (contigId() != other.contigId()) {
             throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
         }
-        other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
-        return pos() - other.pos();
+        other = other.withStrand(strand());
+        return other.pos() - pos();
     }
 
 
-    default int differenceTo(GenomicRegion other) {
+    default int distanceTo(GenomicRegion other) {
         if (contigId() != other.contigId()) {
             throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
 
         }
-        other = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
+        other = other.withStrand(strand());
 
         if (other.contains(this)) {
             return 0;
         }
 
-        int s = pos() - other.start();
-        int e = pos() - other.end();
+        int s = other.start() - pos();
+        int e = other.end() - pos();
         return Math.abs(s) < Math.abs(e) ? s : e;
     }
 
@@ -76,7 +82,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> position
      */
     default boolean isUpstreamOf(GenomicPosition other) {
-        return differenceTo(other) < 0;
+        return distanceTo(other) > 0;
     }
 
 
@@ -88,7 +94,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @return <code>true</code> if <code>this</code> position is upstream of the <code>other</code> region
      */
     default boolean isUpstreamOf(GenomicRegion other) {
-        return differenceTo(other) < 0;
+        return distanceTo(other) > 0;
     }
 
     /**
@@ -99,7 +105,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> position
      */
     default boolean isDownstreamOf(GenomicPosition other) {
-        return differenceTo(other) > 0;
+        return distanceTo(other) < 0;
     }
 
     /**
@@ -110,58 +116,61 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @return <code>true</code> if <code>this</code> position is downstream of the <code>other</code> region
      */
     default boolean isDownstreamOf(GenomicRegion other) {
-        return differenceTo(other) > 0;
+        return distanceTo(other) < 0;
     }
 
 
     /**
-     * Convert the position to a region. <em>Zero based</em> position is converted into a 0bp-long region, while
-     * <em>one based</em> position is converted into a 1bp-long region.
+     * Convert the position to a 0 bp-long region in {@link CoordinateSystem#ZERO_BASED} coordinate system with precise
+     * start/end positions.
      *
-     * @return the position as a region
+     * @return the region
      */
-    default GenomicRegion asRegion() {
-        return GenomicRegionDefault.of(contig(), strand(), coordinateSystem(), position(), position());
+    default GenomicRegion toRegion() {
+        return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().asPrecise(), position().asPrecise());
     }
 
     /**
-     * Convert the position to a region by adding specified number of <code>padding</code> nucleotides upstream
-     * and downstream from the position.
-     * <p>
-     * Note that if the position is <em>zero based</em>, the returned region has length <code>2 * padding</code>.
-     * If the position is <em>one based</em>, the returned region has length <code>2 * padding + 1</code>.
-     * <p>
-     * The method may throw {@link IllegalArgumentException} if the padded region (including CI) would extend the
-     * contig boundaries. TODO - check
+     * Convert the position to a region in {@link CoordinateSystem#ZERO_BASED} by adding specified number of
+     * <code>padding</code> nucleotides upstream and downstream from the position. Length of the returned region
+     * is <code>2 * padding</code>. The start/end coordinates of the region are precise.
      *
      * @param padding non-negative number of padding bases to add upstream and downstream from the position
-     * @return the padded region or <code>null</code> if <code>padding < 0</code>
+     * @return the padded region
+     * @throws IllegalArgumentException if <code>padding < 0</code> or if the padded region would extend
+     * the contig boundaries. TODO - check if the exception is really thrown
      */
-    default GenomicRegion withPadding(int padding) {
-        return withPadding(padding, padding);
+    default GenomicRegion toRegion(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Cannot apply negative padding: " + padding);
+        }
+        return toRegion(-padding, padding);
     }
 
     /**
-     * Convert the position to a region by adding specified number of nucleotides <code>upstream</code>
-     * and <code>downstream</code> from the position.
+     * Convert the position to a region in {@link CoordinateSystem#ZERO_BASED} by adding specified number of
+     * nucleotides <code>upstream</code> and <code>downstream</code> from the current position. The start/end
+     * coordinates of the region are precise.
      * <p>
-     * Note that if the position is <em>zero based</em>, the returned region has length
-     * <code>upstream + downstream</code>.
-     * If the position is <em>one based</em>, the returned region has length <code>upstream + downstream + 1</code>.
+     * To extend the region in upstream (5') direction, <code>upstream</code> must be <em>negative</em>. To extend the
+     * region in downstream direction, <code>downstream</code> must be positive.
      *
-     * @param upstream non-negative number of padding bases to add upstream from the position
-     * @param downstream non-negative number of padding bases to add downstream from the position
+     * Length of the returned region is equal to <code>(pos + downstream) - (pos + upstream)</code>, where
+     * <code>pos</code> is the current position.
+     *
+     * @param upstream number of padding bases to add upstream from the position
+     * @param downstream number of padding bases to add downstream from the position
      * @return the padded region
-     * @throws IllegalArgumentException if <code>upstream</code> or <code>downstream</code> is negative, or if the
-     * padded region (including CI) would extend the contig boundaries
+     * @throws IllegalArgumentException if <code>downstream < upstream</code> or if the padded region would extend
+     * the contig boundaries. TODO - check if the exception is really thrown
      */
-    default GenomicRegion withPadding(int upstream, int downstream) {
-        if (upstream < 0 || downstream < 0) {
+    default GenomicRegion toRegion(int upstream, int downstream) {
+        if (upstream == 0 && downstream == 0) {
+            return toRegion();
+        } else if (upstream >= downstream) {
             throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
-        } else if (upstream == 0 && downstream == 0) {
-            return asRegion();
         }
-        return GenomicRegionDefault.of(contig(), strand(), coordinateSystem(), position().shift(-upstream), position().shift(downstream));
+        return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
     }
 
     @Override
@@ -172,12 +181,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
     static int compare(GenomicPosition x, GenomicPosition y) {
         int result = Contig.compare(x.contig(), y.contig());
         if (result == 0) {
-            // TODO: 25. 11. 2020 also consider the coordinate system here?
-//            result = Position.compare(x.toZeroBased().position(), y.toZeroBased().position());
-            // or this...
-            // calculate normalization delta for start positions
-            int delta = x.coordinateSystem().delta(y.coordinateSystem());
-            result = Position.compare(x.position(), y.position().shift(delta));
+            result = Position.compare(x.position(), y.position());
         }
         if (result == 0) {
             result = Strand.compare(x.strand(), y.strand());
@@ -186,27 +190,41 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
     }
 
     /**
-     * Create genomic position using <em>one-based</em> coordinate system.
+     * Create {@link GenomicPosition} starting from a <code>position</code> in <em>one-based</em> coordinate system.
+     * <p>
+     * Note that the method returns a genomic position in {@link CoordinateSystem#ZERO_BASED}.
      *
-     * @return one-based position
+     * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
      */
     static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
-        return GenomicPositionDefault.oneBased(contig, strand, position);
+        return of(contig, strand, CoordinateSystem.ONE_BASED, position);
     }
 
     /**
-     * Create genomic position using <em>zero-based</em> coordinate system.
+     * Create {@link GenomicPosition} starting from a <code>position</code> in <em>zero-based</em> coordinate system.
      *
-     * @return zero-based position
+     * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
      */
     static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
-        return GenomicPositionDefault.zeroBased(contig, strand, position);
+        return of(contig, strand, CoordinateSystem.ZERO_BASED, position);
     }
 
     /**
-     * Create genomic position on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
+     * Create a {@link CoordinateSystem#ZERO_BASED} genomic position at <code>position</code> in the provided
+     * <code>coordinateSystem</code> on <code>contig</code> and <code>strand</code>.
+     * <p>
+     * For example:
+     * <pre>
+     * // pos will be 0 in 0-based coordinate system
+     * GenomicPosition pos = GenomicPosition.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(1))
+     * </pre>
+     * <pre>
+     * // pos will be 1 in 0-based coordinate system
+     * GenomicPosition pos = GenomicPosition.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(1))
+     * </pre>
      *
-     * @return a position
+     * @return a position in {@link CoordinateSystem#ZERO_BASED} coordinate system corrected from the input
+     * <code>coordinateSystem</code>
      */
     static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
         return GenomicPositionDefault.of(contig, strand, coordinateSystem, position);

@@ -84,32 +84,46 @@ public final class BreakendVariant implements Variant, Breakended {
         return left.position();
     }
 
+    /**
+     * @return always {@link CoordinateSystem#ZERO_BASED}
+     */
     @Override
     public CoordinateSystem coordinateSystem() {
-        return left.coordinateSystem();
+        return CoordinateSystem.ZERO_BASED;
     }
 
+    /**
+     * No-op.
+     * @param coordinateSystem ignored argument
+     * @return this instance
+     */
     @Override
     public BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (left.coordinateSystem() == coordinateSystem) {
-            return this;
-        }
-        return new BreakendVariant(eventId, left.withCoordinateSystem(coordinateSystem), right.withCoordinateSystem(coordinateSystem), ref, trailingRef, alt);
+        return this;
     }
 
+    /**
+     * @return length of the sequence inserted between breakends
+     */
     @Override
     public int length() {
         return alt.length();
     }
 
+    /**
+     * @return length of the ref allele
+     */
     @Override
     public int refLength() {
         return ref.length();
     }
 
+    /**
+     * @return length of the sequence inserted between breakends
+     */
     @Override
     public int changeLength() {
-        return 0;
+        return alt.length();
     }
 
     @Override
@@ -127,57 +141,40 @@ public final class BreakendVariant implements Variant, Breakended {
         return VariantType.BND;
     }
 
+    /**
+     * @return strand of the left breakend
+     */
     @Override
     public Strand strand() {
         return left.strand();
     }
 
-    public BreakendVariant withStrand(Strand strand) {
-//        return this;
-        //TODO: Neither of these work with the unit test BrakendVariantTest.withStrand
-//        if (left.strand().notComplementOf(strand)) {
-//            return this;
-//        }
-//        return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), Seq.reverseComplement(trailingRef), Seq.reverseComplement(leadingRef), Seq.reverseComplement(alt));
-
-        // we cannot convert if e.g. left==UNSTRANDED && target==POSITIVE
-        if (left.strand().conversionIsLegal(strand) && right.strand().conversionIsLegal(strand)) {
-
-            // we do nothing if left==POSITIVE && target==POSITIVE
-            if (left.strand().needsConversion(strand)) {
-                if (strand.hasComplement()) {
-                    // Convert between POSITIVE and NEGATIVE.
-                    return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), // reverse order
-                            Seq.reverseComplement(trailingRef), Seq.reverseComplement(ref), // here as well
-                            Seq.reverseComplement(alt));
-                } else {
-                    // Convert into UNSTRANDED or UNKNOWN. Here, there is no need to use trailing ref anymore since
-                    // the conversion to POSITIVE or NEGATIVE is not possible anymore.
-                    return new BreakendVariant(eventId, left.withStrand(strand), right.withStrand(strand), ref, alt);
-                }
-            }
-        }
+    /**
+     * This method returns the unchanged breakend variant, since <em>left</em> and <em>right</em> breakend might be
+     * located on different strands and it may not be possible to convert the breakend variant to required
+     * <code>strand</code>.
+     * <p>
+     * For instance, the VCF record
+     * <pre>2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1</pre>
+     * describes a breakend <em>bnd_W</em> that is located at <em>2:321,681</em> on {@link Strand#POSITIVE}, and
+     * the mate breakend <em>bnd_Y</em> located at <em>17:83,058,460</em> on {@link Strand#NEGATIVE}.
+     * <p>
+     * This variant cannot be converted to {@link Strand#NEGATIVE}, the {@link #left()} breakend will always be on
+     * {@link Strand#POSITIVE}.
+     * <p>
+     * Note: use {@link #toOppositeStrand()} method to flip the breakend variant to the opposite strand
+     * @param other target strand
+     * @return this variant with <em>no change</em>
+     */
+    @Override
+    public BreakendVariant withStrand(Strand other) {
         return this;
     }
 
     @Override
     public BreakendVariant toOppositeStrand() {
-        return withStrand(strand().opposite());
-//
-////        Breakend flippedLeft = left.strand().hasComplement() ? left.toOppositeStrand() : left;
-////        Breakend flippedRight = right.strand().hasComplement() ? right.toOppositeStrand() : right;
-//
-//
-//
-//        if (left.strand().hasComplement() || right.strand().hasComplement()) {
-//                // Convert between POSITIVE and NEGATIVE.
-//                return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(), // reverse order
-//                        Seq.reverseComplement(trailingRef), Seq.reverseComplement(ref), // here as well
-//                        Seq.reverseComplement(alt));
-//        }
-//        // Convert into UNSTRANDED or UNKNOWN. Here, there is no need to use trailing ref anymore since
-//        // the conversion to POSITIVE or NEGATIVE is not possible anymore.
-//        return new BreakendVariant(eventId, left.withStrand(strand), right.withStrand(strand), ref, alt);
+        return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(),
+                Seq.reverseComplement(trailingRef), Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 
     @Override

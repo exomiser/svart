@@ -69,22 +69,6 @@ public class PositionTest {
         assertThat(exception.getMessage(), is("Cannot create position `-1` with negative value"));
     }
 
-    @Test
-    public void toZeroBasedFromOneBased() {
-        Position oneBasedStart = Position.of(1);
-        Position zeroBasedStart = Position.of(0);
-        int delta = CoordinateSystem.ONE_BASED.delta(CoordinateSystem.ZERO_BASED);
-        assertThat(delta, equalTo(-1));
-        assertThat(oneBasedStart.shift(delta), equalTo(zeroBasedStart));
-    }
-
-    @Test
-    public void toOneBasedFromZeroBased() {
-        Position zeroBased = Position.of(0);
-        Position oneBased = Position.of(1);
-        assertThat(zeroBased.shift(CoordinateSystem.ZERO_BASED.delta(CoordinateSystem.ONE_BASED)), equalTo(oneBased));
-    }
-
     @ParameterizedTest
     @CsvSource({
             "0, 1, -1",
@@ -132,9 +116,9 @@ public class PositionTest {
     }
 
     @Test
-    public void toPrecise() {
-        assertThat(Position.of(1).toPrecise(), equalTo(Position.of(1)));
-        assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).toPrecise(), equalTo(Position.of(1)));
+    public void asPrecise() {
+        assertThat(Position.of(1).asPrecise(), equalTo(Position.of(1)));
+        assertThat(Position.of(1, ConfidenceInterval.of(-1, 1)).asPrecise(), equalTo(Position.of(1)));
     }
 
     @Test

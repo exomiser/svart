@@ -36,11 +36,14 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     }
 
     /**
-     * Returns to zero based start position of the region.
-     * @return
+     * @return position representing the start border
      */
-    default int startZeroBased() {
-        return coordinateSystem().isZeroBased() ? start() : start() - 1;
+    default GenomicPosition startGenomicPosition() {
+        return GenomicPosition.of(contig(), strand(), CoordinateSystem.ZERO_BASED, normalisedStartPosition(CoordinateSystem.ZERO_BASED));
+    }
+
+    default Position normalisedStartPosition(CoordinateSystem coordinateSystem) {
+        return startPosition().shift(coordinateSystem().startDelta(coordinateSystem));
     }
 
     /**
@@ -57,9 +60,18 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         return endPosition().pos();
     }
 
+    /**
+     * @return position representing the end border
+     */
+    default GenomicPosition endGenomicPosition() {
+        // no need to normalize to a coordinate system like the start position, since we never use a coordinate system
+        // with open end endpoint
+        return GenomicPosition.of(contig(), strand(), CoordinateSystem.ZERO_BASED, endPosition());
+    }
+
 
     default int length() {
-        return end() - startZeroBased();
+        return end() - start() - coordinateSystem().startDelta(CoordinateSystem.ZERO_BASED);
     }
 
     /**
@@ -88,9 +100,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         if (this.contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.strand());
-//        return start() <= onStrand.end() && end() >= onStrand.start();
-        // TODO: test this thoroughly
+        GenomicRegion onStrand = other.withStrand(strand());
         return isOneBased()
                 ? start() <= onStrand.end() && onStrand.start() <= end()
                 : start() < onStrand.end() && onStrand.start() < end();
@@ -104,8 +114,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         if (this.contig().id() != other.contig().id()) {
             return false;
         }
-        GenomicRegion onStrand = other.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
-        // TODO: test this thoroughly
+        GenomicRegion onStrand = other.withStrand(strand()).withCoordinateSystem(coordinateSystem());
         return onStrand.start() >= start() && onStrand.end() <= end();
     }
 
@@ -113,12 +122,10 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         if (this.contig().id() != genomicPosition.contig().id()) {
             return false;
         }
-        GenomicPosition onStrand = genomicPosition.withStrand(this.strand()).withCoordinateSystem(this.coordinateSystem());
-//        return start() >= onStrand.pos() && onStrand.pos() <= end();
-        // TODO: test this thoroughly
-        return coordinateSystem().isOneBased()
-                ? start() <= onStrand.pos() && onStrand.pos() <= end()
-                : start() <= onStrand.pos() && onStrand.pos() < end();
+        GenomicRegion region = withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        int pos = genomicPosition.withStrand(strand()).pos();
+
+        return region.start() <= pos && pos < region.end();
     }
 
     default GenomicRegion withPadding(int padding) {
@@ -142,8 +149,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         if (result == 0) {
             // TODO: test this thoroughly with mixed systems. Don't want to penalize 1-based if 0-based never used in a system
             // calculate normalization delta for start positions
-            int delta = x.coordinateSystem().delta(y.coordinateSystem());
-            result = Position.compare(x.startPosition(), y.startPosition().shift(delta));
+            result = Position.compare(x.startPosition(), y.normalisedStartPosition(x.coordinateSystem()));
         }
         if (result == 0) {
             result = Position.compare(x.endPosition(), y.endPosition());
@@ -180,21 +186,35 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
 
     /**
      * Create genomic position using <em>zero-based</em> coordinate system with <em>precise</em> positions on the
-     * <em>forward</em> strand.
+     * <em>positive</em> strand.
      *
-     * @return one-based position
+     * @return zero-based genomic region
      */
     static GenomicRegion zeroBased(Contig contig, int startPosition, int endPosition) {
         return GenomicRegionDefault.zeroBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
-     * Create genomic position using <em>zero-based</em> coordinate system.
+     * Create genomic region using coordinates in <em>zero-based</em> coordinate system.
      *
-     * @return zero-based position
+     * @return zero-based genomic region
      */
     static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
         return GenomicRegionDefault.zeroBased(contig, strand, startPosition, endPosition);
+    }
+
+    /**
+     * Create a zero-based genomic region from provided {@link GenomicPosition}s.
+     *
+     * @param start start genomic position
+     * @param end   end genomic position
+     * @return zero-based genomic region
+     */
+    static GenomicRegion of(GenomicPosition start, GenomicPosition end) {
+        if (start.contig() != end.contig() || start.strand() != end.strand()) {
+            throw new IllegalArgumentException("Cannot create a genomic region from positions located on different contigs/strands");
+        }
+        return of(start.contig(), start.strand(), CoordinateSystem.ZERO_BASED, start.position(), end.position());
     }
 
     /**

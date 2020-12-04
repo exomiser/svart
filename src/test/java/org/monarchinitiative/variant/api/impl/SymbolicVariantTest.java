@@ -116,14 +116,6 @@ public class SymbolicVariantTest {
     }
 
     @Test
-    public void symbolicInsWithUnknownStrand() {
-        Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
-        Variant expected = SymbolicVariant.of(chr1, "", Strand.UNKNOWN, CoordinateSystem.ONE_BASED, Position.of(1), Position.of(1), "A", "<INS>", 100);
-        assertThat(ins.withStrand(Strand.UNKNOWN), equalTo(expected));
-        assertSame(expected, expected.withStrand(Strand.POSITIVE));
-    }
-
-    @Test
     public void symbolicInsWithNegativeStrand() {
         Variant ins = SymbolicVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
         Variant negativeIns = ins.withStrand(Strand.NEGATIVE);

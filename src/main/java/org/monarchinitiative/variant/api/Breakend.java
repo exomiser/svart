@@ -15,15 +15,9 @@ public interface Breakend extends GenomicPosition {
      */
     String id();
 
-    @Override
-    CoordinateSystem coordinateSystem();
-
-    @Override
-    Breakend withCoordinateSystem(CoordinateSystem coordinateSystem);
-
     // override Stranded<T> methods from ChromosomalRegion in order to return the more specific Breakend type
     @Override
-    Breakend withStrand(Strand strand);
+    Breakend withStrand(Strand other);
 
     /**
      * Convert the breakend to opposite strand.

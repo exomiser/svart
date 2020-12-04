@@ -48,12 +48,6 @@ public class GenomicRegionDefault implements GenomicRegion {
         return contig;
     }
 
-
-    @Override
-    public int startZeroBased() {
-        return startZeroBased;
-    }
-
     @Override
     public CoordinateSystem coordinateSystem() {
         return coordinateSystem;
@@ -64,8 +58,7 @@ public class GenomicRegionDefault implements GenomicRegion {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new GenomicRegionDefault(contig, strand, coordinateSystem, startPosition.shift(startDelta), endPosition);
+        return new GenomicRegionDefault(contig, strand, coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition);
     }
 
     @Override
@@ -84,16 +77,13 @@ public class GenomicRegionDefault implements GenomicRegion {
     }
 
     @Override
-    public GenomicRegionDefault withStrand(Strand strand) {
-        if (!this.strand.needsConversion(strand)) {
+    public GenomicRegionDefault withStrand(Strand other) {
+        if (strand == other) {
             return this;
         }
-        if (this.strand.isComplementOf(strand)) {
-            Position start = startPosition.invert(contig, coordinateSystem);
-            Position end = endPosition.invert(contig, coordinateSystem);
-            return new GenomicRegionDefault(contig, strand, coordinateSystem, end, start);
-        }
-        return new GenomicRegionDefault(contig, strand, coordinateSystem, startPosition, endPosition);
+        Position start = startPosition.invert(contig, coordinateSystem);
+        Position end = endPosition.invert(contig, coordinateSystem);
+        return new GenomicRegionDefault(contig, other, coordinateSystem, end, start);
     }
 
     @Override

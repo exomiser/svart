@@ -1,9 +1,7 @@
 package org.monarchinitiative.variant.api.impl;
 
 import org.monarchinitiative.variant.api.Breakend;
-import org.monarchinitiative.variant.api.CoordinateSystem;
 import org.monarchinitiative.variant.api.Strand;
-import org.monarchinitiative.variant.api.VariantType;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -19,8 +17,7 @@ public class VcfBreakendFormatter {
      * Create <em>alt</em> allele representation for <code>variant</code>.
      *
      * @param variant breakend variant
-     * @return optional with breakend <em>alt</em> allele representation in VCF format or empty optional if either of
-     * the breakends is not on positive or on negative strand
+     * @return string with breakend <em>alt</em> allele representation in VCF format
      */
     static String makeAltVcfField(BreakendVariant variant) {
         String alt = variant.strand().isPositive() ? variant.alt() : Seq.reverseComplement(variant.alt());
@@ -34,28 +31,26 @@ public class VcfBreakendFormatter {
      * @param right right breakend
      * @param ref   string with <em>ref</em> allele on {@link Strand#POSITIVE}
      * @param ins   string with <em>inserted</em> sequence on {@link Strand#POSITIVE}
-     * @return optional with breakend <em>alt</em> allele representation in VCF format or empty optional if either of
-     * the breakends is not on positive or on negative strand
+     * @return string with breakend <em>alt</em> allele representation in VCF format
      */
     static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
         String contig = right.contigName();
-        int pos = right.withCoordinateSystem(CoordinateSystem.ONE_BASED).withStrand(Strand.POSITIVE).pos();
+        int pos = right.withStrand(Strand.POSITIVE).pos();
         Strand leftStrand = left.strand();
         Strand rightStrand = right.strand();
 
-        if (leftStrand.hasComplement() && rightStrand.hasComplement()) {
-            String mate = rightStrand == Strand.POSITIVE
-                    ? '[' + contig + ':' + pos + '['
-                    : ']' + contig + ':' + pos + ']';
-
-            return leftStrand == Strand.POSITIVE
-                    ? ref + ins + mate
-                    : mate + ins + ref;
-        } else if (left.isUnresolved()) {
+        if (left.isUnresolved()) {
             return '.' + ref;
         } else if (right.isUnresolved()) {
             return ref + '.';
         }
-        return "<" + VariantType.BND + ">";
+
+        String mate = (rightStrand == Strand.POSITIVE)
+                ? '[' + contig + ':' + (pos + 1) + '['
+                : ']' + contig + ':' + pos + ']';
+
+        return leftStrand == Strand.POSITIVE
+                ? ref + ins + mate
+                : mate + ins + ref;
     }
 }

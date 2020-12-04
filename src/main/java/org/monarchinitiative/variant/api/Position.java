@@ -43,7 +43,7 @@ public interface Position extends Comparable<Position> {
      */
     boolean isPrecise();
 
-    Position toPrecise();
+    Position asPrecise();
 
     /**
      * Inverts the current {@link Position} to the opposite end of the given {@link Contig} using the

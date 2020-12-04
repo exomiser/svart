@@ -1,10 +1,6 @@
 package org.monarchinitiative.variant.api.impl;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.variant.api.Breakend;
-import org.monarchinitiative.variant.api.Position;
-import org.monarchinitiative.variant.api.Strand;
-import org.monarchinitiative.variant.api.TestContigs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -16,21 +12,21 @@ class VcfBreakendFormatterTest {
 
     @Test
     public void makeAltVcfField_PosPos() {
-        BreakendVariant variant = TestVariants.bnd_U();
+        BreakendVariant variant = TestVariants.breakendVariant_UV();
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
         assertThat(alt, equalTo("C[2:321682["));
     }
 
     @Test
     public void makeAltVcfField_NegPos() {
-        BreakendVariant variant = TestVariants.bnd_X();
+        BreakendVariant variant = TestVariants.breakendVariant_XZ();
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
         assertThat(alt, equalTo("[17:198983[A"));
     }
 
     @Test
     public void makeAltVcfField_NegNeg() {
-        BreakendVariant variant = TestVariants.bnd_V();
+        BreakendVariant variant = TestVariants.breakendVariant_VU();
 
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
 
@@ -41,7 +37,7 @@ class VcfBreakendFormatterTest {
 
     @Test
     public void makeAltVcfField_PosPos_withInsertedSeq() {
-        BreakendVariant variant = TestVariants.bnd_U_withInserted();
+        BreakendVariant variant = TestVariants.breakendVariant_UV_withInsertion();
 
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
 
@@ -50,7 +46,7 @@ class VcfBreakendFormatterTest {
 
     @Test
     public void makeAltVcfField_NegNeg_withInsertedSeq() {
-        BreakendVariant variant = TestVariants.bnd_V_withInserted();
+        BreakendVariant variant = TestVariants.breakendVariant_VU_withInsertion();
 
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
 
@@ -74,15 +70,5 @@ class VcfBreakendFormatterTest {
         String alt = VcfBreakendFormatter.makeAltVcfField(variant);
 
         assertThat(alt, equalTo("G."));
-    }
-
-    @Test
-    public void makeAltVcfField_invalidStrand() {
-        Breakend bnd_U = PartialBreakend.oneBased(TestContigs.chr13, "bnd_U", Strand.UNSTRANDED, Position.of(123_456));
-        Breakend bnd_V = PartialBreakend.oneBased(TestContigs.chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
-
-        String alt = VcfBreakendFormatter.makeAltVcfField(bnd_U, bnd_V, "C", "");
-
-        assertThat(alt, equalTo("<BND>"));
     }
 }

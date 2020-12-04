@@ -31,7 +31,7 @@ public interface Variant extends GenomicRegion {
     int changeLength();
 
     @Override
-    Variant withStrand(Strand strand);
+    Variant withStrand(Strand other);
 
     @Override
     default Variant toOppositeStrand() {

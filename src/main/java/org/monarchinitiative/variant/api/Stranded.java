@@ -7,7 +7,7 @@ public interface Stranded<T> {
 
     Strand strand();
 
-    T withStrand(Strand strand);
+    T withStrand(Strand other);
 
     default T toOppositeStrand() {
         return withStrand(strand().opposite());

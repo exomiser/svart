@@ -22,23 +22,10 @@ public class TestVariants {
      * <p>
      * <pre>13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2</pre>
      */
-    public static BreakendVariant bnd_U() {
-        Breakend bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
+    public static BreakendVariant breakendVariant_UV() {
+        Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
         return new BreakendVariant("tra2", bnd_U, bnd_V, "C", "");
-    }
-
-    /**
-     * Make variant representing event consisting of <em>bnd_W</em> and <em>bnd_Y</em> described in section 5.4 of VCF specs.
-     * <p>
-     * The variant joins <em>chr2</em> {@link Strand#POSITIVE} to <em>chr17</em> {@link Strand#NEGATIVE}.
-     * <p>
-     * <pre>2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1</pre>
-     */
-    public static BreakendVariant bnd_W() {
-        Breakend bnd_W = PartialBreakend.oneBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
-        Breakend bnd_Y = PartialBreakend.oneBased(chr17, "bnd_Y", Strand.POSITIVE, Position.of(198_982)).withStrand(Strand.NEGATIVE);
-        return new BreakendVariant("tra1", bnd_W, bnd_Y, "G", "");
     }
 
     /**
@@ -48,10 +35,23 @@ public class TestVariants {
      * <p>
      * <pre>2	321682	bnd_V	T	]13:123456]T	6	PASS	SVTYPE=BND;MATEID=bnd_U;EVENT=tra2</pre>
      */
-    public static BreakendVariant bnd_V() {
+    public static BreakendVariant breakendVariant_VU() {
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682)).withStrand(Strand.NEGATIVE);
-        Breakend bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
+        Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
         return new BreakendVariant("tra2", bnd_V, bnd_U, "T", "");
+    }
+
+    /**
+     * Make variant representing event consisting of <em>bnd_W</em> and <em>bnd_Y</em> described in section 5.4 of VCF specs.
+     * <p>
+     * The variant joins <em>chr2</em> {@link Strand#POSITIVE} to <em>chr17</em> {@link Strand#NEGATIVE}.
+     * <p>
+     * <pre>2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1</pre>
+     */
+    public static BreakendVariant breakendVariant_WY() {
+        Breakend bnd_W = PartialBreakend.zeroBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
+        Breakend bnd_Y = PartialBreakend.oneBased(chr17, "bnd_Y", Strand.POSITIVE, Position.of(198_982)).withStrand(Strand.NEGATIVE);
+        return new BreakendVariant("tra1", bnd_W, bnd_Y, "G", "");
     }
 
 
@@ -62,7 +62,7 @@ public class TestVariants {
      * <p>
      * <pre>13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3</pre>
      */
-    public static BreakendVariant bnd_X() {
+    public static BreakendVariant breakendVariant_XZ() {
         Breakend bnd_X = PartialBreakend.oneBased(chr13, "bnd_X", Strand.POSITIVE, Position.of(123_457)).withStrand(Strand.NEGATIVE);
         Breakend bnd_Z = PartialBreakend.oneBased(chr17, "bnd_Z", Strand.POSITIVE, Position.of(198_983));
         return new BreakendVariant("tra3", bnd_X, bnd_Z, "A", "");
@@ -75,8 +75,8 @@ public class TestVariants {
      * <p>
      * <pre>13  123456  bnd_U   C   CAGTNNNNNCA[2:321682[    6   PASS    SVTYPE=BND;MATEID=bnd_V;EVENT=tra2</pre>
      */
-    public static BreakendVariant bnd_U_withInserted() {
-        Breakend bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
+    public static BreakendVariant breakendVariant_UV_withInsertion() {
+        Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
         return new BreakendVariant("tra2", bnd_U, bnd_V, "C", "AGTNNNNNCA");
     }
@@ -88,9 +88,9 @@ public class TestVariants {
      * <p>
      * <pre>2  321582  bnd_V   T   ]13:123456]AGTNNNNNCAT    6   PASS    SVTYPE=BND;MATEID=bnd_U;EVENT=tra2</pre>
      */
-    public static BreakendVariant bnd_V_withInserted() {
+    public static BreakendVariant breakendVariant_VU_withInsertion() {
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682)).withStrand(Strand.NEGATIVE);
-        Breakend bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
+        Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
         return new BreakendVariant("tra2", bnd_V, bnd_U, "T", "TGNNNNNACT");
     }
 
@@ -116,7 +116,7 @@ public class TestVariants {
      * See section 5.4.9 of VCF v4.2 specs for more info.
      */
     public static BreakendVariant bnd_W_rightUnresolved() {
-        Breakend left = PartialBreakend.oneBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
+        Breakend left = PartialBreakend.zeroBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
         Breakend right = Breakend.unresolved();
 
         return new BreakendVariant("", left, right, "G", "");
