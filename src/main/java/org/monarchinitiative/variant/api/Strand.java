@@ -2,7 +2,8 @@
 package org.monarchinitiative.variant.api;
 
 /**
- * Contains the 4 strand types from GFF3. This is a superset of BED which only defines [+, -, .]
+ * Contains definitions of <em>positive</em> (+) and <em>negative</em> (-) nucleotide sequence strand types.
+ * This is a subset of BED which defines {+, -, .}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
