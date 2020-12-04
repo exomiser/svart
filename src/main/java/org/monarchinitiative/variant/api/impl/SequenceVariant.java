@@ -7,6 +7,9 @@ import java.util.Objects;
 /**
  * Represents a simple genomic variation of known sequence. Here simple is defined as not being a symbolic and/or
  * breakend re-arrangement.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class SequenceVariant implements Variant {
 
@@ -19,8 +22,6 @@ public class SequenceVariant implements Variant {
     private final String ref;
     private final String alt;
 
-    private final int startZeroBased;
-
     private SequenceVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt) {
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
@@ -30,7 +31,6 @@ public class SequenceVariant implements Variant {
         this.strand = Objects.requireNonNull(strand);
         this.coordinateSystem = Objects.requireNonNull(coordinateSystem);
         this.startPosition = Objects.requireNonNull(startPosition);
-        this.startZeroBased = coordinateSystem.isZeroBased() ? startPosition.pos() : startPosition.pos() - 1;
         this.endPosition = Objects.requireNonNull(endPosition);
         this.ref = Objects.requireNonNull(ref);
         this.alt = Objects.requireNonNull(alt);
@@ -91,11 +91,6 @@ public class SequenceVariant implements Variant {
     }
 
     @Override
-    public int startZeroBased() {
-        return startZeroBased;
-    }
-
-    @Override
     public CoordinateSystem coordinateSystem() {
         return coordinateSystem;
     }
@@ -105,8 +100,7 @@ public class SequenceVariant implements Variant {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new SequenceVariant(contig, id, strand, coordinateSystem, startPosition.shift(startDelta), endPosition, ref, alt);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition, ref, alt);
     }
 
     @Override
@@ -130,13 +124,13 @@ public class SequenceVariant implements Variant {
     }
 
     @Override
-    public SequenceVariant withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+    public SequenceVariant withStrand(Strand other) {
+        if (strand == other) {
             return this;
         }
         Position start = startPosition.invert(contig, coordinateSystem);
         Position end = endPosition.invert(contig, coordinateSystem);
-        return new SequenceVariant(contig, id, strand, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+        return new SequenceVariant(contig, id, other, coordinateSystem, end, start, Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 
     @Override

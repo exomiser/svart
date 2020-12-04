@@ -1,15 +1,17 @@
 package org.monarchinitiative.variant.api.impl;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.variant.api.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
+import static org.monarchinitiative.variant.api.impl.TestVariants.*;
+import static org.monarchinitiative.variant.api.TestContigs.*;
 
 /**
- *
  * The tests use examples listed in section 5.4. of
  * <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF 4.2</a> specs.
  *
@@ -18,260 +20,350 @@ import static org.hamcrest.Matchers.sameInstance;
  */
 public class BreakendVariantTest {
 
-    private final Contig chr2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 243199373, "CM000664.1", "NC_000002.11", "chr2");
-    private final Contig chr13 = Contig.of(13, "13", SequenceRole.ASSEMBLED_MOLECULE, 115169878, "CM000675.1", "NC_000013.10", "chr2");
 
-    private final Contig chr17 = Contig.of(17, "17", SequenceRole.ASSEMBLED_MOLECULE, 83_257_441, "CM000679.2", "NC_000017.11", "chr17");
+    @Test
+    public void variantProperties() {
+        // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        Variant variant = breakendVariant_UV();
+        assertThat(variant.contigId(), equalTo(13));
+        assertThat(variant.startPosition(), equalTo(Position.of(123_456)));
+        assertThat(variant.endPosition(), equalTo(Position.of(123_456)));
+        assertThat(variant.strand(), equalTo(Strand.POSITIVE));
+        assertThat(variant.variantType(), equalTo(VariantType.BND));
+        assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
 
-    /**
-     * Breakend type {@link Strand#POSITIVE}-{@link Strand#POSITIVE}.
-     *
-     * <pre>13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2</pre>
-     */
-        private BreakendVariant tra2_bnd_U;
-
-    /**
-     * Breakend type {@link Strand#POSITIVE}-{@link Strand#NEGATIVE}.
-     *
-     * <pre>2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1</pre>
-     */
-    private BreakendVariant tra1_bnd_W;
-
-    /**
-     * Breakend type {@link Strand#NEGATIVE}-{@link Strand#NEGATIVE}.
-     *
-     * <pre>2	321682	bnd_V	T	]13:123456]T	6	PASS	SVTYPE=BND;MATEID=bnd_U;EVENT=tra2</pre>
-     */
-    private BreakendVariant tra2_bnd_V;
-
-    /**
-     * Breakend type {@link Strand#NEGATIVE}-{@link Strand#POSITIVE}.
-     *
-     * <pre>13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3</pre>
-     */
-    private BreakendVariant tra3_bnd_X;
-
-    @BeforeEach
-    public void setUp() {
-        Breakend bnd_U = PartialBreakend.oneBased( chr13, "bnd_U",Strand.POSITIVE, Position.of(123_456));
-        Breakend bnd_V = PartialBreakend.oneBased( chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
-        tra2_bnd_U = new BreakendVariant("tra2", bnd_U, bnd_V, "C", "");
-
-        Breakend bnd_W = PartialBreakend.oneBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
-        Breakend bnd_Y = PartialBreakend.oneBased(chr17, "bnd_Y", Strand.POSITIVE, Position.of(198_982)).withStrand(Strand.NEGATIVE);
-        tra1_bnd_W = new BreakendVariant("tra1", bnd_W, bnd_Y, "G", "");
-
-        bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682)).withStrand(Strand.NEGATIVE);
-        bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
-        tra2_bnd_V = new BreakendVariant("tra2", bnd_V, bnd_U, "T", "");
-
-        Breakend bnd_X = PartialBreakend.oneBased(chr13, "bnd_X", Strand.POSITIVE, Position.of(123_457)).withStrand(Strand.NEGATIVE);
-        Breakend bnd_Z = PartialBreakend.oneBased(chr17, "bnd_Z", Strand.POSITIVE, Position.of(198_983));
-        tra3_bnd_X = new BreakendVariant("tra3", bnd_X, bnd_Z, "A", "");
+        assertThat(variant.refLength(), equalTo(1));
+        assertThat(variant.changeLength(), equalTo(0));
+        assertThat(variant.length(), equalTo(0));
+        assertThat(variant.isZeroBased(), equalTo(true));
     }
 
     @Test
-    public void properties() {
-        assertThat(tra2_bnd_U.isSymbolic(), equalTo(true));
-        assertThat(tra2_bnd_U.variantType(), equalTo(VariantType.BND));
-        assertThat(tra2_bnd_U.id(), equalTo("bnd_U"));
-        assertThat(tra2_bnd_U.mateId(), equalTo("bnd_V"));
-        assertThat(tra2_bnd_U.eventId(), equalTo("tra2"));
+    public void breakendVariantProperties() {
+        // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        BreakendVariant bnd_U = breakendVariant_UV();
+        assertThat(bnd_U.isSymbolic(), equalTo(true));
+        assertThat(bnd_U.variantType(), equalTo(VariantType.BND));
+        assertThat(bnd_U.id(), equalTo("bnd_U"));
+        assertThat(bnd_U.mateId(), equalTo("bnd_V"));
+        assertThat(bnd_U.eventId(), equalTo("tra2"));
     }
 
     @Test
     public void tra2_bnd_U() {
         // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        assertThat(tra2_bnd_U.eventId(), equalTo("tra2"));
-        assertThat(tra2_bnd_U.ref(), equalTo("C"));
-        assertThat(tra2_bnd_U.alt(), equalTo(""));
-        assertThat(tra2_bnd_U.refLength(), equalTo(1));
-        assertThat(tra2_bnd_U.length(), equalTo(0));
-        assertThat(tra2_bnd_U.changeLength(), equalTo(0));
+        BreakendVariant bnd_U = breakendVariant_UV();
+        assertThat(bnd_U.eventId(), equalTo("tra2"));
+        assertThat(bnd_U.ref(), equalTo("C"));
+        assertThat(bnd_U.alt(), equalTo(""));
+        assertThat(bnd_U.refLength(), equalTo(1));
+        assertThat(bnd_U.length(), equalTo(0));
+        assertThat(bnd_U.changeLength(), equalTo(0));
 
-        Breakend left = tra2_bnd_U.left();
+        Breakend left = bnd_U.left();
         assertThat(left.contig(), equalTo(chr13));
         assertThat(left.position(), equalTo(Position.of(123_456)));
         assertThat(left.id(), equalTo("bnd_U"));
         assertThat(left.strand(), equalTo(Strand.POSITIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        Breakend right = tra2_bnd_U.right();
+        Breakend right = bnd_U.right();
         assertThat(right.contig(), equalTo(chr2));
-        assertThat(right.position(), equalTo(Position.of(321_682)));
+        assertThat(right.position(), equalTo(Position.of(321_681)));
         assertThat(right.id(), equalTo("bnd_V"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
     @Test
     public void tra1_bnd_W() {
         // 2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1
-        assertThat(tra1_bnd_W.eventId(), equalTo("tra1"));
-        assertThat(tra1_bnd_W.ref(), equalTo("G"));
-        assertThat(tra1_bnd_W.alt(), equalTo(""));
-        assertThat(tra1_bnd_W.refLength(), equalTo(1));
-        assertThat(tra1_bnd_W.length(), equalTo(0));
-        assertThat(tra1_bnd_W.changeLength(), equalTo(0));
+        BreakendVariant bnd_W = breakendVariant_WY();
+        assertThat(bnd_W.eventId(), equalTo("tra1"));
+        assertThat(bnd_W.ref(), equalTo("G"));
+        assertThat(bnd_W.alt(), equalTo(""));
+        assertThat(bnd_W.refLength(), equalTo(1));
+        assertThat(bnd_W.length(), equalTo(0));
+        assertThat(bnd_W.changeLength(), equalTo(0));
 
-        Breakend left = tra1_bnd_W.left();
+        Breakend left = bnd_W.left();
         assertThat(left.contig(), equalTo(chr2));
         assertThat(left.position(), equalTo(Position.of(321_681)));
         assertThat(left.id(), equalTo("bnd_W"));
         assertThat(left.strand(), equalTo(Strand.POSITIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        Breakend right = tra1_bnd_W.right();
+        Breakend right = bnd_W.right();
         assertThat(right.contig(), equalTo(chr17));
-        assertThat(right.position(), equalTo(Position.of(chr17.length() - 198_982 + 1)));
+        assertThat(right.position(), equalTo(Position.of(chr17.length() - 198_981)));
         assertThat(right.id(), equalTo("bnd_Y"));
         assertThat(right.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
     @Test
     public void tra2_bnd_V() {
         // 2	321682	bnd_V	T	]13:123456]T	6	PASS	SVTYPE=BND;MATEID=bnd_U;EVENT=tra2
-        assertThat(tra2_bnd_V.eventId(), equalTo("tra2"));
-        assertThat(tra2_bnd_V.ref(), equalTo("T"));
-        assertThat(tra2_bnd_V.alt(), equalTo(""));
-        assertThat(tra2_bnd_V.refLength(), equalTo(1));
-        assertThat(tra2_bnd_V.length(), equalTo(0));
-        assertThat(tra2_bnd_V.changeLength(), equalTo(0));
+        BreakendVariant bnd_V = breakendVariant_VU();
+        assertThat(bnd_V.eventId(), equalTo("tra2"));
+        assertThat(bnd_V.ref(), equalTo("T"));
+        assertThat(bnd_V.alt(), equalTo(""));
+        assertThat(bnd_V.refLength(), equalTo(1));
+        assertThat(bnd_V.length(), equalTo(0));
+        assertThat(bnd_V.changeLength(), equalTo(0));
 
-        Breakend left = tra2_bnd_V.left();
+        Breakend left = bnd_V.left();
         assertThat(left.contig(), equalTo(chr2));
-        assertThat(left.position(), equalTo(Position.of(chr2.length() - 321_682 + 1)));
+        assertThat(left.position(), equalTo(Position.of(chr2.length() - 321_681)));
         assertThat(left.id(), equalTo("bnd_V"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        Breakend right = tra2_bnd_V.right();
+        Breakend right = bnd_V.right();
         assertThat(right.contig(), equalTo(chr13));
-        assertThat(right.position(), equalTo(Position.of(chr13.length() - 123_456 + 1)));
+        assertThat(right.position(), equalTo(Position.of(chr13.length() - 123_456)));
         assertThat(right.id(), equalTo("bnd_U"));
         assertThat(right.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
     }
 
     @Test
     public void tra3_bnd_X() {
         // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
-        assertThat(tra3_bnd_X.eventId(), equalTo("tra3"));
-        assertThat(tra3_bnd_X.ref(), equalTo("A"));
-        assertThat(tra3_bnd_X.alt(), equalTo(""));
-        assertThat(tra3_bnd_X.refLength(), equalTo(1));
-        assertThat(tra3_bnd_X.length(), equalTo(0));
-        assertThat(tra3_bnd_X.changeLength(), equalTo(0));
+        BreakendVariant bnd_X = breakendVariant_XZ();
+        assertThat(bnd_X.eventId(), equalTo("tra3"));
+        assertThat(bnd_X.ref(), equalTo("A"));
+        assertThat(bnd_X.alt(), equalTo(""));
+        assertThat(bnd_X.refLength(), equalTo(1));
+        assertThat(bnd_X.length(), equalTo(0));
+        assertThat(bnd_X.changeLength(), equalTo(0));
 
-        Breakend left = tra3_bnd_X.left();
+        Breakend left = bnd_X.left();
         assertThat(left.contig(), equalTo(chr13));
-        assertThat(left.position(), equalTo(Position.of(chr13.length() - 123_457 + 1)));
+        assertThat(left.position(), equalTo(Position.of(chr13.length() - 123_456)));
         assertThat(left.id(), equalTo("bnd_X"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        Breakend right = tra3_bnd_X.right();
+        Breakend right = bnd_X.right();
         assertThat(right.contig(), equalTo(chr17));
-        assertThat(right.position(), equalTo(Position.of(198_983)));
+        assertThat(right.position(), equalTo(Position.of(198_982)));
         assertThat(right.id(), equalTo("bnd_Z"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "NEGATIVE",
+            "POSITIVE"})
+    public void withStrand_allStrands(Strand target) {
+        // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
+        BreakendVariant variant = breakendVariant_XZ();
+
+        // withStrand is not applicable for BreakendVariant
+        BreakendVariant stranded = variant.withStrand(target);
+        assertThat(stranded, sameInstance(variant));
     }
 
     @Test
-    public void withStrand() {
+    public void toOppositeStrand() {
         // test conversion of the NEGATIVE->POSITIVE case as this is the most complicated case
         // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
-        assertThat(tra3_bnd_X.withStrand(Strand.NEGATIVE), sameInstance(tra3_bnd_X));
+        BreakendVariant bnd_X = breakendVariant_XZ();
+        assertThat(bnd_X.left().strand(), equalTo(Strand.NEGATIVE));
+        assertThat(bnd_X.right().strand(), equalTo(Strand.POSITIVE));
 
-        BreakendVariant breakendVariant = tra3_bnd_X.withStrand(Strand.POSITIVE);
-        assertThat(breakendVariant.eventId(), equalTo("tra3"));
-        assertThat(breakendVariant.ref(), equalTo("A")); // stays the same!!
-        assertThat(breakendVariant.alt(), equalTo(""));
-        assertThat(breakendVariant.refLength(), equalTo(1));
-        assertThat(breakendVariant.length(), equalTo(0));
-        assertThat(breakendVariant.changeLength(), equalTo(0));
+        BreakendVariant opposite = bnd_X.toOppositeStrand();
+        assertThat(opposite.eventId(), equalTo("tra3"));
+        assertThat(opposite.ref(), equalTo(""));
+        assertThat(opposite.alt(), equalTo(""));
+        assertThat(opposite.refLength(), equalTo(0));
+        assertThat(opposite.length(), equalTo(0));
+        assertThat(opposite.changeLength(), equalTo(0));
 
-        Breakend left = breakendVariant.left();
+        Breakend left = opposite.left();
         assertThat(left.contig(), equalTo(chr17));
-        assertThat(left.position(), equalTo(Position.of(chr17.length() - 198_983 + 1)));
+        assertThat(left.position(), equalTo(Position.of(chr17.length() - 198_982)));
         assertThat(left.id(), equalTo("bnd_Z"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
 
-        Breakend right = breakendVariant.right();
+        Breakend right = opposite.right();
         assertThat(right.contig(), equalTo(chr13));
-        assertThat(right.position(), equalTo(Position.of(123_457)));
+        assertThat(right.position(), equalTo(Position.of(123_456)));
         assertThat(right.id(), equalTo("bnd_X"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
+
+        BreakendVariant original = opposite.toOppositeStrand();
+        assertThat(original, equalTo(bnd_X));
+        assertThat(original, not(sameInstance(bnd_X)));
     }
 
     @Test
-    public void withCoordinateSystem() {
-        assertThat(tra3_bnd_X.withCoordinateSystem(CoordinateSystem.ONE_BASED), sameInstance(tra3_bnd_X));
+    public void withStrand_checkRefAndAlt() {
+        // 13  123456  bnd_U   C   CAGTNNNNNCA[2:321682[    6   PASS    SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        BreakendVariant variant = breakendVariant_UV_withInsertion();
 
-        BreakendVariant breakendVariant = tra3_bnd_X.withCoordinateSystem(CoordinateSystem.ZERO_BASED);
-        assertThat(breakendVariant.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        BreakendVariant positive = variant.withStrand(Strand.POSITIVE);
+        assertThat(positive, sameInstance(variant));
+        assertThat(positive.ref(), equalTo("C"));
+        assertThat(positive.alt(), equalTo("AGTNNNNNCA"));
 
-        Breakend left = breakendVariant.left();
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        BreakendVariant negative = positive.toOppositeStrand();
+        assertThat(negative.ref(), equalTo(""));
+        assertThat(negative.alt(), equalTo("TGNNNNNACT"));
 
-        Breakend right = breakendVariant.right();
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        BreakendVariant positiveAgain = negative.toOppositeStrand();
+        assertThat(positiveAgain, not(sameInstance(positive)));
+        assertThat(positiveAgain.ref(), equalTo("C"));
+        assertThat(positiveAgain.alt(), equalTo("AGTNNNNNCA"));
     }
 
     @Test
-    public void matedBreakend() {
-        // 2       4150333 28382_1 N       N]13:33423926]  284.1   PASS    SVTYPE=BND;POS=4150333;STRANDS=++:31;CIPOS=-8,10;CIEND=-2,1;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_2;EVENT=28382;
-        Breakend left = PartialBreakend.oneBased(chr2, "28382_1", Strand.POSITIVE, Position.of(4150333, -8, 10));
-        Breakend right = PartialBreakend.oneBased(chr13, "28382_2", Strand.POSITIVE, Position.of(33423926, -2, 1));
-        BreakendVariant instance = new BreakendVariant("28382", left, right, "N", "N");
-        assertThat(instance.contig(), equalTo(chr2));
-        assertThat(instance.startPosition().pos(), equalTo(4150333));
-        assertThat(instance.ref(), equalTo("N"));
-        assertThat(instance.alt(), equalTo("N"));
-        assertThat(instance.left().contig(), equalTo(chr2));
-        assertThat(instance.left().pos(), equalTo(4150333));
-        assertThat(instance.right().contig(), equalTo(chr13));
-        assertThat(instance.right().pos(), equalTo(33423926));
+    public void singleBreakend_leftUnresolved() {
+        // Single breakends are breakends that are not part of a novel adjacency.
+        // See section 5.4.9 of VCF v4.2 specs for more info.
 
-        System.out.println(instance.withStrand(Strand.NEGATIVE));
-        // 13      33423926        28382_2 N       N]2:4150333]    284.1   PASS    SVTYPE=BND;POS=33423926;STRANDS=++:31;CIPOS=-2,1;CIEND=-8,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28382_1;EVENT=28382;
-        Breakend matedLeft = PartialBreakend.oneBased(chr13, "28382_2", Strand.POSITIVE, Position.of(33423926, -2, 1));
-        Breakend matedRight = PartialBreakend.oneBased(chr2, "28382_1", Strand.POSITIVE, Position.of(4150333, -8, 10));
-        BreakendVariant matedInstance = new BreakendVariant("28382", matedLeft, matedRight, "N", "N");
+        // 13  123457  bnd_X   A   .A    6   PASS    SVTYPE=BND
+        BreakendVariant instance = TestVariants.bnd_X_leftUnresolved();
+        assertThat(instance.changeLength(), equalTo(0));
+        assertThat(instance.eventId(), equalTo(""));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo(""));
 
-        // these can be combined using their id and mateids to recreate the full SequenceRearrangement
+        Breakend l = instance.left();
+        assertThat(l.isUnresolved(), equalTo(true));
+
+        Breakend r = instance.right();
+        assertThat(r.contig(), equalTo(chr13));
+        assertThat(r.position(), equalTo(Position.of(123_456)));
+        assertThat(r.id(), equalTo("bnd_X"));
+        assertThat(r.strand(), equalTo(Strand.POSITIVE));
+
+
+        BreakendVariant variant = instance.toOppositeStrand();
+        assertThat(variant.changeLength(), equalTo(0));
+
+        Breakend oppositeLeft = variant.left();
+        assertThat(oppositeLeft.contig(), equalTo(chr13));
+        assertThat(oppositeLeft.position(), equalTo(Position.of(chr13.length() - 123_456)));
+        assertThat(oppositeLeft.id(), equalTo("bnd_X"));
+        assertThat(oppositeLeft.strand(), equalTo(Strand.NEGATIVE));
+
+        Breakend oppositeRight = variant.right();
+        assertThat(oppositeRight.isUnresolved(), equalTo(true));
     }
 
     @Test
-    public void insertedSequence() {
+    public void singleBreakend_rightUnresolved() {
+        // Single breakends are breakends that are not part of a novel adjacency.
+        // See section 5.4.9 of VCF v4.2 specs for more info.
+
+        // 2  321681  bnd_W   G   G.    6   PASS    SVTYPE=BND
+        BreakendVariant instance = bnd_W_rightUnresolved();
+        assertThat(instance.changeLength(), equalTo(0));
+
+        Breakend l = instance.left();
+        assertThat(l.contig(), equalTo(chr2));
+        assertThat(l.position(), equalTo(Position.of(321_681)));
+        assertThat(l.id(), equalTo("bnd_W"));
+        assertThat(l.strand(), equalTo(Strand.POSITIVE));
+
+        Breakend r = instance.right();
+        assertThat(r.isUnresolved(), equalTo(true));
+
+
+        BreakendVariant variant = instance.toOppositeStrand();
+        assertThat(variant.changeLength(), equalTo(0));
+
+        Breakend oppositeLeft = variant.left();
+        assertThat(oppositeLeft.isUnresolved(), equalTo(true));
+
+        Breakend oppositeRight = variant.right();
+        assertThat(oppositeRight.contig(), equalTo(chr2));
+        assertThat(oppositeRight.position(), equalTo(Position.of(chr2.length() - 321_681)));
+        assertThat(oppositeRight.id(), equalTo("bnd_W"));
+        assertThat(oppositeRight.strand(), equalTo(Strand.NEGATIVE));
+    }
+
+    @Test
+    public void insertedSequence_PosPos() {
+        // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
+        // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
+        Breakend left = PartialBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456));
+        Breakend right = PartialBreakend.zeroBased(chr2, "bndV", Strand.POSITIVE, Position.of(321_681));
+
+        // ref stays the same, while alt is stripped of bases shared with ref
+        BreakendVariant variant = new BreakendVariant("", left, right, "C", "AGTNNNNNCA");
+
+        assertThat(variant.eventId(), equalTo(""));
+        assertThat(variant.ref(), equalTo("C"));
+        assertThat(variant.alt(), equalTo("AGTNNNNNCA"));
+        assertThat(variant.changeLength(), equalTo(10));
+
+        assertThat(variant.withStrand(Strand.POSITIVE), sameInstance(variant));
+
+        variant = variant.toOppositeStrand();
+        assertThat(variant.eventId(), equalTo(""));
+        assertThat(variant.ref(), equalTo(""));
+        assertThat(variant.alt(), equalTo("TGNNNNNACT")); // reverse complement
+        assertThat(variant.changeLength(), equalTo(10));
+
+        Breakend l = variant.left();
+        assertThat(l.contig(), equalTo(chr2));
+        assertThat(l.position(), equalTo(Position.of(chr2.length() - 321_681)));
+        assertThat(l.id(), equalTo("bndV"));
+        assertThat(l.strand(), equalTo(Strand.NEGATIVE));
+
+        Breakend r = variant.right();
+        assertThat(r.contig(), equalTo(chr13));
+        assertThat(r.position(), equalTo(Position.of(chr13.length() - 123_456)));
+        assertThat(r.id(), equalTo("bndU"));
+        assertThat(r.strand(), equalTo(Strand.NEGATIVE));
+    }
+
+    @Test
+    public void insertedSequence_NegNeg() {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 2  321682  bndV  T  ]13:123456]AGTNNNNNCAT  6  PASS  SVTYPE=BND;MATEID=bndU
-        // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
-        Breakend left = PartialBreakend.oneBased(chr2, "bndV", Strand.POSITIVE, Position.of(321682));
-        Breakend right = PartialBreakend.oneBased(chr13, "bndU", Strand.POSITIVE, Position.of(123456));
-        // TODO: parse strands and partial breakends from record
+        Breakend left = PartialBreakend.zeroBased(chr2, "bndV",Strand.POSITIVE, Position.of(321_682))
+                .withStrand(Strand.NEGATIVE);
+        Breakend right = PartialBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456))
+                .withStrand(Strand.NEGATIVE);
 
-        BreakendVariant first = new BreakendVariant("", left, right, "T", "AGTNNNNNCAT");
-        System.out.println(first);
-        System.out.println(first.toOppositeStrand());
-        BreakendVariant second = new BreakendVariant("", right, left, "C", "CAGTNNNNNCA");
+        // ref stays the same, while alt is reverse-complemented and stripped of bases shared with ref
+        BreakendVariant variant = new BreakendVariant("", left, right, "T", "TGNNNNNACT");
+
+        assertThat(variant.eventId(), equalTo(""));
+        assertThat(variant.ref(), equalTo("T"));
+        assertThat(variant.alt(), equalTo("TGNNNNNACT"));
+        assertThat(variant.changeLength(), equalTo(10));
+
+        assertThat(variant.withStrand(Strand.NEGATIVE), sameInstance(variant));
+
+        variant = variant.toOppositeStrand();
+        assertThat(variant.eventId(), equalTo(""));
+        assertThat(variant.ref(), equalTo(""));
+        assertThat(variant.alt(), equalTo("AGTNNNNNCA")); // reverse complement
+        assertThat(variant.changeLength(), equalTo(10));
+
+        Breakend l = variant.left();
+        assertThat(l.contig(), equalTo(chr13));
+        assertThat(l.position(), equalTo(Position.of(123_456)));
+        assertThat(l.id(), equalTo("bndU"));
+        assertThat(l.strand(), equalTo(Strand.POSITIVE));
+
+        Breakend r = variant.right();
+        assertThat(r.contig(), equalTo(chr2));
+        assertThat(r.position(), equalTo(Position.of(321_682)));
+        assertThat(r.id(), equalTo("bndV"));
+        assertThat(r.strand(), equalTo(Strand.POSITIVE));
     }
 
     @Test
-    public void positiveNegativeStrand() {
-        // 2       135592459       28388_1 N       N[13:36400702[  2049.07 LOW     SVTYPE=BND;POS=135592459;STRANDS=+-:125;CIPOS=-2,10;CIEND=-9,9;CIPOS95=0,0;CIEND95=0,0;MATEID=28388_2;EVENT=28388;
-        // 13      36400702        28388_2 N       ]2:135592459]N  2049.07 LOW     SVTYPE=BND;POS=36400702;STRANDS=+-:125;CIPOS=-9,9;CIEND=-2,10;CIPOS95=0,0;CIEND95=0,0;MATEID=28388_1;EVENT=28388;
+    @Disabled
+    public void deletionAsBreakends() {
+        // TODO - we might want to use BreakendVariant to represent intrachromosomal events such as DEL, INS, DUP, etc.
+        // chr2:100-200
+        PartialBreakend start = PartialBreakend.zeroBased(chr2, "left", Strand.POSITIVE, Position.of(100));
+        PartialBreakend end = PartialBreakend.oneBased(chr2, "right", Strand.POSITIVE, Position.of(200));
+        BreakendVariant deletion = new BreakendVariant("del1", start, end, "", "");
 
-    }
+//        assertThat(deletion.length(), equalTo(100));
 
-    @Test
-    public void negativeNegativeStrand() {
-        // 1       10567   2838_1  N       [15:102520406[N 47911.3 LOW     SVTYPE=BND;POS=10567;STRANDS=--:97;IMPRECISE;CIPOS=-205,24;CIEND=-104,42;CIPOS95=-20,20;CIEND95=-6,6;MATEID=2838_2;EVENT=2838;
-        //15      102520406       2838_2  N       [1:10567[N      47911.3 LOW     SVTYPE=BND;POS=102520406;STRANDS=--:97;IMPRECISE;CIPOS=-104,42;CIEND=-205,24;CIPOS95=-6,6;CIEND95=-20,20;MATEID=2838_1;EVENT=2838;
-
+        SymbolicVariant symbolicDeletion = SymbolicVariant.oneBased(chr2, "del1", Position.of(101), Position.of(200), "N", "<DEL>", -99);
+        assertThat(symbolicDeletion.changeLength(), equalTo(-99));
     }
 }

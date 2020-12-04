@@ -2,13 +2,15 @@
 package org.monarchinitiative.variant.api;
 
 /**
- * Contains the 4 strand types from GFF3. This is a superset of BED which only defines [+, -, .]
+ * Contains definitions of <em>positive</em> (+) and <em>negative</em> (-) nucleotide sequence strand types.
+ * This is a subset of BED which defines {+, -, .}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public enum Strand {
 
-    UNSTRANDED("."), UNKNOWN("?"), POSITIVE("+"), NEGATIVE("-");
+    POSITIVE("+"), NEGATIVE("-");
 
     private final String symbol;
 
@@ -18,15 +20,11 @@ public enum Strand {
 
     public static Strand parseStrand(String value) {
         switch (value) {
-            case "+":
-                return POSITIVE;
             case "-":
                 return NEGATIVE;
-            case ".":
-                return UNSTRANDED;
-            case "?":
+            case "+":
             default:
-                return UNKNOWN;
+                return POSITIVE;
         }
     }
 
@@ -39,35 +37,7 @@ public enum Strand {
     }
 
     public Strand opposite() {
-        switch (this) {
-            case POSITIVE:
-                return NEGATIVE;
-            case NEGATIVE:
-                return POSITIVE;
-            default:
-                return this;
-        }
-    }
-
-    public boolean hasComplement() {
-        switch (this) {
-            case NEGATIVE:
-            case POSITIVE:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public boolean isComplementOf(Strand other) {
-        if (this == other) {
-            return false;
-        }
-        return this == POSITIVE && other == NEGATIVE || this == NEGATIVE && other == POSITIVE;
-    }
-
-    public boolean notComplementOf(Strand other) {
-        return !isComplementOf(other);
+        return this == POSITIVE ? NEGATIVE : POSITIVE;
     }
 
     static int compare(Strand x, Strand y) {

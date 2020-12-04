@@ -56,7 +56,7 @@ class PrecisePosition implements Position {
     }
 
     @Override
-    public Position toPrecise() {
+    public Position asPrecise() {
         return this;
     }
 

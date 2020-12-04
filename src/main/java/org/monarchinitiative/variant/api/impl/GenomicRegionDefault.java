@@ -6,6 +6,9 @@ import java.util.Objects;
 
 /**
  * 0- or 1-based region e.g. half-open [a,b) or fully closed [a,b] as indicated by the {@link CoordinateSystem}
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class GenomicRegionDefault implements GenomicRegion {
 
@@ -24,6 +27,7 @@ public class GenomicRegionDefault implements GenomicRegion {
         this.startPosition = checkNotBeyondContigCoordinates(startPosition, coordinateSystem, contig.length());
         this.endPosition = checkNotBeyondContigCoordinates(endPosition, coordinateSystem, contig.length());
         this.startZeroBased = coordinateSystem == CoordinateSystem.ZERO_BASED ? startPosition.pos() : startPosition.pos() - 1;
+        // TODO - check that the positions are valid wrt. contig
     }
 
     private static Position checkNotBeyondContigCoordinates(Position position, CoordinateSystem coordinateSystem, int contigLength) {
@@ -60,12 +64,6 @@ public class GenomicRegionDefault implements GenomicRegion {
         return contig;
     }
 
-
-    @Override
-    public int startZeroBased() {
-        return startZeroBased;
-    }
-
     @Override
     public CoordinateSystem coordinateSystem() {
         return coordinateSystem;
@@ -76,8 +74,7 @@ public class GenomicRegionDefault implements GenomicRegion {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new GenomicRegionDefault(contig, strand, coordinateSystem, startPosition.shift(startDelta), endPosition);
+        return new GenomicRegionDefault(contig, strand, coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition);
     }
 
     @Override
@@ -96,13 +93,13 @@ public class GenomicRegionDefault implements GenomicRegion {
     }
 
     @Override
-    public GenomicRegionDefault withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
+    public GenomicRegionDefault withStrand(Strand other) {
+        if (strand == other) {
             return this;
         }
         Position start = startPosition.invert(contig, coordinateSystem);
         Position end = endPosition.invert(contig, coordinateSystem);
-        return new GenomicRegionDefault(contig, strand, coordinateSystem, end, start);
+        return new GenomicRegionDefault(contig, other, coordinateSystem, end, start);
     }
 
     @Override

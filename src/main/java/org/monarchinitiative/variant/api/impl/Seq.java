@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
+ */
 public class Seq {
 
     private static final Charset ASCII = StandardCharsets.US_ASCII;

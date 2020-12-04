@@ -66,7 +66,7 @@ class ImprecisePosition implements Position {
     }
 
     @Override
-    public Position toPrecise() {
+    public Position asPrecise() {
         return PrecisePosition.of(pos);
     }
 

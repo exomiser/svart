@@ -250,7 +250,7 @@ public class SequenceVariantTest {
 
     @Test
     public void symbolicVariantContainsSnv() {
-        Variant largeIns = SymbolicVariant.of(chr1, 1, 100, "T", "<INS>", 100);
+        Variant largeIns = SymbolicVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
         assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
         assertTrue(largeIns.contains(SequenceVariant.zeroBased(chr1, 0, "A", "T")));
         assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));

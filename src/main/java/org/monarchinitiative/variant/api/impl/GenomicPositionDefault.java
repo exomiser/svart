@@ -6,16 +6,16 @@ import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public class GenomicPositionDefault implements GenomicPosition {
 
     private final Contig contig;
     private final Position position;
-    private final CoordinateSystem coordinateSystem;
     private final Strand strand;
 
-    protected GenomicPositionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        if ((coordinateSystem.isOneBased() && position.minPos() <= 0) || (coordinateSystem.isZeroBased() && position.minPos() < 0)) {
+    private GenomicPositionDefault(Contig contig, Strand strand, Position position) {
+        if ((position.minPos() < 0)) {
             throw new IllegalArgumentException("Cannot create genomic position " + position + " that extends beyond first contig base");
         }
         if (position.maxPos() > contig.length()) {
@@ -24,20 +24,11 @@ public class GenomicPositionDefault implements GenomicPosition {
 
         this.contig = contig;
         this.position = position;
-        this.coordinateSystem = coordinateSystem;
         this.strand = strand;
     }
 
-    public static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
-        return of(contig, strand, CoordinateSystem.ONE_BASED, position);
-    }
-
-    public static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
-        return of(contig, strand, CoordinateSystem.ZERO_BASED, position);
-    }
-
     public static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        return new GenomicPositionDefault(contig, strand, coordinateSystem, position);
+        return new GenomicPositionDefault(contig, strand, position.shift(coordinateSystem.startDelta(CoordinateSystem.ZERO_BASED)));
     }
 
     @Override
@@ -51,26 +42,11 @@ public class GenomicPositionDefault implements GenomicPosition {
     }
 
     @Override
-    public CoordinateSystem coordinateSystem() {
-        return coordinateSystem;
-    }
-
-    @Override
-    public GenomicPositionDefault withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        if (this.coordinateSystem == coordinateSystem) {
+    public GenomicPositionDefault withStrand(Strand other) {
+        if (strand == other) {
             return this;
         }
-        int startDelta = this.coordinateSystem.delta(coordinateSystem);
-        return new GenomicPositionDefault(contig, strand, coordinateSystem, position().shift(startDelta));
-    }
-
-    @Override
-    public GenomicPositionDefault withStrand(Strand strand) {
-        if (this.strand.notComplementOf(strand)) {
-            return this;
-        }
-        Position pos = position.invert(contig, coordinateSystem);
-        return new GenomicPositionDefault(contig, strand, coordinateSystem, pos);
+        return new GenomicPositionDefault(contig, other, position.invert(contig, CoordinateSystem.ZERO_BASED));
     }
 
     @Override
@@ -85,19 +61,20 @@ public class GenomicPositionDefault implements GenomicPosition {
         GenomicPositionDefault that = (GenomicPositionDefault) o;
         return Objects.equals(contig, that.contig) &&
                 Objects.equals(position, that.position) &&
-                coordinateSystem == that.coordinateSystem &&
                 strand == that.strand;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, position, coordinateSystem, strand);
+        return Objects.hash(contig, position, strand);
     }
 
     @Override
     public String toString() {
-        return coordinateSystem.isOneBased()
-                ? '[' + contig.name() + ':' + position + ']' + strand
-                : '[' + contig.name() + ':' + position + ')' + strand;
+        return "GenomicPositionDefault{" +
+                "contig=" + contig +
+                ", position=" + position +
+                ", strand=" + strand +
+                '}';
     }
 }
