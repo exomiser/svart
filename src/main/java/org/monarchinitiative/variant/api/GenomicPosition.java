@@ -119,30 +119,19 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
         return distanceTo(other) < 0;
     }
 
-
-    /**
-     * Convert the position to a 0 bp-long region in {@link CoordinateSystem#ZERO_BASED} coordinate system with precise
-     * start/end positions.
-     *
-     * @return the region
-     */
-    default GenomicRegion toRegion() {
-        return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().asPrecise(), position().asPrecise());
-    }
-
     /**
      * Convert the position to a region in {@link CoordinateSystem#ZERO_BASED} by adding specified number of
      * <code>padding</code> nucleotides upstream and downstream from the position. Length of the returned region
      * is <code>2 * padding</code>. The start/end coordinates of the region are precise.
      *
-     * @param padding non-negative number of padding bases to add upstream and downstream from the position
+     * @param padding positive number of padding bases to add upstream and downstream from the position
      * @return the padded region
-     * @throws IllegalArgumentException if <code>padding < 0</code> or if the padded region would extend
-     * the contig boundaries. TODO - check if the exception is really thrown
+     * @throws IllegalArgumentException if <code>padding <= 0</code> or if the padded region would extend
+     * the contig boundaries
      */
     default GenomicRegion toRegion(int padding) {
-        if (padding < 0) {
-            throw new IllegalArgumentException("Cannot apply negative padding: " + padding);
+        if (padding <= 0) {
+            throw new IllegalArgumentException("Cannot apply non-positive padding: " + padding);
         }
         return toRegion(-padding, padding);
     }
@@ -162,13 +151,11 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @param downstream number of padding bases to add downstream from the position
      * @return the padded region
      * @throws IllegalArgumentException if <code>downstream < upstream</code> or if the padded region would extend
-     * the contig boundaries. TODO - check if the exception is really thrown
+     * the contig boundaries
      */
     default GenomicRegion toRegion(int upstream, int downstream) {
-        if (upstream == 0 && downstream == 0) {
-            return toRegion();
-        } else if (upstream >= downstream) {
-            throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
+        if (upstream >= downstream) {
+            throw new IllegalArgumentException("Cannot apply padding: " + upstream + ", " + downstream);
         }
         return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
     }

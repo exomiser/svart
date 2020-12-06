@@ -97,8 +97,6 @@ public class GenomicRegionTest {
     @CsvSource({
             // region            pos
             "ZERO_BASED, 0, 1,   0,   true",
-            "ZERO_BASED, 1, 1,   0,   false",
-            "ZERO_BASED, 1, 1,   1,   false",
             "ZERO_BASED, 1, 2,   1,   true",
             "ZERO_BASED, 1, 2,   2,   false",
 
@@ -127,25 +125,15 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 0, 1,   false",
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 1, 1,   true",
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 1, 2,   false",
-
             "ZERO_BASED, 1, 2,   ZERO_BASED, 0, 1,   false",
-            "ZERO_BASED, 1, 2,   ZERO_BASED, 1, 1,   true",
             "ZERO_BASED, 1, 2,   ZERO_BASED, 1, 2,   true",
-            "ZERO_BASED, 1, 2,   ZERO_BASED, 2, 2,   true",
             "ZERO_BASED, 1, 2,   ZERO_BASED, 2, 3,   false",
 
             "ZERO_BASED, 1, 3,   ZERO_BASED, 0, 1,   false",
             "ZERO_BASED, 1, 3,   ZERO_BASED, 1, 2,   true",
             "ZERO_BASED, 1, 3,   ZERO_BASED, 2, 3,   true",
             "ZERO_BASED, 1, 3,   ZERO_BASED, 3, 4,   false",
-            // --------------------------------------------
-            "ZERO_BASED, 2, 2,   ONE_BASED,  1, 1,   false",
-            "ZERO_BASED, 2, 2,   ONE_BASED,  2, 2,   false",
-            "ZERO_BASED, 2, 2,   ONE_BASED,  3, 3,   false",
-
+            // --------------------------------------------=
             "ZERO_BASED, 2, 3,   ONE_BASED,  2, 3,   false",
             "ZERO_BASED, 2, 3,   ONE_BASED,  3, 3,   true",
             "ZERO_BASED, 2, 3,   ONE_BASED,  3, 4,   false",
@@ -167,17 +155,12 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "ONE_BASED, 1, 1,   ZERO_BASED, 0, 0,   true",
             "ONE_BASED, 1, 1,   ZERO_BASED, 0, 1,   true",
-            "ONE_BASED, 1, 1,   ZERO_BASED, 1, 1,   true",
             "ONE_BASED, 1, 1,   ZERO_BASED, 1, 2,   false",
 
             "ONE_BASED, 2, 3,   ZERO_BASED, 0, 1,   false",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 1, 1,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 1, 2,   true",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 2, 2,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 2, 3,   true",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 3, 3,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 3, 4,   false",
 
             "ONE_BASED, 2, 4,   ZERO_BASED, 0, 1,   false",
@@ -276,7 +259,6 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ZERO_BASED, 3, 3,     0",
             "ONE_BASED,  3, 3,     1",
             "ZERO_BASED, 2, 3,     1",
             "ONE_BASED,  2, 3,     2",
@@ -319,7 +301,7 @@ public class GenomicRegionTest {
         // one-based region
         IllegalArgumentException eo = assertThrows(IllegalArgumentException.class,
                 () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(0), Position.of(2)));
-        assertThat(eo.getMessage(), equalTo("Cannot create genomic region with a position 0 that extends beyond contig start 1"));
+        assertThat(eo.getMessage(), equalTo("Cannot create position `-1` with negative value"));
     }
 
     @Test
@@ -337,10 +319,16 @@ public class GenomicRegionTest {
     public void illegalNullPosition() {
         NullPointerException ez = assertThrows(NullPointerException.class,
                 () -> GenomicRegion.zeroBased(chr1, Strand.POSITIVE, null, Position.of(6)));
-        assertThat(ez.getMessage(), equalTo("Position cannot be null"));
+        assertThat(ez.getMessage(), equalTo("Start position cannot be null"));
 
         NullPointerException eo = assertThrows(NullPointerException.class,
-                () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, null, Position.of(6)));
-        assertThat(eo.getMessage(), equalTo("Position cannot be null"));
+                () -> GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(6), null));
+        assertThat(eo.getMessage(), equalTo("End position cannot be null"));
+    }
+
+    @Test
+    public void illegalRegionWithLengthZero() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> GenomicRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(1), Position.of(1)));
+        assertThat(e.getMessage(), equalTo("Cannot create genomic region with start 1 greater than or equal to end 1"));
     }
 }

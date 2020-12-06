@@ -18,32 +18,22 @@ public class GenomicRegionDefault implements GenomicRegion {
     private final Position startPosition;
     private final Position endPosition;
 
-    private final int startZeroBased;
-
     private GenomicRegionDefault(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        this.contig = Objects.requireNonNull(contig);
-        this.strand = Objects.requireNonNull(strand);
-        this.coordinateSystem = coordinateSystem;
-        this.startPosition = checkNotBeyondContigCoordinates(startPosition, coordinateSystem, contig.length());
-        this.endPosition = checkNotBeyondContigCoordinates(endPosition, coordinateSystem, contig.length());
-        this.startZeroBased = coordinateSystem == CoordinateSystem.ZERO_BASED ? startPosition.pos() : startPosition.pos() - 1;
-        // TODO - check that the positions are valid wrt. contig
-    }
-
-    private static Position checkNotBeyondContigCoordinates(Position position, CoordinateSystem coordinateSystem, int contigLength) {
-        if (position == null) {
-            throw new NullPointerException("Position cannot be null");
+        this.contig = Objects.requireNonNull(contig, "Contig cannot be null");
+        this.strand = Objects.requireNonNull(strand, "Strand cannot be null");
+        this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "Coordinate system cannot be null");
+        this.startPosition = Objects.requireNonNull(startPosition, "Start position cannot be null");
+        this.endPosition = Objects.requireNonNull(endPosition, "End position cannot be null");
+        Position zeroBased = normalisedStartPosition(CoordinateSystem.ZERO_BASED);
+        if (zeroBased.pos() >= endPosition.pos()) {
+            throw new IllegalArgumentException("Cannot create genomic region with start " + startPosition + " greater than or equal to end " + endPosition);
         }
-        // adjust contig start to the coordinate system in use
-        int contigStart = 1 - coordinateSystem.delta(CoordinateSystem.ONE_BASED);
-        if (position.minPos() + coordinateSystem.delta(CoordinateSystem.ONE_BASED) < contigStart) {
-            throw new IllegalArgumentException("Cannot create genomic region with a position " + position + " that extends beyond contig start " + contigStart);
+        if (zeroBased.minPos() < 0) {
+            throw new IllegalArgumentException("Cannot create genomic region with start " + startPosition + " that extends beyond first contig base");
         }
-        // no need to adjust contig end since it is one-based for all coordinate systems that we have
-        if (position.maxPos() > contigLength) {
-            throw new IllegalArgumentException("Cannot create genomic region with a position " + position + " that extends beyond contig end " + contigLength);
+        if (endPosition.maxPos() > contig.length()) {
+            throw new IllegalArgumentException("Cannot create genomic region with a position " + endPosition + " that extends beyond contig end " + contig.length());
         }
-        return position;
     }
 
     public static GenomicRegionDefault of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {

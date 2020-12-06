@@ -98,31 +98,13 @@ public class GenomicPositionTest {
         assertThat(actual.pos(), equalTo(expectedPosition));
     }
 
-    @Test
-    public void toRegion() {
-        // a position is turned into a region of length 0
-        GenomicPosition three = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3));
-
-        GenomicRegion region = three.toRegion();
-        assertThat(region.length(), equalTo(0));
-        assertThat(region.startPosition(), equalTo(three.position()));
-        assertThat(region.endPosition(), equalTo(three.position()));
-        assertThat(region.strand(), equalTo(three.strand()));
-        assertThat(region.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
-    }
-
     @ParameterizedTest
     @CsvSource({
-            "3,   0,   3, 3",
-            "3,   1,   2, 4",
-            "3,   2,   1, 5",
-
-            "3,   0,   3, 3",
             "3,   1,   2, 4",
             "3,   2,   1, 5"
     })
     public void toRegion_singlePadding(int pos, int padding,
-                                          int expectedStart, int expectedEnd) {
+                                       int expectedStart, int expectedEnd) {
         GenomicRegion actual = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(pos)).toRegion(padding);
         GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(expectedStart), Position.of(expectedEnd));
         assertThat(actual, equalTo(expected));
@@ -130,23 +112,32 @@ public class GenomicPositionTest {
 
     @Test
     public void toRegion_singleNegativePadding() {
-        GenomicPosition three = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3, ConfidenceInterval.of(-2, 3)));
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> three.toRegion(-1));
-        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1"));
+        GenomicPosition three = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> three.toRegion(0));
+        assertThat(e.getMessage(), equalTo("Cannot apply non-positive padding: 0"));
 
-        GenomicPosition seven = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(7, ConfidenceInterval.of(-1, 2)));
+        GenomicPosition seven = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(7));
         e = assertThrows(IllegalArgumentException.class, () -> seven.toRegion(-1));
-        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: -1"));
+        assertThat(e.getMessage(), equalTo("Cannot apply non-positive padding: -1"));
+    }
+
+    @Test
+    public void toRegion_singlePadding_extendingContigBoundaries() {
+        GenomicPosition zero = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(0));
+        IllegalArgumentException eZero = assertThrows(IllegalArgumentException.class, () -> zero.toRegion(1));
+        assertThat(eZero.getMessage(), equalTo("Cannot create position `-1` with negative value"));
+
+        GenomicPosition ten = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(10));
+        IllegalArgumentException eTen = assertThrows(IllegalArgumentException.class, () -> ten.toRegion(1));
+        assertThat(eTen.getMessage(), equalTo("Cannot create genomic region with a position 11 that extends beyond contig end 10"));
     }
 
     @ParameterizedTest
     @CsvSource({
             "3,  -2, -1,   1, 2",
-            "3,   0, -0,   3, 3",
             "3,  -1,  0,   2, 3",
             "3,  -2,  1,   1, 4",
 
-            "3,   0, -0,   3, 3",
             "3,   0,  1,   3, 4",
             "3,  -1,  2,   2, 5"
     })
@@ -168,7 +159,18 @@ public class GenomicPositionTest {
     public void toRegion_illegalPadding(int pos, int upstream, int downstream) {
         GenomicPosition position = GenomicPosition.oneBased(ctg1, Strand.POSITIVE, Position.of(pos));
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> position.toRegion(upstream, downstream));
-        assertThat(e.getMessage(), equalTo("Cannot apply negative padding: " + upstream + ", " + downstream));
+        assertThat(e.getMessage(), equalTo("Cannot apply padding: " + upstream + ", " + downstream));
+    }
+
+    @Test
+    public void toRegion_upDownPadding_extendingContigBoundaries() {
+        GenomicPosition zero = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(0));
+        IllegalArgumentException eZero = assertThrows(IllegalArgumentException.class, () -> zero.toRegion(-1, 0));
+        assertThat(eZero.getMessage(), equalTo("Cannot create position `-1` with negative value"));
+
+        GenomicPosition ten = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(10));
+        IllegalArgumentException eTen = assertThrows(IllegalArgumentException.class, () -> ten.toRegion(0, 1));
+        assertThat(eTen.getMessage(), equalTo("Cannot create genomic region with a position 11 that extends beyond contig end 10"));
     }
 
     @Test
@@ -225,7 +227,6 @@ public class GenomicPositionTest {
 
             "3,  ZERO_BASED, 1, 2,   false",
             "3,  ZERO_BASED, 2, 3,   false",
-            "3,  ZERO_BASED, 3, 3,   false",
             "3,  ZERO_BASED, 3, 4,   false",
             "3,  ZERO_BASED, 4, 5,   true"
     })
