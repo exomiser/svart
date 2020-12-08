@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class VcfBreakendFormatterTest {
+public class VcfBreakendFormatterTest {
 
     @Test
     public void makeAltVcfField_PosPos() {

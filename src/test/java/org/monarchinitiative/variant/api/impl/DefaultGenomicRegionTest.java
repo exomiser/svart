@@ -32,7 +32,7 @@ public class DefaultGenomicRegionTest {
             "POSITIVE, ZERO_BASED, 0, 1,  NEGATIVE, ZERO_BASED,   9, 10",
             "POSITIVE, ONE_BASED , 1, 2,  NEGATIVE, ONE_BASED,    9, 10"
     })
-    void toOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
+    public void toOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
                           Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
         GenomicRegion instance = DefaultGenomicRegion.of(chr1, inputStrand, inputCoords, Position.of(inputStart), Position.of(inputEnd));
         GenomicRegion expected = DefaultGenomicRegion.of(chr1, exptStrand, exptCoords, Position.of(exptStart), Position.of(exptEnd));
