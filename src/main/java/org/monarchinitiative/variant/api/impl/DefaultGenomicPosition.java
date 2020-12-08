@@ -8,13 +8,13 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class GenomicPositionDefault implements GenomicPosition {
+public final class DefaultGenomicPosition implements GenomicPosition {
 
     private final Contig contig;
     private final Position position;
     private final Strand strand;
 
-    private GenomicPositionDefault(Contig contig, Strand strand, Position position) {
+    private DefaultGenomicPosition(Contig contig, Strand strand, Position position) {
         if ((position.minPos() < 0)) {
             throw new IllegalArgumentException("Cannot create genomic position " + position + " that extends beyond first contig base");
         }
@@ -28,7 +28,7 @@ public class GenomicPositionDefault implements GenomicPosition {
     }
 
     public static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        return new GenomicPositionDefault(contig, strand, position.shift(coordinateSystem.startDelta(CoordinateSystem.ZERO_BASED)));
+        return new DefaultGenomicPosition(contig, strand, position.shift(coordinateSystem.startDelta(CoordinateSystem.ZERO_BASED)));
     }
 
     @Override
@@ -42,11 +42,11 @@ public class GenomicPositionDefault implements GenomicPosition {
     }
 
     @Override
-    public GenomicPositionDefault withStrand(Strand other) {
+    public DefaultGenomicPosition withStrand(Strand other) {
         if (strand == other) {
             return this;
         }
-        return new GenomicPositionDefault(contig, other, position.invert(contig, CoordinateSystem.ZERO_BASED));
+        return new DefaultGenomicPosition(contig, other, position.invert(contig, CoordinateSystem.ZERO_BASED));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GenomicPositionDefault implements GenomicPosition {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GenomicPositionDefault that = (GenomicPositionDefault) o;
+        DefaultGenomicPosition that = (DefaultGenomicPosition) o;
         return Objects.equals(contig, that.contig) &&
                 Objects.equals(position, that.position) &&
                 strand == that.strand;
@@ -71,7 +71,7 @@ public class GenomicPositionDefault implements GenomicPosition {
 
     @Override
     public String toString() {
-        return "GenomicPositionDefault{" +
+        return "GenomicPosition{" +
                 "contig=" + contig +
                 ", position=" + position +
                 ", strand=" + strand +

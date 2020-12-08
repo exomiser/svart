@@ -8,12 +8,10 @@ import java.util.Objects;
 public class TestContig implements Contig {
 
     private final int id;
-    private final String name;
     private final int length;
 
-    public TestContig(int id, String name, int length) {
+    public TestContig(int id, int length) {
         this.id = id;
-        this.name = name;
         this.length = length;
     }
 
@@ -24,7 +22,7 @@ public class TestContig implements Contig {
 
     @Override
     public String name() {
-        return name;
+        return String.valueOf(id);
     }
 
     @Override
@@ -49,7 +47,7 @@ public class TestContig implements Contig {
 
     @Override
     public String ucscName() {
-        return "chr" + name;
+        return "chr" + name();
     }
 
     @Override
@@ -63,20 +61,18 @@ public class TestContig implements Contig {
         if (!(o instanceof TestContig)) return false;
         TestContig that = (TestContig) o;
         return id == that.id &&
-                length == that.length &&
-                Objects.equals(name, that.name);
+                length == that.length;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, length);
+        return Objects.hash(id, length);
     }
 
     @Override
     public String toString() {
         return "TestContig{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
                 ", length=" + length +
                 '}';
     }

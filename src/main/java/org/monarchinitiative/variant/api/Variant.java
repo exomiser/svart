@@ -42,6 +42,8 @@ public interface Variant extends GenomicRegion {
         return VariantType.parseType(ref(), alt());
     }
 
-    boolean isSymbolic();
+    default boolean isSymbolic() {
+        return VariantType.isSymbolic(alt());
+    }
 
 }

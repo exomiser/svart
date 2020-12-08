@@ -1,7 +1,7 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.impl.GenomicPositionDefault;
-import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicPosition;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
 /**
  * Represents a {@link Position} on a {@link Contig} and a {@link Strand}. The position is always zero-based for ease
@@ -127,7 +127,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * @return the region
      */
     default GenomicRegion toRegion() {
-        return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().asPrecise(), position().asPrecise());
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().asPrecise(), position().shift(1).asPrecise());
     }
 
     /**
@@ -170,7 +170,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
         } else if (upstream >= downstream) {
             throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
         }
-        return GenomicRegionDefault.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
     }
 
     @Override
@@ -227,7 +227,7 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
      * <code>coordinateSystem</code>
      */
     static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        return GenomicPositionDefault.of(contig, strand, coordinateSystem, position);
+        return DefaultGenomicPosition.of(contig, strand, coordinateSystem, position);
     }
 
 }

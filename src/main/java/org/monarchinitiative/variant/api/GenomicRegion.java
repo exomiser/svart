@@ -2,13 +2,13 @@
 package org.monarchinitiative.variant.api;
 
 
-import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion> , CoordinateSystemed<GenomicRegion> {
+public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion>, CoordinateSystemed<GenomicRegion> {
 
     /**
      * @return contig where the region is located
@@ -171,7 +171,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return one-based position
      */
     static GenomicRegion oneBased(Contig contig, int startPosition, int endPosition) {
-        return GenomicRegionDefault.oneBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
+        return DefaultGenomicRegion.oneBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
@@ -180,7 +180,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return one-based position
      */
     static GenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return GenomicRegionDefault.oneBased(contig, strand, startPosition, endPosition);
+        return DefaultGenomicRegion.oneBased(contig, strand, startPosition, endPosition);
     }
 
 
@@ -191,7 +191,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return zero-based genomic region
      */
     static GenomicRegion zeroBased(Contig contig, int startPosition, int endPosition) {
-        return GenomicRegionDefault.zeroBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
+        return DefaultGenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
@@ -200,7 +200,7 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return zero-based genomic region
      */
     static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return GenomicRegionDefault.zeroBased(contig, strand, startPosition, endPosition);
+        return DefaultGenomicRegion.zeroBased(contig, strand, startPosition, endPosition);
     }
 
     /**
@@ -223,6 +223,6 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
      * @return a position
      */
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return GenomicRegionDefault.of(contig, strand, coordinateSystem, startPosition, endPosition);
+        return DefaultGenomicRegion.of(contig, strand, coordinateSystem, startPosition, endPosition);
     }
 }

@@ -98,28 +98,26 @@ public class GenomicPositionTest {
         assertThat(actual.pos(), equalTo(expectedPosition));
     }
 
-    @Test
-    public void toRegion() {
-        // a position is turned into a region of length 0
-        GenomicPosition three = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3));
+    @ParameterizedTest
+    @CsvSource({
+            // strand  coords      pos  expected coords  start end
+            "POSITIVE, ZERO_BASED, 3,   ZERO_BASED,   3, 4",
+            "NEGATIVE, ZERO_BASED, 3,   ZERO_BASED,   3, 4",
 
-        GenomicRegion region = three.toRegion();
-        assertThat(region.length(), equalTo(0));
-        assertThat(region.startPosition(), equalTo(three.position()));
-        assertThat(region.endPosition(), equalTo(three.position()));
-        assertThat(region.strand(), equalTo(three.strand()));
-        assertThat(region.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+            "POSITIVE, ONE_BASED, 3,   ZERO_BASED,   2, 3",
+            "NEGATIVE, ONE_BASED, 3,   ZERO_BASED,   2, 3",
+    })
+    public void toRegion(Strand strand, CoordinateSystem initCoords, int initPos, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
+        // a position is turned into a region of length 1
+        GenomicPosition position = GenomicPosition.of(ctg1, strand, initCoords, Position.of(initPos));
+        GenomicRegion expected = GenomicRegion.of(ctg1, strand, exptCoords, Position.of(exptStart), Position.of(exptEnd));
+        assertThat(position.toRegion(), equalTo(expected));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "3,   0,   3, 3",
             "3,   1,   2, 4",
             "3,   2,   1, 5",
-
-            "3,   0,   3, 3",
-            "3,   1,   2, 4",
-            "3,   2,   1, 5"
     })
     public void toRegion_singlePadding(int pos, int padding,
                                           int expectedStart, int expectedEnd) {
@@ -142,11 +140,9 @@ public class GenomicPositionTest {
     @ParameterizedTest
     @CsvSource({
             "3,  -2, -1,   1, 2",
-            "3,   0, -0,   3, 3",
             "3,  -1,  0,   2, 3",
             "3,  -2,  1,   1, 4",
 
-            "3,   0, -0,   3, 3",
             "3,   0,  1,   3, 4",
             "3,  -1,  2,   2, 5"
     })
@@ -225,7 +221,6 @@ public class GenomicPositionTest {
 
             "3,  ZERO_BASED, 1, 2,   false",
             "3,  ZERO_BASED, 2, 3,   false",
-            "3,  ZERO_BASED, 3, 3,   false",
             "3,  ZERO_BASED, 3, 4,   false",
             "3,  ZERO_BASED, 4, 5,   true"
     })

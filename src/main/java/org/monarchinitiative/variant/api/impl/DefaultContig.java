@@ -9,7 +9,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public final class ContigDefault implements Contig {
+public final class DefaultContig implements Contig {
 
     private final int id;
     private final String name;
@@ -19,7 +19,7 @@ public final class ContigDefault implements Contig {
     private final String refSeqAccession;
     private final String ucscName;
 
-    private ContigDefault(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+    private DefaultContig(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
         this.id = id;
         this.name = Objects.requireNonNull(name);
         this.sequenceRole = sequenceRole;
@@ -29,8 +29,8 @@ public final class ContigDefault implements Contig {
         this.ucscName = Objects.requireNonNull(ucscName);
     }
 
-    public static ContigDefault of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
-        return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
+    public static DefaultContig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+        return new DefaultContig(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
     }
 
     @Override
@@ -76,8 +76,8 @@ public final class ContigDefault implements Contig {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ContigDefault)) return false;
-        ContigDefault that = (ContigDefault) o;
+        if (!(o instanceof DefaultContig)) return false;
+        DefaultContig that = (DefaultContig) o;
         return id == that.id &&
                 length == that.length &&
                 name.equals(that.name) &&

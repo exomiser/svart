@@ -3,7 +3,7 @@ package org.monarchinitiative.variant.api;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.impl.GenomicRegionDefault;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.sameInstance;
 public class GenomicRegionTest {
 
 
-    private final Contig chr1 = new TestContig(1, "1", 5);
+    private final Contig chr1 = new TestContig(1, 5);
 
     @Test
     public void oneBasedSingleBase() {
@@ -23,8 +23,8 @@ public class GenomicRegionTest {
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegionDefault.oneBased(chr1, Strand.NEGATIVE, Position.of(5), Position.of(5))));
-        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegionDefault.zeroBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand(), equalTo(DefaultGenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(5), Position.of(5))));
+        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(DefaultGenomicRegion.zeroBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
     @Test
@@ -33,7 +33,7 @@ public class GenomicRegionTest {
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegionDefault.zeroBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand(), equalTo(DefaultGenomicRegion.zeroBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
     @Test
@@ -42,7 +42,7 @@ public class GenomicRegionTest {
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegionDefault.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand(), equalTo(DefaultGenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
     @Test
@@ -51,13 +51,13 @@ public class GenomicRegionTest {
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegionDefault.zeroBased(chr1, Strand.NEGATIVE, Position.of(3), Position.of(5))));
+        assertThat(instance.toOppositeStrand(), equalTo(DefaultGenomicRegion.zeroBased(chr1, Strand.NEGATIVE, Position.of(3), Position.of(5))));
     }
 
     @Test
     public void flipStrandAndChangeCoordinateSystem() {
         GenomicRegion instance = GenomicRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(0), Position.of(2));
-        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegionDefault.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(DefaultGenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
     @ParameterizedTest
@@ -96,8 +96,6 @@ public class GenomicRegionTest {
     @CsvSource({
             // region            pos
             "ZERO_BASED, 0, 1,   0,   true",
-            "ZERO_BASED, 1, 1,   0,   false",
-            "ZERO_BASED, 1, 1,   1,   false",
             "ZERO_BASED, 1, 2,   1,   true",
             "ZERO_BASED, 1, 2,   2,   false",
 
@@ -126,14 +124,8 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 0, 1,   false",
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 1, 1,   true",
-            "ZERO_BASED, 1, 1,   ZERO_BASED, 1, 2,   false",
-
             "ZERO_BASED, 1, 2,   ZERO_BASED, 0, 1,   false",
-            "ZERO_BASED, 1, 2,   ZERO_BASED, 1, 1,   true",
             "ZERO_BASED, 1, 2,   ZERO_BASED, 1, 2,   true",
-            "ZERO_BASED, 1, 2,   ZERO_BASED, 2, 2,   true",
             "ZERO_BASED, 1, 2,   ZERO_BASED, 2, 3,   false",
 
             "ZERO_BASED, 1, 3,   ZERO_BASED, 0, 1,   false",
@@ -141,9 +133,6 @@ public class GenomicRegionTest {
             "ZERO_BASED, 1, 3,   ZERO_BASED, 2, 3,   true",
             "ZERO_BASED, 1, 3,   ZERO_BASED, 3, 4,   false",
             // --------------------------------------------
-            "ZERO_BASED, 2, 2,   ONE_BASED,  1, 1,   false",
-            "ZERO_BASED, 2, 2,   ONE_BASED,  2, 2,   false",
-            "ZERO_BASED, 2, 2,   ONE_BASED,  3, 3,   false",
 
             "ZERO_BASED, 2, 3,   ONE_BASED,  2, 3,   false",
             "ZERO_BASED, 2, 3,   ONE_BASED,  3, 3,   true",
@@ -154,7 +143,7 @@ public class GenomicRegionTest {
             "ZERO_BASED, 2, 4,   ONE_BASED,  4, 4,   true",
             "ZERO_BASED, 2, 4,   ONE_BASED,  4, 5,   false",
     })
-    public void zeroBasedRegionContainsARegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
+    public void zeroBasedRegionContainsRegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
                                boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, thisCoordinateSystem, Position.of(thisStart), Position.of(thisEnd));
@@ -166,17 +155,12 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "ONE_BASED, 1, 1,   ZERO_BASED, 0, 0,   true",
             "ONE_BASED, 1, 1,   ZERO_BASED, 0, 1,   true",
-            "ONE_BASED, 1, 1,   ZERO_BASED, 1, 1,   true",
             "ONE_BASED, 1, 1,   ZERO_BASED, 1, 2,   false",
 
             "ONE_BASED, 2, 3,   ZERO_BASED, 0, 1,   false",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 1, 1,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 1, 2,   true",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 2, 2,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 2, 3,   true",
-            "ONE_BASED, 2, 3,   ZERO_BASED, 3, 3,   true",
             "ONE_BASED, 2, 3,   ZERO_BASED, 3, 4,   false",
 
             "ONE_BASED, 2, 4,   ZERO_BASED, 0, 1,   false",
@@ -201,7 +185,7 @@ public class GenomicRegionTest {
             "ONE_BASED, 2, 4,   ONE_BASED,  3, 4,   true",
             "ONE_BASED, 2, 4,   ONE_BASED,  3, 5,   false",
     })
-    public void oneBasedRegionContainsARegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
+    public void oneBasedRegionContainsRegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                                CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
                                                boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, thisCoordinateSystem, Position.of(thisStart), Position.of(thisEnd));
@@ -275,7 +259,6 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ZERO_BASED, 3, 3,     0",
             "ONE_BASED,  3, 3,     1",
             "ZERO_BASED, 2, 3,     1",
             "ONE_BASED,  2, 3,     2",

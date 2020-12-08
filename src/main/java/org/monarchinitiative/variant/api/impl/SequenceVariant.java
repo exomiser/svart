@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class SequenceVariant implements Variant {
+public final class SequenceVariant implements Variant {
 
     private final Contig contig;
     private final String id;
