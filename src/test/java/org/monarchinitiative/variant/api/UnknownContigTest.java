@@ -30,7 +30,7 @@ public class UnknownContigTest {
     }
 
     @Test
-    void genBankAccession() {
+    public void genBankAccession() {
         assertThat(unknown.genBankAccession(), equalTo(""));
     }
 
