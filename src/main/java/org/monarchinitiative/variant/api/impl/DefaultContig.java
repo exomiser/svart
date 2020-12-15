@@ -15,22 +15,22 @@ public final class DefaultContig implements Contig {
     private final String name;
     private final SequenceRole sequenceRole;
     private final int length;
-    private final String genbankAccession;
+    private final String genBankAccession;
     private final String refSeqAccession;
     private final String ucscName;
 
-    private DefaultContig(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+    private DefaultContig(int id, String name, SequenceRole sequenceRole, int length, String genBankAccession, String refSeqAccession, String ucscName) {
         this.id = id;
         this.name = Objects.requireNonNull(name);
         this.sequenceRole = sequenceRole;
         this.length = length;
-        this.genbankAccession = Objects.requireNonNull(genbankAccession);
+        this.genBankAccession = Objects.requireNonNull(genBankAccession);
         this.refSeqAccession = Objects.requireNonNull(refSeqAccession);
         this.ucscName = Objects.requireNonNull(ucscName);
     }
 
-    public static DefaultContig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
-        return new DefaultContig(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
+    public static DefaultContig of(int id, String name, SequenceRole sequenceRole, int length, String genBankAccession, String refSeqAccession, String ucscName) {
+        return new DefaultContig(id, name, sequenceRole, length, genBankAccession, refSeqAccession, ucscName);
     }
 
     @Override
@@ -55,7 +55,7 @@ public final class DefaultContig implements Contig {
 
     @Override
     public String genBankAccession() {
-        return genbankAccession;
+        return genBankAccession;
     }
 
     @Override
@@ -82,14 +82,14 @@ public final class DefaultContig implements Contig {
                 length == that.length &&
                 name.equals(that.name) &&
                 sequenceRole == that.sequenceRole &&
-                genbankAccession.equals(that.genbankAccession) &&
+                genBankAccession.equals(that.genBankAccession) &&
                 refSeqAccession.equals(that.refSeqAccession) &&
                 ucscName.equals(that.ucscName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
+        return Objects.hash(id, name, sequenceRole, length, genBankAccession, refSeqAccession, ucscName);
     }
 
     @Override
@@ -99,7 +99,7 @@ public final class DefaultContig implements Contig {
                 ", name='" + name + '\'' +
                 ", sequenceRole=" + sequenceRole +
                 ", length=" + length +
-                ", genbankAccession='" + genbankAccession + '\'' +
+                ", genBankAccession='" + genBankAccession + '\'' +
                 ", refSeqAccession='" + refSeqAccession + '\'' +
                 ", ucscName='" + ucscName + '\'' +
                 '}';

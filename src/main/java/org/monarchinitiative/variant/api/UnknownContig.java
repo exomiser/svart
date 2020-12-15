@@ -34,7 +34,7 @@ final class UnknownContig implements Contig {
 
     @Override
     public int length() {
-        return 0;
+        return 1;
     }
 
     @Override
@@ -65,5 +65,18 @@ final class UnknownContig implements Contig {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "UnknownContig{" +
+                "id=" + id() +
+                ", name='" + name() + '\'' +
+                ", sequenceRole=" + sequenceRole() +
+                ", length=" + length() +
+                ", genBankAccession='" + genBankAccession() + '\'' +
+                ", refSeqAccession='" + refSeqAccession() + '\'' +
+                ", ucscName='" + ucscName() + '\'' +
+                '}';
     }
 }
