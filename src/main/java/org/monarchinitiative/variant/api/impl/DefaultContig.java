@@ -69,11 +69,6 @@ public final class DefaultContig implements Contig {
     }
 
     @Override
-    public int compareTo(Contig o) {
-        return Integer.compare(this.id(), o.id());
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DefaultContig)) return false;
