@@ -15,11 +15,11 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     private final Position endPosition;
 
     protected BaseGenomicRegion(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        this.contig = Objects.requireNonNull(contig);
-        this.strand = Objects.requireNonNull(strand);
-        this.coordinateSystem = Objects.requireNonNull(coordinateSystem);
-        this.startPosition = Objects.requireNonNull(startPosition);
-        this.endPosition = Objects.requireNonNull(endPosition);
+        this.contig = Objects.requireNonNull(contig, "contig must not be null");
+        this.strand = Objects.requireNonNull(strand, "strand must not be null");
+        this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "coordinateSystem must not be null");
+        this.startPosition = Objects.requireNonNull(startPosition, "startPosition must not be null");
+        this.endPosition = Objects.requireNonNull(endPosition, "endPosition must not be null");
         if (coordinateSystem == CoordinateSystem.ZERO_BASED && startPosition.pos() >= endPosition.pos()) {
             throw new IllegalArgumentException("Zero-based region must have a start position greater than the end position");
         }
