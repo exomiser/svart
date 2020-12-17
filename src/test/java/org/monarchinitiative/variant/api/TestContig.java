@@ -51,11 +51,6 @@ public class TestContig implements Contig {
     }
 
     @Override
-    public int compareTo(Contig o) {
-        return Integer.compare(id, o.id());
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TestContig)) return false;
