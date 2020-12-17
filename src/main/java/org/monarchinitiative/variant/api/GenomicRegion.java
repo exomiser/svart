@@ -147,8 +147,6 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
     static int compare(GenomicRegion x, GenomicRegion y) {
         int result = Contig.compare(x.contig(), y.contig());
         if (result == 0) {
-            // TODO: test this thoroughly with mixed systems. Don't want to penalize 1-based if 0-based never used in a system
-            // calculate normalization delta for start positions
             result = Position.compare(x.startPosition(), y.normalisedStartPosition(x.coordinateSystem()));
         }
         if (result == 0) {

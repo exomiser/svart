@@ -42,7 +42,6 @@ public class UnknownContigTest {
     @Test
     public void ucscName() {
         assertThat(unknown.ucscName(), equalTo("na"));
-        System.out.println(unknown);
     }
 
 }
