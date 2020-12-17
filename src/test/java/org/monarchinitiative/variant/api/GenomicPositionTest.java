@@ -168,7 +168,7 @@ public class GenomicPositionTest {
     }
 
     @Test
-    public void compareToWhenDifferingContigs() {
+    public void compareWhenDifferingContigs() {
         Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
         Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr2");
         Contig ctg3 = Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr3");
@@ -177,9 +177,9 @@ public class GenomicPositionTest {
         GenomicPosition three = GenomicPosition.zeroBased(ctg2, Strand.POSITIVE, Position.of(3));
         GenomicPosition four = GenomicPosition.zeroBased(ctg3, Strand.POSITIVE, Position.of(3));
 
-        assertThat(three.compareTo(two), equalTo(1));
-        assertThat(three.compareTo(three), equalTo(0));
-        assertThat(three.compareTo(four), equalTo(-1));
+        assertThat(GenomicPosition.compare(three, two), equalTo(1));
+        assertThat(GenomicPosition.compare(three, three), equalTo(0));
+        assertThat(GenomicPosition.compare(three, four), equalTo(-1));
     }
 
     @ParameterizedTest
@@ -187,12 +187,12 @@ public class GenomicPositionTest {
             "2,  1",
             "3,  0",
             "4, -1"})
-    public void compareToWhenDifferingPositions(int pos, int expected) {
+    public void compareWhenDifferingPositions(int pos, int expected) {
         GenomicPosition three = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3));
 
         GenomicPosition gp = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(pos));
 
-        assertThat(three.compareTo(gp), equalTo(expected));
+        assertThat(GenomicPosition.compare(three, gp), equalTo(expected));
     }
 
     @Test

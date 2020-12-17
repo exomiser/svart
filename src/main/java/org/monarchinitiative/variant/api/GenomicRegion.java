@@ -4,11 +4,15 @@ package org.monarchinitiative.variant.api;
 
 import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
+import java.util.Comparator;
+
+import static org.monarchinitiative.variant.api.GenomicComparators.*;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<GenomicRegion>, CoordinateSystemed<GenomicRegion> {
+public interface GenomicRegion extends Stranded<GenomicRegion>, CoordinateSystemed<GenomicRegion> {
 
     /**
      * @return contig where the region is located
@@ -139,9 +143,8 @@ public interface GenomicRegion extends Comparable<GenomicRegion>, Stranded<Genom
         return GenomicRegion.of(contig(), strand(), coordinateSystem(), startPosition().shift(-upstream), endPosition().shift(downstream));
     }
 
-    @Override
-    default int compareTo(GenomicRegion other) {
-        return compare(this, other);
+    static Comparator<GenomicRegion> naturalOrder() {
+        return GenomicRegionNaturalOrderComparator.INSTANCE;
     }
 
     static int compare(GenomicRegion x, GenomicRegion y) {

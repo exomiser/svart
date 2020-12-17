@@ -3,6 +3,10 @@ package org.monarchinitiative.variant.api;
 import org.monarchinitiative.variant.api.impl.DefaultGenomicPosition;
 import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
+import java.util.Comparator;
+
+import static org.monarchinitiative.variant.api.GenomicComparators.*;
+
 /**
  * Represents a {@link Position} on a {@link Contig} and a {@link Strand}. The position is always zero-based for ease
  * of calculations.
@@ -10,7 +14,7 @@ import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<GenomicPosition> {
+public interface GenomicPosition extends Stranded<GenomicPosition> {
 
     Contig contig();
 
@@ -173,9 +177,8 @@ public interface GenomicPosition extends Comparable<GenomicPosition>, Stranded<G
         return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
     }
 
-    @Override
-    default int compareTo(GenomicPosition o) {
-        return compare(this, o);
+    static Comparator<GenomicPosition> naturalOrder() {
+        return GenomicPositionNaturalOrderComparator.INSTANCE;
     }
 
     static int compare(GenomicPosition x, GenomicPosition y) {
