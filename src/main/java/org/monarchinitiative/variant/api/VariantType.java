@@ -213,11 +213,11 @@ public enum VariantType {
     }
 
     public static boolean isLargeSymbolic(String allele) {
-        return allele.length() > 1 && allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>';
+        return allele.length() > 1 && (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>');
     }
 
     public static boolean isSingleBreakend(String allele) {
-        return allele.length() > 1 && allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.';
+        return allele.length() > 1 && (allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.');
     }
 
     public static boolean isMatedBreakend(String allele) {

@@ -140,4 +140,79 @@ public class VariantTypeTest {
     public void isMatedBreakend(String allele, boolean expected) {
         assertThat(VariantType.isMatedBreakend(allele), equalTo(expected));
     }
+
+    @Test
+    public void isMatedBreakendEmptyStringReturnsFalse() {
+        assertThat(VariantType.isMatedBreakend(""), equalTo(false));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "]13:123456]AGTNNNNNCAT, false",
+            "]13:123456[AGTNNNNNCAT, false",
+            "[13:123456[AGTNNNNNCAT, false",
+            "[13:123456]AGTNNNNNCAT, false",
+            "[, false",
+            "], false",
+            "AGTNNNNNCAT, false",
+            "<INS>, false",
+            "., false",
+            ".ATC, true",
+            "ATC., true",
+    })
+    public void isSingleBreakend(String allele, boolean expected) {
+        assertThat(VariantType.isSingleBreakend(allele), equalTo(expected));
+    }
+
+    @Test
+    public void isSingleBreakendEmptyStringReturnsFalse() {
+        assertThat(VariantType.isSingleBreakend(""), equalTo(false));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "]13:123456]AGTNNNNNCAT, true",
+            "]13:123456[AGTNNNNNCAT, true",
+            "[13:123456[AGTNNNNNCAT, true",
+            "[13:123456]AGTNNNNNCAT, true",
+            "[, false",
+            "], false",
+            "AGTNNNNNCAT, false",
+            "<INS>, true",
+            "., false",
+            ".ATC, true",
+            "ATC., true",
+    })
+    public void isSymbolic(String allele, boolean expected) {
+        assertThat(VariantType.isSymbolic(allele), equalTo(expected));
+    }
+
+    @Test
+    public void isSymbolicEmptyStringReturnsFalse() {
+        assertThat(VariantType.isSymbolic(""), equalTo(false));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "]13:123456]AGTNNNNNCAT, false",
+            "]13:123456[AGTNNNNNCAT, false",
+            "[13:123456[AGTNNNNNCAT, false",
+            "[13:123456]AGTNNNNNCAT, false",
+            "[, false",
+            "], false",
+            "AGTNNNNNCAT, false",
+            "<INS>, true",
+            "., false",
+            ".ATC, false",
+            "ATC., false",
+    })
+    public void isLargeSymbolic(String allele, boolean expected) {
+        assertThat(VariantType.isLargeSymbolic(allele), equalTo(expected));
+    }
+
+    @Test
+    public void isLargeSymbolicEmptyStringReturnsFalse() {
+        assertThat(VariantType.isLargeSymbolic(""), equalTo(false));
+    }
 }
