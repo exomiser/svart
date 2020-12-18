@@ -41,36 +41,42 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         return name;
     }
 
-    public String organismName(){
+    public String organismName() {
         return organismName;
     }
-    public String taxId(){
+
+    public String taxId() {
         return taxId;
     }
-    public String submitter(){
+
+    public String submitter() {
         return submitter;
     }
-    public String date(){
+
+    public String date() {
         return date;
     }
-    public String genBankAccession(){
+
+    public String genBankAccession() {
         return genBankAccession;
     }
-    public String refSeqAccession(){
+
+    public String refSeqAccession() {
         return refSeqAccession;
     }
-    public SortedSet<Contig> contigs(){
-        return contigs;
+
+    public SortedSet<Contig> contigs() {
+        return new TreeSet<>(contigs);
     }
 
-    public Contig contigById(int contigId){
-        if(contigId <= contigsById.size() - 1) {
+    public Contig contigById(int contigId) {
+        if (contigId <= contigsById.size() - 1) {
             return contigsById.get(contigId);
         }
         return Contig.unknown();
     }
 
-    public Contig contigByName(String contigName){
+    public Contig contigByName(String contigName) {
         return contigsByName.getOrDefault(contigName, Contig.unknown());
     }
 
@@ -110,7 +116,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
     public static class Builder {
 
         private String name = "";
-        private String organismName ="";
+        private String organismName = "";
         private String taxId = "";
         private String submitter = "";
         private String date = "";
@@ -119,41 +125,42 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         private Collection<Contig> contigs = new ArrayList<>();
 
         public Builder name(String name) {
-            this.name = name;
+            this.name = Objects.requireNonNull(name);
             return this;
         }
 
-        public Builder organismName(String organismName){
-            this.organismName =  organismName;
-            return this;
-        }
-        public Builder taxId(String taxId){
-            this.taxId = taxId;
+        public Builder organismName(String organismName) {
+            this.organismName = Objects.requireNonNull(organismName);
             return this;
         }
 
-        public Builder submitter(String submitter){
-            this.submitter = submitter;
+        public Builder taxId(String taxId) {
+            this.taxId = Objects.requireNonNull(taxId);
             return this;
         }
 
-        public Builder date(String date){
-            this.date = date;
+        public Builder submitter(String submitter) {
+            this.submitter = Objects.requireNonNull(submitter);
             return this;
         }
 
-        public Builder genBankAccession(String genBankAccession){
-            this.genBankAccession = genBankAccession;
+        public Builder date(String date) {
+            this.date = Objects.requireNonNull(date);
             return this;
         }
 
-        public Builder refSeqAccession(String refSeqAccession){
-            this.refSeqAccession = refSeqAccession;
+        public Builder genBankAccession(String genBankAccession) {
+            this.genBankAccession = Objects.requireNonNull(genBankAccession);
             return this;
         }
 
-        public Builder contigs(Collection<Contig> contigs){
-            this.contigs = contigs;
+        public Builder refSeqAccession(String refSeqAccession) {
+            this.refSeqAccession = Objects.requireNonNull(refSeqAccession);
+            return this;
+        }
+
+        public Builder contigs(Collection<Contig> contigs) {
+            this.contigs = Objects.requireNonNull(contigs);
             return this;
         }
 

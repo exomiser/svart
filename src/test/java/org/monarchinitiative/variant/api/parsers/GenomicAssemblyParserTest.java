@@ -87,4 +87,16 @@ public class GenomicAssemblyParserTest {
     public void contigByNameMt() {
         assertThat(instance.contigByName("MT"), equalTo(chrM));
     }
+
+    @Test
+    public void contigByNameHSCHR17_1_CTG5() {
+        //HSCHR17_1_CTG5	alt-scaffold	17	Chromosome	GL000258.1	=	NT_167251.1	ALT_REF_LOCI_9	1680828	chr17_ctg5_hap1
+        Contig last = Contig.of(297, "HSCHR17_1_CTG5", SequenceRole.ALT_SCAFFOLD, 1680828, "GL000258.1", "NT_167251.1", "chr17_ctg5_hap1");
+        assertThat(instance.contigByName("HSCHR17_1_CTG5"), equalTo(last));
+    }
+
+    @Test
+    public void contigs() {
+        assertThat(instance.contigs().size(), equalTo(298));
+    }
 }
