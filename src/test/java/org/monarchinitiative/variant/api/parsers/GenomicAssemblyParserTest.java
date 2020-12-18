@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class GenomicAssemblyParserTest {
 
-    private static final GenomicAssembly instance = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+    private static final GenomicAssembly grch37p13 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
 
     // 1	assembled-molecule	1	Chromosome	CM000663.1	=	NC_000001.10	Primary Assembly	249250621	chr1
     private static final Contig chr1b37 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 249250621, "CM000663.1" , "NC_000001.10", "chr1");
@@ -21,82 +21,104 @@ public class GenomicAssemblyParserTest {
 
     @Test
     public void name() {
-        assertThat(instance.name(), equalTo("GRCh37.p13"));
+        assertThat(grch37p13.name(), equalTo("GRCh37.p13"));
     }
 
     @Test
     public void submitter() {
-        assertThat(instance.submitter(), equalTo("Genome Reference Consortium"));
+        assertThat(grch37p13.submitter(), equalTo("Genome Reference Consortium"));
     }
 
     @Test
     public void date() {
-        assertThat(instance.date(), equalTo("2013-06-28"));
+        assertThat(grch37p13.date(), equalTo("2013-06-28"));
     }
 
     @Test
     public void organismName() {
-        assertThat(instance.organismName(), equalTo("Homo sapiens (human)"));
+        assertThat(grch37p13.organismName(), equalTo("Homo sapiens (human)"));
     }
 
     @Test
     public void taxId() {
-        assertThat(instance.taxId(), equalTo("9606"));
+        assertThat(grch37p13.taxId(), equalTo("9606"));
     }
 
     @Test
     public void genBankAccession() {
-        assertThat(instance.genBankAccession(), equalTo("GCA_000001405.14"));
+        assertThat(grch37p13.genBankAccession(), equalTo("GCA_000001405.14"));
     }
 
     @Test
     public void refSeqAccession() {
-        assertThat(instance.refSeqAccession(), equalTo("GCF_000001405.25"));
+        assertThat(grch37p13.refSeqAccession(), equalTo("GCF_000001405.25"));
     }
 
     @Test
     public void contigById0() {
-        assertThat(instance.contigById(0), equalTo(Contig.unknown()));
+        assertThat(grch37p13.contigById(0), equalTo(Contig.unknown()));
     }
 
     @Test
     public void contigById999() {
-        assertThat(instance.contigById(999), equalTo(Contig.unknown()));
+        assertThat(grch37p13.contigById(999), equalTo(Contig.unknown()));
     }
 
     @Test
     public void contigById1() {
-        assertThat(instance.contigById(1), equalTo(chr1b37));
+        assertThat(grch37p13.contigById(1), equalTo(chr1b37));
     }
     @Test
     public void contigById25() {
-        assertThat(instance.contigById(25), equalTo(chrM));
+        assertThat(grch37p13.contigById(25), equalTo(chrM));
     }
 
     @Test
     public void contigByNameUnknown() {
-        assertThat(instance.contigByName("wibble"), equalTo(Contig.unknown()));
+        assertThat(grch37p13.contigByName("wibble"), equalTo(Contig.unknown()));
     }
 
     @Test
     public void contigByName1() {
-        assertThat(instance.contigByName("1"), equalTo(chr1b37));
+        assertThat(grch37p13.contigByName("1"), equalTo(chr1b37));
     }
 
     @Test
     public void contigByNameMt() {
-        assertThat(instance.contigByName("MT"), equalTo(chrM));
+        assertThat(grch37p13.contigByName("MT"), equalTo(chrM));
     }
 
     @Test
     public void contigByNameHSCHR17_1_CTG5() {
         //HSCHR17_1_CTG5	alt-scaffold	17	Chromosome	GL000258.1	=	NT_167251.1	ALT_REF_LOCI_9	1680828	chr17_ctg5_hap1
         Contig last = Contig.of(297, "HSCHR17_1_CTG5", SequenceRole.ALT_SCAFFOLD, 1680828, "GL000258.1", "NT_167251.1", "chr17_ctg5_hap1");
-        assertThat(instance.contigByName("HSCHR17_1_CTG5"), equalTo(last));
+        assertThat(grch37p13.contigByName("HSCHR17_1_CTG5"), equalTo(last));
     }
 
     @Test
     public void contigs() {
-        assertThat(instance.contigs().size(), equalTo(298));
+        assertThat(grch37p13.contigs().size(), equalTo(298));
+    }
+
+    @Test
+    void grcm38p6() {
+        GenomicAssembly mm10 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001635.26_GRCm38.p6_assembly_report.txt"));
+        assertThat(mm10.name(), equalTo("GRCm38.p6"));
+        assertThat(mm10.organismName(), equalTo("Mus musculus (house mouse)"));
+        assertThat(mm10.taxId(), equalTo("10090"));
+        assertThat(mm10.contigByName("X").id(), equalTo(20));
+        assertThat(mm10.contigByName("Y").id(), equalTo(21));
+        assertThat(mm10.contigByName("MT").id(), equalTo(22));
+    }
+
+    @Test
+    void chimpPTRv2() {
+        GenomicAssembly clint_PTRv2 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_002880755.1_Clint_PTRv2_assembly_report.txt"));
+        assertThat(clint_PTRv2.name(), equalTo("Clint_PTRv2"));
+        assertThat(clint_PTRv2.organismName(), equalTo("Pan troglodytes (chimpanzee)"));
+        assertThat(clint_PTRv2.taxId(), equalTo("9598"));
+        assertThat(clint_PTRv2.contigByName("chrX").id(), equalTo(24));
+        assertThat(clint_PTRv2.contigByName("Y").id(), equalTo(25));
+        assertThat(clint_PTRv2.contigByName("MT").id(), equalTo(26));
     }
 }
