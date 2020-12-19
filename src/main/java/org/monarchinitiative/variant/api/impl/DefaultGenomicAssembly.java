@@ -30,7 +30,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         this.date = builder.date;
         this.genBankAccession = builder.genBankAccession;
         this.refSeqAccession = builder.refSeqAccession;
-        this.contigs = new TreeSet<>(builder.contigs);
+        this.contigs = Collections.unmodifiableSortedSet(new TreeSet<>(builder.contigs));
 
         contigsById = new ArrayList<>(contigs);
         contigsByName = contigs.stream().collect(toMap(Contig::name, Function.identity()));
@@ -66,7 +66,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
     }
 
     public SortedSet<Contig> contigs() {
-        return new TreeSet<>(contigs);
+        return contigs;
     }
 
     public Contig contigById(int contigId) {

@@ -38,7 +38,7 @@ public class GenomicAssemblyParser {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unable to parse assembly file " + assemblyReportPath, e);
         }
 
         DefaultGenomicAssembly.Builder assemblyBuilder = DefaultGenomicAssembly.builder();

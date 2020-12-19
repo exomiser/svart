@@ -9,6 +9,7 @@ import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GenomicAssemblyParserTest {
 
@@ -18,6 +19,11 @@ public class GenomicAssemblyParserTest {
     private static final Contig chr1b37 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 249250621, "CM000663.1" , "NC_000001.10", "chr1");
     // MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM
     private static final Contig chrM = Contig.of(25, "MT", SequenceRole.ASSEMBLED_MOLECULE, 16569, "J01415.2" , "NC_012920.1", "chrM");
+
+    @Test
+    public void error() {
+        assertThrows(RuntimeException.class, ()-> GenomicAssemblyParser.parseAssembly(Path.of("wibble")));
+    }
 
     @Test
     public void name() {
@@ -106,6 +112,8 @@ public class GenomicAssemblyParserTest {
         assertThat(mm10.name(), equalTo("GRCm38.p6"));
         assertThat(mm10.organismName(), equalTo("Mus musculus (house mouse)"));
         assertThat(mm10.taxId(), equalTo("10090"));
+        assertThat(mm10.contigByName("1").id(), equalTo(1));
+        assertThat(mm10.contigByName("19").id(), equalTo(19));
         assertThat(mm10.contigByName("X").id(), equalTo(20));
         assertThat(mm10.contigByName("Y").id(), equalTo(21));
         assertThat(mm10.contigByName("MT").id(), equalTo(22));
@@ -117,6 +125,8 @@ public class GenomicAssemblyParserTest {
         assertThat(clint_PTRv2.name(), equalTo("Clint_PTRv2"));
         assertThat(clint_PTRv2.organismName(), equalTo("Pan troglodytes (chimpanzee)"));
         assertThat(clint_PTRv2.taxId(), equalTo("9598"));
+        assertThat(clint_PTRv2.contigByName("chr1").id(), equalTo(1));
+        assertThat(clint_PTRv2.contigByName("chr22").id(), equalTo(23));
         assertThat(clint_PTRv2.contigByName("chrX").id(), equalTo(24));
         assertThat(clint_PTRv2.contigByName("Y").id(), equalTo(25));
         assertThat(clint_PTRv2.contigByName("MT").id(), equalTo(26));
