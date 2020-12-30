@@ -219,6 +219,20 @@ public interface GenomicRegion extends Stranded<GenomicRegion>, CoordinateSystem
     }
 
     /**
+     * Create a zero-based genomic region with specified length that starts at the provided position.
+     *
+     * @param start  start genomic position
+     * @param length positive number of bases spanned by the region
+     * @return zero-based genomic region
+     */
+    static GenomicRegion of(GenomicPosition start, int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("Length must be positive");
+        }
+        return of(start.contig(), start.strand(), CoordinateSystem.ZERO_BASED, start.position(), start.position().shift(length));
+    }
+
+    /**
      * Create genomic position on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
      *
      * @return a position

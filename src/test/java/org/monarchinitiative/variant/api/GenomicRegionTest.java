@@ -8,6 +8,7 @@ import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -292,5 +293,31 @@ public class GenomicRegionTest {
 
         if (targetSystem.isZeroBased() && coordinateSystem.isZeroBased())
             assertThat(region.normalisedStartPosition(targetSystem), sameInstance(startPosition));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, ZERO_BASED, 2, 1,   POSITIVE, 2, 3",
+            "POSITIVE, ONE_BASED,  2, 1,   POSITIVE, 1, 2",
+            "POSITIVE, ZERO_BASED, 0, 5,   POSITIVE, 0, 5",
+            "POSITIVE, ZERO_BASED, 0, 5,   POSITIVE, 0, 5",
+    })
+    public void createRegionFromStartAndLength(Strand strand, CoordinateSystem coordinateSystem, int pos, int length,
+                                               Strand expectedStrand, int start, int end) {
+        GenomicPosition gp = GenomicPosition.of(chr1, strand, coordinateSystem, Position.of(pos));
+        GenomicRegion region = GenomicRegion.of(gp, length);
+
+        assertThat(region.contig(), equalTo(chr1));
+        assertThat(region.start(), equalTo(start));
+        assertThat(region.end(), equalTo(end));
+        assertThat(region.strand(), equalTo(expectedStrand));
+        assertThat(region.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED)); // always
+    }
+
+    @Test
+    public void creatingRegionFromStartWithZeroLengthThrowsAnException() {
+        GenomicPosition gp = GenomicPosition.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(2));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> GenomicRegion.of(gp, 0));
+        assertThat(e.getMessage(), equalTo("Length must be positive"));
     }
 }
