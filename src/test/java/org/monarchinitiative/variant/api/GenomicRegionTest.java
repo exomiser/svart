@@ -301,6 +301,7 @@ public class GenomicRegionTest {
             "POSITIVE, ONE_BASED,  2, 1,   POSITIVE, 1, 2",
             "POSITIVE, ZERO_BASED, 0, 5,   POSITIVE, 0, 5",
             "POSITIVE, ZERO_BASED, 0, 5,   POSITIVE, 0, 5",
+            "NEGATIVE, ZERO_BASED, 2, 1,   NEGATIVE, 2, 3",
     })
     public void createRegionFromStartAndLength(Strand strand, CoordinateSystem coordinateSystem, int pos, int length,
                                                Strand expectedStrand, int start, int end) {
