@@ -107,7 +107,7 @@ public class GenomicAssemblyParserTest {
     }
 
     @Test
-    void grcm38p6() {
+    public void grcm38p6() {
         GenomicAssembly mm10 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001635.26_GRCm38.p6_assembly_report.txt"));
         assertThat(mm10.name(), equalTo("GRCm38.p6"));
         assertThat(mm10.organismName(), equalTo("Mus musculus (house mouse)"));
@@ -120,7 +120,7 @@ public class GenomicAssemblyParserTest {
     }
 
     @Test
-    void chimpPTRv2() {
+    public void chimpPTRv2() {
         GenomicAssembly clint_PTRv2 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_002880755.1_Clint_PTRv2_assembly_report.txt"));
         assertThat(clint_PTRv2.name(), equalTo("Clint_PTRv2"));
         assertThat(clint_PTRv2.organismName(), equalTo("Pan troglodytes (chimpanzee)"));
