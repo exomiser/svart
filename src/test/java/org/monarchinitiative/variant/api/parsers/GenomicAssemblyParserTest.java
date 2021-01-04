@@ -62,6 +62,11 @@ public class GenomicAssemblyParserTest {
     }
 
     @Test
+    public void contigByNegativeId() {
+        assertThat(grch37p13.contigById(-1), equalTo(Contig.unknown()));
+    }
+
+    @Test
     public void contigById0() {
         assertThat(grch37p13.contigById(0), equalTo(Contig.unknown()));
     }
@@ -136,7 +141,6 @@ public class GenomicAssemblyParserTest {
     @Test
     public void riceIRGSP1() {
         GenomicAssembly IRGSP_1 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_001433935.1_IRGSP-1.0_assembly_report.txt"));
-        IRGSP_1.contigs().forEach(System.out::println);
         assertThat(IRGSP_1.name(), equalTo("IRGSP-1.0"));
         assertThat(IRGSP_1.organismName(), equalTo("Oryza sativa Japonica Group (Japanese rice)"));
         assertThat(IRGSP_1.taxId(), equalTo("39947"));

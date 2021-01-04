@@ -70,10 +70,10 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
     }
 
     public Contig contigById(int contigId) {
-        if (contigId <= contigsById.size() - 1) {
-            return contigsById.get(contigId);
+        if (contigId < 0 || contigId > contigsById.size() - 1) {
+            return Contig.unknown();
         }
-        return Contig.unknown();
+        return contigsById.get(contigId);
     }
 
     public Contig contigByName(String contigName) {
