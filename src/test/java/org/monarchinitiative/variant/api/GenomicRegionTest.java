@@ -116,7 +116,7 @@ public class GenomicRegionTest {
     public void containsPosition_otherContig() {
         GenomicRegion oneToThree = GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(1), Position.of(3));
 
-        Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 200, "", "", "");
+        Contig ctg2 = TestContig.of(2, 200);
         GenomicPosition other = GenomicPosition.zeroBased(ctg2, Strand.POSITIVE, Position.of(2));
         assertThat(oneToThree.contains(other), equalTo(false));
     }
@@ -197,7 +197,7 @@ public class GenomicRegionTest {
     @Test
     public void containsRegion_otherContig() {
         GenomicRegion oneToThree = GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(1), Position.of(3));
-        Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 200, "", "", "");
+        Contig ctg2 = TestContig.of(2, 200);
         GenomicRegion other = GenomicRegion.oneBased(ctg2, Strand.POSITIVE, Position.of(2), Position.of(3));
         assertThat(oneToThree.contains(other), equalTo(false));
     }

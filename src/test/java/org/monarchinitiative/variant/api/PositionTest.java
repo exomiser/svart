@@ -135,7 +135,7 @@ public class PositionTest {
             "100, ONE_BASED, 1",
     })
     public void invert(int pos, CoordinateSystem coordinateSystem, int expected) {
-        Contig contig = Contig.of(1, "1", SequenceRole.UNKNOWN, 100, "", "", "");
+        Contig contig = TestContig.of(1, 100);
         assertThat(Position.of(pos).invert(contig, coordinateSystem), equalTo(Position.of(expected)));
     }
 }

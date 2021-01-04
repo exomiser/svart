@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DefaultVariantTest {
-    private final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 1000, "", "", "chr1");
+    private final Contig chr1 = TestContig.of(1, 1000);
 
     @Test
     public void throwsIllegalArgumentWithSymbolicAllele() {
@@ -184,7 +184,7 @@ public class DefaultVariantTest {
 
     @Test
     public void delWithNegativeStrand() {
-        Contig chr5 = Contig.of(5, "5", SequenceRole.UNKNOWN, 5, "", "", "");
+        Contig chr5 = TestContig.of(5, 5);
         Variant del = DefaultVariant.oneBased(chr5, 1, "AG", "A");
         Variant negativeDel = del.withStrand(Strand.NEGATIVE);
 
@@ -202,7 +202,7 @@ public class DefaultVariantTest {
 
     @Test
     public void delZeroBasedWithNegativeStrand() {
-        Contig chr5 = Contig.of(5, "5", SequenceRole.UNKNOWN, 5, "", "", "");
+        Contig chr5 = TestContig.of(5, 5);
         Variant del = DefaultVariant.zeroBased(chr5, 0, "AG", "A");
         Variant negativeDel = del.withStrand(Strand.NEGATIVE);
 

@@ -1,5 +1,6 @@
 package org.monarchinitiative.variant.api.parsers;
 
+import org.monarchinitiative.variant.api.AssignedMoleculeType;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.SequenceRole;
@@ -81,11 +82,13 @@ public class GenomicAssemblyParser {
         String[] tokens = line.split("\t");
         String name = tokens[0];
         SequenceRole sequenceRole = SequenceRole.parseRole(tokens[1]);
+        String assignedMolecule = tokens[2];
+        AssignedMoleculeType assignedMoleculeType = AssignedMoleculeType.parseMoleculeType(tokens[3]);
         String genBankAccession = tokens[4];
         String refSeqAccession = tokens[6];
         int length = Integer.parseInt(tokens[8]);
         String ucscName = tokens[9];
-        return DefaultContig.of(id, name, sequenceRole, length, genBankAccession, refSeqAccession, ucscName);
+        return DefaultContig.of(id, name, sequenceRole, assignedMolecule, assignedMoleculeType, length, genBankAccession, refSeqAccession, ucscName);
     }
 
     private static void parseHeaderLines(List<String> headerLines, DefaultGenomicAssembly.Builder assemblyBuilder) {

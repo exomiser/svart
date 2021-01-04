@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GenomicPositionTest {
 
-    private final Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
+    private final Contig ctg1 = TestContig.of(1, 10);
 
     @Test
     public void properties() {
@@ -38,7 +38,7 @@ public class GenomicPositionTest {
 
     @Test
     public void distanceToPositionWhenOnDifferentContig() {
-        Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20, "", "", "");
+        Contig ctg2 = TestContig.of(2, 20);
         GenomicPosition seven = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(7));
 
         GenomicPosition other = GenomicPosition.zeroBased(ctg2, Strand.POSITIVE, Position.of(2));
@@ -62,7 +62,7 @@ public class GenomicPositionTest {
 
     @Test
     public void distanceToRegionWhenOnDifferentContig() {
-        Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20, "", "", "");
+        Contig ctg2 = TestContig.of(2, 20);
         GenomicPosition seven = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(7));
 
         GenomicRegion other = GenomicRegion.oneBased(ctg2, Strand.POSITIVE, Position.of(5), Position.of(6));
@@ -169,9 +169,9 @@ public class GenomicPositionTest {
 
     @Test
     public void compareWhenDifferingContigs() {
-        Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
-        Contig ctg2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr2");
-        Contig ctg3 = Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr3");
+        Contig ctg1 = TestContig.of(1, 10);
+        Contig ctg2 = TestContig.of(2, 10);
+        Contig ctg3 = TestContig.of(3, 10);
 
         GenomicPosition two = GenomicPosition.zeroBased(ctg1, Strand.POSITIVE, Position.of(3));
         GenomicPosition three = GenomicPosition.zeroBased(ctg2, Strand.POSITIVE, Position.of(3));

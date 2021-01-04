@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.*;
  */
 public class PartialBreakendTest {
 
-    private static final Contig ctg1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10, "", "", "chr1");
+    private static final Contig ctg1 = TestContig.of(1, 10);
 
     @Test
     public void properties() {

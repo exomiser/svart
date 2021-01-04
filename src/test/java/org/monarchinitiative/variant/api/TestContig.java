@@ -15,6 +15,10 @@ public class TestContig implements Contig {
         this.length = length;
     }
 
+    public static TestContig of(int id, int length) {
+        return new TestContig(id, length);
+    }
+
     @Override
     public int id() {
         return id;
@@ -23,6 +27,16 @@ public class TestContig implements Contig {
     @Override
     public String name() {
         return String.valueOf(id);
+    }
+
+    @Override
+    public String assignedMolecule() {
+        return name();
+    }
+
+    @Override
+    public AssignedMoleculeType assignedMoleculeType() {
+        return AssignedMoleculeType.UNKNOWN;
     }
 
     @Override

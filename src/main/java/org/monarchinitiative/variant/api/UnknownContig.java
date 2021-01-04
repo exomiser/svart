@@ -33,6 +33,16 @@ final class UnknownContig implements Contig {
     }
 
     @Override
+    public String assignedMolecule() {
+        return "na";
+    }
+
+    @Override
+    public AssignedMoleculeType assignedMoleculeType() {
+        return AssignedMoleculeType.UNKNOWN;
+    }
+
+    @Override
     public int length() {
         return 1;
     }
@@ -69,10 +79,12 @@ final class UnknownContig implements Contig {
 
     @Override
     public String toString() {
-        return "UnknownContig{" +
+        return "Contig{" +
                 "id=" + id() +
                 ", name='" + name() + '\'' +
                 ", sequenceRole=" + sequenceRole() +
+                ", assignedMolecule=" + assignedMolecule() +
+                ", assignedMoleculeType=" + assignedMoleculeType() +
                 ", length=" + length() +
                 ", genBankAccession='" + genBankAccession() + '\'' +
                 ", refSeqAccession='" + refSeqAccession() + '\'' +

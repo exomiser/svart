@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class SymbolicVariantTest {
 
-    private final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 1000, "", "", "chr1");
+    private final Contig chr1 = TestContig.of(1, 1000);
 
     @Test
     public void symbolicVariantOverlapsOther() {

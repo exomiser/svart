@@ -1,6 +1,7 @@
 package org.monarchinitiative.variant.api.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.variant.api.AssignedMoleculeType;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.SequenceRole;
@@ -16,9 +17,9 @@ public class GenomicAssemblyParserTest {
     private static final GenomicAssembly grch37p13 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
 
     // 1	assembled-molecule	1	Chromosome	CM000663.1	=	NC_000001.10	Primary Assembly	249250621	chr1
-    private static final Contig chr1b37 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 249250621, "CM000663.1" , "NC_000001.10", "chr1");
+    private static final Contig chr1b37 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 249250621, "CM000663.1" , "NC_000001.10", "chr1");
     // MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM
-    private static final Contig chrM = Contig.of(25, "MT", SequenceRole.ASSEMBLED_MOLECULE, 16569, "J01415.2" , "NC_012920.1", "chrM");
+    private static final Contig chrM = Contig.of(25, "MT", SequenceRole.ASSEMBLED_MOLECULE, "MT", AssignedMoleculeType.MITOCHONDRION, 16569, "J01415.2" , "NC_012920.1", "chrM");
 
     @Test
     public void error() {
@@ -97,7 +98,7 @@ public class GenomicAssemblyParserTest {
     @Test
     public void contigByNameHSCHR17_1_CTG5() {
         //HSCHR17_1_CTG5	alt-scaffold	17	Chromosome	GL000258.1	=	NT_167251.1	ALT_REF_LOCI_9	1680828	chr17_ctg5_hap1
-        Contig last = Contig.of(297, "HSCHR17_1_CTG5", SequenceRole.ALT_SCAFFOLD, 1680828, "GL000258.1", "NT_167251.1", "chr17_ctg5_hap1");
+        Contig last = Contig.of(297, "HSCHR17_1_CTG5", SequenceRole.ALT_SCAFFOLD, "17", AssignedMoleculeType.CHROMOSOME, 1680828, "GL000258.1", "NT_167251.1", "chr17_ctg5_hap1");
         assertThat(grch37p13.contigByName("HSCHR17_1_CTG5"), equalTo(last));
     }
 
@@ -107,7 +108,7 @@ public class GenomicAssemblyParserTest {
     }
 
     @Test
-    void grcm38p6() {
+    public void grcm38p6() {
         GenomicAssembly mm10 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001635.26_GRCm38.p6_assembly_report.txt"));
         assertThat(mm10.name(), equalTo("GRCm38.p6"));
         assertThat(mm10.organismName(), equalTo("Mus musculus (house mouse)"));
@@ -120,7 +121,7 @@ public class GenomicAssemblyParserTest {
     }
 
     @Test
-    void chimpPTRv2() {
+    public void chimpPTRv2() {
         GenomicAssembly clint_PTRv2 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_002880755.1_Clint_PTRv2_assembly_report.txt"));
         assertThat(clint_PTRv2.name(), equalTo("Clint_PTRv2"));
         assertThat(clint_PTRv2.organismName(), equalTo("Pan troglodytes (chimpanzee)"));
@@ -131,4 +132,24 @@ public class GenomicAssemblyParserTest {
         assertThat(clint_PTRv2.contigByName("Y").id(), equalTo(25));
         assertThat(clint_PTRv2.contigByName("MT").id(), equalTo(26));
     }
+
+    @Test
+    public void riceIRGSP1() {
+        GenomicAssembly IRGSP_1 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_001433935.1_IRGSP-1.0_assembly_report.txt"));
+        IRGSP_1.contigs().forEach(System.out::println);
+        assertThat(IRGSP_1.name(), equalTo("IRGSP-1.0"));
+        assertThat(IRGSP_1.organismName(), equalTo("Oryza sativa Japonica Group (Japanese rice)"));
+        assertThat(IRGSP_1.taxId(), equalTo("39947"));
+        assertThat(IRGSP_1.contigByName("1"), equalTo(IRGSP_1.contigById(1)));
+        assertThat(IRGSP_1.contigByName("12"), equalTo(IRGSP_1.contigById(12)));
+
+        assertThat(IRGSP_1.contigByName("Pltd"), equalTo(IRGSP_1.contigById(13)));
+        assertThat(IRGSP_1.contigByName("Pltd").assignedMoleculeType(), equalTo(AssignedMoleculeType.CHLOROPLAST));
+
+        assertThat(IRGSP_1.contigByName("MT"), equalTo(IRGSP_1.contigById(14)));
+
+        assertThat(IRGSP_1.contigByName("B1"), equalTo(IRGSP_1.contigById(15)));
+        assertThat(IRGSP_1.contigByName("B1").assignedMoleculeType(), equalTo(AssignedMoleculeType.MITOCHONDRIAL_PLASMID));
+    }
+
 }
