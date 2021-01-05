@@ -48,6 +48,13 @@ public interface Contig extends Comparable<Contig> {
     // UCSC-style-name column 9 (zero-based) of assembly-report
     String ucscName();
 
+    default boolean isKnownContig() {
+        return !isUnknownContig();
+    }
+
+    default boolean isUnknownContig() {
+        return this.equals(Contig.unknown());
+    }
     //# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
     // HUMAN (GRCh38.p13)
     // 1	assembled-molecule	1	Chromosome	CM000663.2	=	NC_000001.11	Primary Assembly	248956422	chr1
