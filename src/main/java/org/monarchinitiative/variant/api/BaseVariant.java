@@ -25,18 +25,27 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         this.changeLength = checkChangeLength(changeLength, endPosition, variantType);
     }
 
+    protected BaseVariant(Builder<?> builder) {
+        this(builder.contig, builder.id, builder.strand, builder.coordinateSystem, builder.start, builder.end, builder.ref, builder.alt, builder.changeLength);
+    }
+
     private int checkChangeLength(int changeLength, Position endPosition, VariantType variantType) {
         int startZeroBased = normalisedStartPosition(CoordinateSystem.ZERO_BASED).pos();
         if (variantType.baseType() == VariantType.DEL && startZeroBased - (endPosition.pos() - 1) != changeLength) {
-            throw new IllegalArgumentException("BAD DEL! ChangeLength:" + changeLength + " does not match expected " + (startZeroBased - (endPosition.pos() - 1) + " given coordinates " + contigId() + " "  + start() + " " + end() + " " + ref + " " + " " + alt));
+            throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Does not match expected " + (startZeroBased - (endPosition.pos() - 1) + " given coordinates " + coordinates()));
         } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
-            throw new IllegalArgumentException("BAD INS!");
+            throw new IllegalArgumentException("Illegal INS changeLength:" + changeLength + ". Should be > 0 given coordinates " + coordinates());
         } else if (variantType.baseType() == VariantType.DUP && (changeLength <= 0)) {
-            throw new IllegalArgumentException("BAD DUP!");
-        } else if (variantType.baseType() == VariantType.INV && (changeLength != 0)) {
-            throw new IllegalArgumentException("BAD INV!");
+            throw new IllegalArgumentException("Illegal DUP!changeLength:" + changeLength + ". Should be > 0 given coordinates " + coordinates());
+        } else if (variantType.baseType() == VariantType.INV && (changeLength != 0) && !isSymbolic()) {
+            // symbolic alleles may not be precise, so this can cause failures
+            throw new IllegalArgumentException("Illegal INV! changeLength:" + changeLength + ". Should be 0 given coordinates " + coordinates());
         }
         return changeLength;
+    }
+
+    private String coordinates() {
+        return contigId() + " " + start() + " " + end() + " " + ref + " " + " " + alt;
     }
 
     protected static int calculateChangeLength(String ref, String alt) {
@@ -139,11 +148,79 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
                 ", coordinateSystem=" + coordinateSystem() +
                 ", startPosition=" + startPosition() +
                 ", endPosition=" + endPosition() +
-                ", changeLength=" + changeLength +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", variantType=" + variantType +
+                ", length=" + length() +
+                ", changeLength=" + changeLength +
                 '}';
+    }
+
+    protected abstract static class  Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
+
+        protected String id = "";
+        protected String ref = "";
+        protected String alt = "";
+
+        protected int changeLength = 0;
+
+        // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
+        // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
+        // to maintain the correct state when finally built.
+
+        public T with(Variant variant) {
+            Objects.requireNonNull(variant, "variant cannot be null");
+            return with(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), variant.startPosition(), variant.endPosition(), variant.ref(), variant.alt(), variant.changeLength());
+        }
+
+        public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
+            Position end = calculateEnd(start, coordinateSystem, ref, alt);
+            int changeLength = calculateChangeLength(ref, alt);
+            return with(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength);
+        }
+
+        public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength) {
+            Objects.requireNonNull(alt);
+            assertNotBreakend(alt);
+            super.with(contig, strand, coordinateSystem, start, end);
+            this.id = Objects.requireNonNull(id);
+            this.ref = Objects.requireNonNull(ref);
+            this.alt = Objects.requireNonNull(alt);
+            this.changeLength = changeLength;
+            return self();
+        }
+
+        /**
+         * Classes extending this Builder are <em>strongly</em> advised to call this method when implementing the
+         * build() method in order to add the missing end coordinates and changeLength if objects have been created
+         * using the precise contig-position-ref-alt pattern for non-symbolic variants.
+         */
+        protected T selfWithEndIfMissing() {
+            // should pos be null? 1 is a bit arbitrary.
+            if (end.pos() == 1 && changeLength == 0) {
+                end = calculateEnd(start, coordinateSystem, ref, alt);
+                changeLength = calculateChangeLength(ref, alt);
+            }
+            return self();
+        }
+
+        public T withStrand(Strand strand) {
+            if (this.strand == strand) {
+                return self();
+            }
+            this.strand = strand;
+            Position invertedStart = start.invert(contig, coordinateSystem);
+            start = end.invert(contig, coordinateSystem);
+            end = invertedStart;
+            ref = Seq.reverseComplement(ref);
+            alt = VariantType.isSymbolic(alt) ? alt : Seq.reverseComplement(alt);
+            return self();
+        }
+
+        protected abstract BaseGenomicRegion<?> build();
+
+        protected abstract T self();
     }
 
 }

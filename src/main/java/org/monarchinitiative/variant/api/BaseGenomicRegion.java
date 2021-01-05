@@ -28,6 +28,10 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         }
     }
 
+    protected BaseGenomicRegion(Builder<?> builder) {
+        this(builder.contig, builder.strand, builder.coordinateSystem, builder.start, builder.end);
+    }
+
     @Override
     public Contig contig() {
         return contig;
@@ -122,11 +126,85 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     @Override
     public String toString() {
         return "BaseGenomicRegion{" +
-                "contig=" + contig +
+                "contig=" + contig.id() +
                 ", strand=" + strand +
                 ", coordinateSystem=" + coordinateSystem +
                 ", startPosition=" + startPosition +
                 ", endPosition=" + endPosition +
                 '}';
+    }
+
+    protected abstract static class Builder<T extends Builder<T>> {
+
+        protected Contig contig;
+        // we're primarily interested in VCF coordinates so we're defaulting to 1-based coordinates on the + strand
+        protected Strand strand = Strand.POSITIVE;
+        protected CoordinateSystem coordinateSystem = CoordinateSystem.ONE_BASED;
+        protected Position start = Position.of(1);
+        protected Position end = start;
+
+        // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
+        // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
+        // to maintain the correct state when finally built.
+
+        public T with(GenomicRegion genomicRegion) {
+            Objects.requireNonNull(genomicRegion, "genomicRegion cannot be null");
+            return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinateSystem(), genomicRegion.startPosition(), genomicRegion.endPosition());
+        }
+
+        public T with(Variant variant) {
+            Objects.requireNonNull(variant, "variant cannot be null");
+            return with(variant.contig(), variant.strand(), variant.coordinateSystem(), variant.startPosition(), variant.endPosition());
+        }
+
+        public T with(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+            this.contig = Objects.requireNonNull(contig, "contig must not be null");
+            this.strand = Objects.requireNonNull(strand, "strand must not be null");
+            this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "coordinateSystem must not be null");
+            this.start = Objects.requireNonNull(startPosition, "startPosition must not be null");
+            this.end = Objects.requireNonNull(endPosition, "endPosition must not be null");
+            return self();
+        }
+
+        public T asZeroBased() {
+            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        }
+
+        public T asOneBased() {
+            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        }
+
+        public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
+            if (this.coordinateSystem == coordinateSystem) {
+                return self();
+            }
+            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem));
+            this.coordinateSystem = coordinateSystem;
+            return self();
+        }
+
+        public T onPositiveStrand() {
+            return withStrand(Strand.POSITIVE);
+        }
+
+        public T onNegativeStrand() {
+            return withStrand(Strand.NEGATIVE);
+        }
+
+        public T withStrand(Strand strand) {
+            if (this.strand == strand) {
+                return self();
+            }
+            this.strand = strand;
+            Position invertedStart = start.invert(contig, coordinateSystem);
+            start = end.invert(contig, coordinateSystem);
+            end = invertedStart;
+            return self();
+        }
+
+        protected abstract GenomicRegion build();
+
+        protected abstract T self();
     }
 }
