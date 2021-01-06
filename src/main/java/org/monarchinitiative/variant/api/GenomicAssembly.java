@@ -49,6 +49,8 @@ public interface GenomicAssembly {
 
     public Contig contigByName(String contigName);
 
+    boolean containsContig(Contig contig);
+    
 //# Assembly name:  GRCh38.p13
 //# Description:    Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)
 //# Organism name:  Homo sapiens (human)

@@ -23,15 +23,32 @@ public final class DefaultContig implements Contig {
     private final String ucscName;
 
     private DefaultContig(int id, String name, SequenceRole sequenceRole, String assignedMolecule, AssignedMoleculeType assignedMoleculeType, int length, String genBankAccession, String refSeqAccession, String ucscName) {
-        this.id = id;
+        this.id = requirePositiveNonZeroId(id);
         this.name = Objects.requireNonNull(name);
         this.sequenceRole = Objects.requireNonNull(sequenceRole);
         this.assignedMolecule = Objects.requireNonNull(assignedMolecule);
         this.assignedMoleculeType = Objects.requireNonNull(assignedMoleculeType);
-        this.length = length;
+        this.length = requirePositiveNonZeroLength(length);
         this.genBankAccession = Objects.requireNonNull(genBankAccession);
         this.refSeqAccession = Objects.requireNonNull(refSeqAccession);
         this.ucscName = Objects.requireNonNull(ucscName);
+    }
+
+    private int requirePositiveNonZeroId(int id) {
+        if (id == 0) {
+            throw new IllegalArgumentException("id 0 is reserved for the unknown contig");
+        }
+        if (id < 0) {
+            throw new IllegalArgumentException("id must have a positive value");
+        }
+        return id;
+    }
+
+    private int requirePositiveNonZeroLength(int length) {
+        if (length < 1) {
+            throw new IllegalArgumentException("Contig id " + id + " (name='" + name + "') must have a length greater than zero");
+        }
+        return length;
     }
 
     public static DefaultContig of(int id, String name, SequenceRole sequenceRole, String assignedMolecule, AssignedMoleculeType assignedMoleculeType, int length, String genBankAccession, String refSeqAccession, String ucscName) {
