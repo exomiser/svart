@@ -21,10 +21,10 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.startPosition = Objects.requireNonNull(startPosition, "startPosition must not be null");
         this.endPosition = Objects.requireNonNull(endPosition, "endPosition must not be null");
         if (coordinateSystem == CoordinateSystem.ZERO_BASED && startPosition.pos() >= endPosition.pos()) {
-            throw new IllegalArgumentException("Zero-based region must have a start position greater than the end position");
+            throw new IllegalArgumentException("Zero-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before the end position");
         }
         if (coordinateSystem == CoordinateSystem.ONE_BASED && startPosition.pos() > endPosition.pos()) {
-            throw new IllegalArgumentException("One-based region must have a start position greater than or equal to the end position");
+            throw new IllegalArgumentException("One-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before or same as the end position");
         }
     }
 
