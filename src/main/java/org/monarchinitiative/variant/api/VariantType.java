@@ -224,6 +224,27 @@ public enum VariantType {
         return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
+    /**
+     * Returns true if the provided allele matches the string '*'. This is defined in VCF 4.3 as "allele missing due to
+     * overlapping deletion"
+     *
+     * @param allele
+     * @return true if the input allele equals '*'
+     */
+    public static boolean isMissingUpstreamDeletion(String allele) {
+        return allele.equals("*");
+    }
+
+    /**
+     * Returns true if the provided allele matches the string '.'. This is defined in VCF 4.3 as missing or "no  variant"
+     *
+     * @param allele
+     * @return
+     */
+    public static boolean isMissing(String allele) {
+        return allele.equals(".");
+    }
+
     private static String trimAngleBrackets(String value) {
         if (value.startsWith("<") && value.endsWith(">")) {
             return value.substring(1, value.length() - 1);

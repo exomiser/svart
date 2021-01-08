@@ -442,4 +442,11 @@ public class DefaultVariantTest {
         assertThat(DefaultVariant.oneBased(chr1, 1, 1, "A", "<BND>", 0).isSymbolic(), is(true));
     }
 
+    @Test
+    public void missingAllele() {
+        Contig chr1 = TestContig.of(1, 5);
+        Variant variant = DefaultVariant.oneBased(chr1, 1, "T", "*");
+        Variant onNegative = variant.withStrand(Strand.NEGATIVE);
+        assertThat(onNegative, equalTo(DefaultVariant.of(chr1, "", Strand.NEGATIVE, CoordinateSystem.ONE_BASED, Position.of(5), "A", "*")));
+    }
 }

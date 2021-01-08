@@ -1,5 +1,7 @@
 package org.monarchinitiative.variant.api.impl;
 
+import org.monarchinitiative.variant.api.VariantType;
+
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +53,9 @@ public class Seq {
      * @return reverse complemented sequence
      */
     public static String reverseComplement(String seq) {
-        // TODO: should this be symbolic-allele safe and return the original input if symbolic? e.g. '<DEL>'
+        if (VariantType.isSymbolic(seq) || VariantType.isMissingUpstreamDeletion(seq) || VariantType.isMissing(seq)) {
+            return seq;
+        }
         char[] oldSeq = seq.toCharArray();
         char[] newSeq = new char[oldSeq.length];
         for (int i = 0; i < oldSeq.length; i++) {

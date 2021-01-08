@@ -215,4 +215,14 @@ public class VariantTypeTest {
     public void isLargeSymbolicEmptyStringReturnsFalse() {
         assertThat(VariantType.isLargeSymbolic(""), equalTo(false));
     }
+
+    @Test
+    public void isMissing() {
+        assertThat(VariantType.isMissing("."), equalTo(true));
+    }
+
+    @Test
+    public void isMissingUpstreamDeletion() {
+        assertThat(VariantType.isMissingUpstreamDeletion("*"), equalTo(true));
+    }
 }

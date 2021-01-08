@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -24,5 +25,20 @@ public class SeqTest {
     public void reverseComplementString() {
         assertThat(Seq.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn"),
                 is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
+    }
+
+    @Test
+    public void reverseComplementSymbolic() {
+        assertThat(Seq.reverseComplement("<INS>"), equalTo("<INS>"));
+    }
+
+    @Test
+    public void reverseComplementMissing() {
+        assertThat(Seq.reverseComplement("."), equalTo("."));
+    }
+
+    @Test
+    public void reverseComplementUpstreamDeletion() {
+        assertThat(Seq.reverseComplement("*"), equalTo("*"));
     }
 }
