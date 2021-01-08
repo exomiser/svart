@@ -56,10 +56,6 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
-        // SNV case
-        if ((ref.length() | alt.length()) == 1) {
-            return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.shift(1) : start;
-        }
         return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
     }
 
