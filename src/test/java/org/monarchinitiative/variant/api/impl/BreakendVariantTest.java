@@ -286,7 +286,7 @@ public class BreakendVariantTest {
         Breakend right = PartialBreakend.zeroBased(chr2, "bndV", Strand.POSITIVE, Position.of(321_681));
 
         // ref stays the same, while alt is stripped of bases shared with ref
-        BreakendVariant variant = new BreakendVariant("", left, right, "C", "AGTNNNNNCA");
+        BreakendVariant variant = BreakendVariant.of("", left, right, "C", "AGTNNNNNCA");
 
         assertThat(variant.eventId(), equalTo(""));
         assertThat(variant.ref(), equalTo("C"));
@@ -324,7 +324,7 @@ public class BreakendVariantTest {
                 .withStrand(Strand.NEGATIVE);
 
         // ref stays the same, while alt is reverse-complemented and stripped of bases shared with ref
-        BreakendVariant variant = new BreakendVariant("", left, right, "T", "TGNNNNNACT");
+        BreakendVariant variant = BreakendVariant.of("", left, right, "T", "TGNNNNNACT");
 
         assertThat(variant.eventId(), equalTo(""));
         assertThat(variant.ref(), equalTo("T"));
@@ -359,7 +359,7 @@ public class BreakendVariantTest {
         // chr2:100-200
         PartialBreakend start = PartialBreakend.zeroBased(chr2, "left", Strand.POSITIVE, Position.of(100));
         PartialBreakend end = PartialBreakend.oneBased(chr2, "right", Strand.POSITIVE, Position.of(200));
-        BreakendVariant deletion = new BreakendVariant("del1", start, end, "", "");
+        BreakendVariant deletion = BreakendVariant.of("del1", start, end, "", "");
 
 //        assertThat(deletion.length(), equalTo(100));
 

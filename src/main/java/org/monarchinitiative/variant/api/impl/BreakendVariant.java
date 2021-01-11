@@ -31,8 +31,8 @@ public final class BreakendVariant implements Variant, Breakended {
      */
     private final String alt;
 
-    public BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        this(eventId, left, right, ref, "", alt);
+    public static BreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
+        return new BreakendVariant(eventId, left, right, ref, "", alt);
     }
 
     private BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {

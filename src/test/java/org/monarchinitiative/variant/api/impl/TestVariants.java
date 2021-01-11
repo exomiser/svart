@@ -25,7 +25,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_UV() {
         Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
-        return new BreakendVariant("tra2", bnd_U, bnd_V, "C", "");
+        return BreakendVariant.of("tra2", bnd_U, bnd_V, "C", "");
     }
 
     /**
@@ -38,7 +38,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_VU() {
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682)).withStrand(Strand.NEGATIVE);
         Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
-        return new BreakendVariant("tra2", bnd_V, bnd_U, "T", "");
+        return BreakendVariant.of("tra2", bnd_V, bnd_U, "T", "");
     }
 
     /**
@@ -51,7 +51,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_WY() {
         Breakend bnd_W = PartialBreakend.zeroBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
         Breakend bnd_Y = PartialBreakend.oneBased(chr17, "bnd_Y", Strand.POSITIVE, Position.of(198_982)).withStrand(Strand.NEGATIVE);
-        return new BreakendVariant("tra1", bnd_W, bnd_Y, "G", "");
+        return BreakendVariant.of("tra1", bnd_W, bnd_Y, "G", "");
     }
 
 
@@ -65,7 +65,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_XZ() {
         Breakend bnd_X = PartialBreakend.oneBased(chr13, "bnd_X", Strand.POSITIVE, Position.of(123_457)).withStrand(Strand.NEGATIVE);
         Breakend bnd_Z = PartialBreakend.oneBased(chr17, "bnd_Z", Strand.POSITIVE, Position.of(198_983));
-        return new BreakendVariant("tra3", bnd_X, bnd_Z, "A", "");
+        return BreakendVariant.of("tra3", bnd_X, bnd_Z, "A", "");
     }
 
     /**
@@ -78,7 +78,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_UV_withInsertion() {
         Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
-        return new BreakendVariant("tra2", bnd_U, bnd_V, "C", "AGTNNNNNCA");
+        return BreakendVariant.of("tra2", bnd_U, bnd_V, "C", "AGTNNNNNCA");
     }
 
     /**
@@ -91,7 +91,7 @@ public class TestVariants {
     public static BreakendVariant breakendVariant_VU_withInsertion() {
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682)).withStrand(Strand.NEGATIVE);
         Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456)).withStrand(Strand.NEGATIVE);
-        return new BreakendVariant("tra2", bnd_V, bnd_U, "T", "TGNNNNNACT");
+        return BreakendVariant.of("tra2", bnd_V, bnd_U, "T", "TGNNNNNACT");
     }
 
     /**
@@ -104,8 +104,7 @@ public class TestVariants {
     public static BreakendVariant bnd_X_leftUnresolved() {
         Breakend left = Breakend.unresolved();
         Breakend right = PartialBreakend.oneBased(chr13, "bnd_X", Strand.POSITIVE, Position.of(123_457));
-
-        return new BreakendVariant("", left, right, "A", "");
+        return BreakendVariant.of("", left, right, "A", "");
     }
 
     /**
@@ -118,7 +117,6 @@ public class TestVariants {
     public static BreakendVariant bnd_W_rightUnresolved() {
         Breakend left = PartialBreakend.zeroBased(chr2, "bnd_W", Strand.POSITIVE, Position.of(321_681));
         Breakend right = Breakend.unresolved();
-
-        return new BreakendVariant("", left, right, "G", "");
+        return BreakendVariant.of("", left, right, "G", "");
     }
 }
