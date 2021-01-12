@@ -38,6 +38,17 @@ public interface Variant extends GenomicRegion {
     Variant withStrand(Strand other);
 
     @Override
+    Variant withCoordinateSystem(CoordinateSystem coordinateSystem);
+
+    default Variant toZeroBased() {
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+    }
+
+    default Variant toOneBased() {
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+    }
+
+    @Override
     default Variant toOppositeStrand() {
         return withStrand(strand().opposite());
     }

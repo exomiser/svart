@@ -24,10 +24,10 @@ class ImprecisePosition implements Position {
 
     @Override
     public Position invert(Contig contig, CoordinateSystem coordinateSystem) {
-        if (coordinateSystem == CoordinateSystem.ONE_BASED) {
-            return Position.of(contig.length() - pos + 1, confidenceInterval().invert());
-        }
-        return Position.of(contig.length() - pos, confidenceInterval().invert());
+        int adjustedContigLength = contig.length()
+                + CoordinateSystem.startDelta(Endpoint.OPEN, coordinateSystem.startEndpoint())
+                + CoordinateSystem.endDelta(Endpoint.CLOSED, coordinateSystem.endEndpoint());
+        return Position.of(adjustedContigLength - pos, confidenceInterval().invert());
     }
 
     @Override

@@ -28,8 +28,8 @@ public class DefaultContigTest {
 
     @Test
     public void compareTo() {
-        assertThat(new TestContig(1, 1).compareTo(new TestContig(2, 2)), equalTo(-1));
-        assertThat(new TestContig(1, 1).compareTo(new TestContig(1, 1)), equalTo(0));
-        assertThat(new TestContig(2, 1).compareTo(new TestContig(1, 2)), equalTo(1));
+        assertThat(TestContig.of(1, 1).compareTo(TestContig.of(2, 2)), equalTo(-1));
+        assertThat(TestContig.of(1, 1).compareTo(TestContig.of(1, 1)), equalTo(0));
+        assertThat(TestContig.of(2, 1).compareTo(TestContig.of(1, 2)), equalTo(1));
     }
 }

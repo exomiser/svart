@@ -42,8 +42,38 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
-    public Position position() {
-        return POSITION;
+    public UnresolvedBreakend withPos(int pos) {
+        return this;
+    }
+
+    @Override
+    public int pos() {
+        return POSITION.pos();
+    }
+
+    @Override
+    public ConfidenceInterval confidenceInterval() {
+        return ConfidenceInterval.precise();
+    }
+
+    @Override
+    public UnresolvedBreakend asPrecise() {
+        return this;
+    }
+
+    @Override
+    public UnresolvedBreakend invert(Contig contig, CoordinateSystem coordinateSystem) {
+        return this;
+    }
+
+    @Override
+    public int minPos() {
+        return POSITION.minPos();
+    }
+
+    @Override
+    public int maxPos() {
+        return POSITION.maxPos();
     }
 
     @Override

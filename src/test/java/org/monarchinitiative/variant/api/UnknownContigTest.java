@@ -26,7 +26,7 @@ public class UnknownContigTest {
 
     @Test
     public void length() {
-        assertThat(unknown.length(), equalTo(1));
+        assertThat(unknown.length(), equalTo(0));
     }
 
     @Test

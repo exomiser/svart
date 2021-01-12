@@ -34,7 +34,7 @@ public final class SymbolicVariant implements Variant {
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
 
-        int startZeroBased = normalisedStartPosition(CoordinateSystem.ZERO_BASED).pos();
+        int startZeroBased = normalisedStart(Endpoint.OPEN);
         if (startZeroBased >= endPosition.pos()) {
             throw new IllegalArgumentException("start " + startZeroBased + " must be upstream of end " + endPosition.pos());
         }
@@ -126,11 +126,11 @@ public final class SymbolicVariant implements Variant {
     }
 
     @Override
-    public GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
+    public Variant withCoordinateSystem(CoordinateSystem coordinateSystem) {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        return new SymbolicVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition, ref, alt, changeLength);
+        return new SymbolicVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()), ref, alt, changeLength);
     }
 
     @Override

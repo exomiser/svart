@@ -76,12 +76,12 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public Position startPosition() {
-        return left.position();
+        return left;
     }
 
     @Override
     public Position endPosition() {
-        return left.position();
+        return left;
     }
 
     /**
