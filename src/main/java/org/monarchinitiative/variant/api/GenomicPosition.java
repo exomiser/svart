@@ -14,7 +14,7 @@ import static org.monarchinitiative.variant.api.GenomicComparators.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicPosition extends Stranded<GenomicPosition> {
+public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
 
     Contig contig();
 
@@ -26,56 +26,23 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
         return contig().name();
     }
 
-    Position position();
-
-    default int pos() {
-        return position().pos();
-    }
-
-    default int posOneBased() {
-        // since GenomicPosition is always in ZERO_BASED, we need to correct the position to get the ONE_BASED position
-        return pos() + CoordinateSystem.startDelta(CoordinateSystem.ZERO_BASED, CoordinateSystem.ONE_BASED);
-    }
-
     default Strand strand() {
         return Strand.POSITIVE;
-    }
-
-    default ConfidenceInterval ci() {
-        return position().confidenceInterval();
-    }
-
-    default int min() {
-        return position().minPos();
-    }
-
-    default int max() {
-        return position().maxPos();
     }
 
     default int distanceTo(GenomicPosition other) {
         if (contigId() != other.contigId()) {
             throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
         }
-        other = other.withStrand(strand());
-        return other.pos() - pos();
+        return distanceTo(other.withStrand(strand()).pos());
     }
 
 
     default int distanceTo(GenomicRegion other) {
-        if (contigId() != other.contigId()) {
+        if (contigId() != other.contigId())
             throw new IllegalArgumentException("Coordinates are on different chromosomes: " + contigName() + " vs. " + other.contigName());
 
-        }
-        other = other.withStrand(strand());
-
-        if (other.contains(this)) {
-            return 0;
-        }
-
-        int s = other.start() - pos();
-        int e = other.end() - pos();
-        return Math.abs(s) < Math.abs(e) ? s : e;
+        return distanceTo((Region) other.withStrand(strand()));
     }
 
     /**
@@ -131,7 +98,8 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
      * @return the region
      */
     default GenomicRegion toRegion() {
-        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().asPrecise(), position().shift(1).asPrecise());
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED,
+                Position.of(pos() - 1), Position.of(pos()));
     }
 
     /**
@@ -174,7 +142,10 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
         } else if (upstream >= downstream) {
             throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
         }
-        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED, position().shift(upstream).asPrecise(), position().shift(downstream).asPrecise());
+
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED,
+                Position.of(pos() + upstream),
+                Position.of(pos() + downstream));
     }
 
     static Comparator<GenomicPosition> naturalOrder() {
@@ -184,7 +155,7 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
     static int compare(GenomicPosition x, GenomicPosition y) {
         int result = Contig.compare(x.contig(), y.contig());
         if (result == 0) {
-            result = Position.compare(x.position(), y.position());
+            result = Position.compare(x, y);
         }
         if (result == 0) {
             result = Strand.compare(x.strand(), y.strand());
@@ -199,8 +170,9 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
      *
      * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
      */
+    @Deprecated // we should not think of positions as zero or one based anymore
     static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
-        return of(contig, strand, CoordinateSystem.ONE_BASED, position);
+        return of(contig, strand, position);
     }
 
     /**
@@ -208,8 +180,9 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
      *
      * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
      */
+    @Deprecated // we should not think of positions as zero or one based anymore
     static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
-        return of(contig, strand, CoordinateSystem.ZERO_BASED, position);
+        return of(contig, strand, position);
     }
 
     /**
@@ -229,8 +202,8 @@ public interface GenomicPosition extends Stranded<GenomicPosition> {
      * @return a position in {@link CoordinateSystem#ZERO_BASED} coordinate system corrected from the input
      * <code>coordinateSystem</code>
      */
-    static GenomicPosition of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position position) {
-        return DefaultGenomicPosition.of(contig, strand, coordinateSystem, position);
+    static GenomicPosition of(Contig contig, Strand strand, Position position) {
+        return DefaultGenomicPosition.of(contig, strand, position);
     }
 
 }

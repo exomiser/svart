@@ -20,12 +20,45 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "coordinateSystem must not be null");
         this.startPosition = Objects.requireNonNull(startPosition, "startPosition must not be null");
         this.endPosition = Objects.requireNonNull(endPosition, "endPosition must not be null");
-        if (coordinateSystem == CoordinateSystem.ZERO_BASED && startPosition.pos() >= endPosition.pos()) {
-            throw new IllegalArgumentException("Zero-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before the end position");
+
+        // TODO - test more thoroughly
+        int start = startPosition.pos(), end = endPosition.pos();
+        if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+            if (start < 1 || end > contig.length())
+                throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end [" + 1 + ',' + contig.length() + ']');
+            if (start > end + 1)
+                // region [2,1] is an empty region, equivalent to (1,2)
+                throw new IllegalArgumentException("One-based region " + contig.name() + '-' + start + '-' + end + " must have a start position at most one position past the end position");
+
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED) {
+            if (start < 0 || end > contig.length())
+                throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end (" + 0 + ',' + contig.length() + ']');
+            if (start > end)
+                // region (1,1] is an empty region, equivalent to (1,2)
+                throw new IllegalArgumentException("Zero-based region " + contig.name() + '-' + start + '-' + end + " must have a start position before the end position");
+
+        } else if (coordinateSystem == CoordinateSystem.RIGHT_OPEN) {
+            if (start < 1 || end > contig.length() + 1)
+                throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end [" + 1 + ',' + (contig.length() + 1) + ']');
+            if (start > end)
+                // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
+                throw new IllegalArgumentException("Right-open region " + contig.name() + '-' + start + '-' + end + " must have a start position before the end position");
+
+        } else {
+            if (start < 0 || end > contig.length() + 1)
+                throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end (" + 0 + ',' + (contig.length() + 1) + ')');
+            if (start >= end)
+                // region in FULLY_OPEN coordinates
+                throw new IllegalArgumentException("Cannot create region with start coordinate being greater than end more than 1 base pair: [" + start + ',' + end + ']');
         }
-        if (coordinateSystem == CoordinateSystem.ONE_BASED && startPosition.pos() > endPosition.pos()) {
-            throw new IllegalArgumentException("One-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before or same as the end position");
-        }
+
+//        TODO - candidate for removal
+//        if (coordinateSystem.startEndpoint() == Endpoint.OPEN && startPosition.pos() >= endPosition.pos()) {
+//            throw new IllegalArgumentException("Zero-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before the end position");
+//        }
+//        if (coordinateSystem == CoordinateSystem.ONE_BASED && startPosition.pos() > endPosition.pos()) {
+//            throw new IllegalArgumentException("One-based region " + contig.name() + "-" + startPosition.pos() + "-" + endPosition.pos() + " must have a start position before or same as the end position");
+//        }
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {
@@ -63,7 +96,9 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         if (this.coordinateSystem == requiredCoordinateSystem) {
             return (T) this;
         }
-        return newRegionInstance(contig, strand, requiredCoordinateSystem, normalisedStartPosition(requiredCoordinateSystem), endPosition);
+        return newRegionInstance(contig, strand, requiredCoordinateSystem,
+                normalisedStartPosition(requiredCoordinateSystem.startEndpoint()),
+                normalisedEndPosition(requiredCoordinateSystem.endEndpoint()));
     }
 
     @Override
@@ -82,8 +117,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         if (this.strand == strand) {
             return (T) this;
         }
-        Position start = startPosition.invert(contig, coordinateSystem());
-        Position end = endPosition.invert(contig, coordinateSystem());
+        Position start = startPosition.invert(contig, coordinateSystem);
+        Position end = endPosition.invert(contig, coordinateSystem);
         return newRegionInstance(contig, strand, coordinateSystem, end, start);
     }
 
@@ -179,7 +214,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
             if (this.coordinateSystem == coordinateSystem) {
                 return self();
             }
-            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem));
+            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem.startEndpoint()));
+            end = end.shift(this.coordinateSystem.endDelta(coordinateSystem.endEndpoint()));
             this.coordinateSystem = coordinateSystem;
             return self();
         }

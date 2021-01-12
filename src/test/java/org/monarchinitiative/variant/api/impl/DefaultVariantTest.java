@@ -220,7 +220,7 @@ public class DefaultVariantTest {
 
     @Test
     public void delLenSvLen() {
-        Variant del = DefaultVariant.oneBased(chr1, "rs2376870", 2827694, "CGTGGATGCGGGGAC", "C");
+        Variant del = DefaultVariant.oneBased(TestContigs.chr1, "rs2376870", 2827694, "CGTGGATGCGGGGAC", "C");
         //.    PASS   SVTYPE=DEL;LEN=15;HOMLEN=1;HOMSEQ=G;SVLEN=-14
         assertThat(del.variantType(), equalTo(VariantType.DEL));
         assertThat(del.length(), equalTo(15));
@@ -337,7 +337,7 @@ public class DefaultVariantTest {
     @Test
     public void symbolicDelLenSvLen() {
         //1       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
-        Variant del = DefaultVariant.oneBased(chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
+        Variant del = DefaultVariant.oneBased(TestContigs.chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
         assertThat(del.length(), equalTo(206));
         assertThat(del.refLength(), equalTo(206));
         assertThat(del.changeLength(), equalTo(-205));

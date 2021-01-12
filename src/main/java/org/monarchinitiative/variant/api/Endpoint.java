@@ -16,6 +16,14 @@ public enum Endpoint {
     /**
      * Closed endpoint <em>includes</em> the coordinate.
      */
-    CLOSED
+    CLOSED;
+
+    public boolean isOpen() {
+        return this == OPEN;
+    }
+
+    public boolean isClosed() {
+        return this == CLOSED;
+    }
 
 }

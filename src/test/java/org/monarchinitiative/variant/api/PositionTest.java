@@ -129,13 +129,13 @@ public class PositionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1, ONE_BASED, 100",
-            "0, ZERO_BASED, 100",
-            "100, ZERO_BASED, 0",
-            "100, ONE_BASED, 1",
+            "1,  5",
+            "2,  4",
+            "5,  1",
     })
-    public void invert(int pos, CoordinateSystem coordinateSystem, int expected) {
-        Contig contig = TestContig.of(1, 100);
-        assertThat(Position.of(pos).invert(contig, coordinateSystem), equalTo(Position.of(expected)));
+    public void invert(int pos, int expected) {
+        Contig contig = TestContig.of(1, 5);
+        CoordinateSystem any = CoordinateSystem.FULLY_OPEN;
+        assertThat(Position.of(pos).invert(contig, any), equalTo(Position.of(expected)));
     }
 }

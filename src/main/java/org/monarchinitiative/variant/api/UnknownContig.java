@@ -44,7 +44,7 @@ final class UnknownContig implements Contig {
 
     @Override
     public int length() {
-        return 1;
+        return 0;
     }
 
     @Override

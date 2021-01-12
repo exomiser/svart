@@ -100,7 +100,7 @@ public final class SequenceVariant implements Variant {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        return new SequenceVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition, ref, alt);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()), ref, alt);
     }
 
     @Override
