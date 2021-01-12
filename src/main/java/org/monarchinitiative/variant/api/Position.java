@@ -22,7 +22,9 @@ public interface Position extends Comparable<Position> {
      * @param delta amount by which to shift the position. Positive inputs will increase the value of pos, negative decrease it.
      * @return a Position shifted by the provided delta
      */
-    Position shift(int delta);
+    default Position shift(int delta) {
+        return delta == 0 ? this : withPos(pos() + delta);
+    }
 
     /**
      * @return the numeric position
@@ -41,7 +43,9 @@ public interface Position extends Comparable<Position> {
     /**
      * @return true if this position is precise (CI = [0,0])
      */
-    boolean isPrecise();
+    default boolean isPrecise() {
+        return confidenceInterval().isPrecise();
+    }
 
     Position asPrecise();
 
@@ -54,6 +58,29 @@ public interface Position extends Comparable<Position> {
      * @return a new position at the opposite end of the {@link Contig} on which the current {@link Position} is located
      */
     Position invert(Contig contig, CoordinateSystem coordinateSystem);
+
+
+    default int distanceTo(Position position) {
+        return distanceTo(position.pos());
+    }
+
+    default int distanceTo(int pos) {
+        return pos - pos();
+    }
+
+    default int distanceTo(Region region) {
+        region = region.toOneBased();
+        return distanceTo(region.start(), region.end());
+    }
+
+    default int distanceTo(int start, int end) {
+        if (start <= pos() && pos() <= end)
+            return 0;
+
+        int s = start - pos();
+        int e = end - pos();
+        return Math.abs(s) < Math.abs(e) ? s : e;
+    }
 
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.

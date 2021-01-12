@@ -46,7 +46,7 @@ public class VcfBreakendFormatter {
         }
 
         String mate = (rightStrand == Strand.POSITIVE)
-                ? '[' + contig + ':' + (pos + 1) + '['
+                ? '[' + contig + ':' + pos + '['
                 : ']' + contig + ':' + pos + ']';
 
         return leftStrand == Strand.POSITIVE

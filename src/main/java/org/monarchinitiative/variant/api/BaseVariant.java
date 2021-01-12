@@ -30,7 +30,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
     }
 
     private int checkChangeLength(int changeLength, Position endPosition, VariantType variantType) {
-        int startZeroBased = normalisedStartPosition(CoordinateSystem.ZERO_BASED).pos();
+        int startZeroBased = normalisedStart(Endpoint.OPEN);
         if (variantType.baseType() == VariantType.DEL && startZeroBased - (endPosition.pos() - 1) != changeLength) {
             throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Does not match expected " + (startZeroBased - (endPosition.pos() - 1) + " given coordinates " + coordinates()));
         } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
@@ -80,7 +80,9 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         if (this.coordinateSystem() == coordinateSystem) {
             return (T) this;
         }
-        return newVariantInstance(contig(), id, strand(), coordinateSystem, normalisedStartPosition(coordinateSystem), endPosition(), ref, alt, changeLength);
+        return newVariantInstance(contig(), id, strand(), coordinateSystem,
+                normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()),
+                ref, alt, changeLength);
     }
 
     @Override

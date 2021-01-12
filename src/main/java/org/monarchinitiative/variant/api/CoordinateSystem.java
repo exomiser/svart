@@ -30,7 +30,11 @@ public enum CoordinateSystem {
      * For example, the region between the 3rd and the 7th bases, where the end base is included, is (2,7]. The BAM,
      * BCFv2, BED, and PSL formats use the 0-based coordinate system.
      */
-    ZERO_BASED(Endpoint.OPEN, Endpoint.CLOSED);
+    ZERO_BASED(Endpoint.OPEN, Endpoint.CLOSED),
+
+    RIGHT_OPEN(Endpoint.CLOSED, Endpoint.OPEN),
+
+    FULLY_OPEN(Endpoint.OPEN, Endpoint.OPEN);
 
     private final Endpoint start;
     private final Endpoint end;
@@ -38,6 +42,26 @@ public enum CoordinateSystem {
     CoordinateSystem(Endpoint start, Endpoint end) {
         this.start = start;
         this.end = end;
+    }
+
+    /**
+     * Returns the required delta to shift a start position from the <code>current</code> endpoint to the
+     * <code>required</code> one.
+     *
+     * @return an integer in the range [-1, 0, 1]
+     */
+    public static int startDelta(Endpoint current, Endpoint required) {
+        return current == required ? 0 : current == Endpoint.OPEN ? 1 : -1;
+    }
+
+    /**
+     * Returns the required delta to shift an end position from the <code>current</code> endpoint to the
+     * <code>required</code> one.
+     *
+     * @return an integer in the range [-1, 0, 1]
+     */
+    public static int endDelta(Endpoint current, Endpoint required) {
+        return current == required ? 0 : current == Endpoint.OPEN ? -1 : 1;
     }
 
     public boolean isOneBased() {
@@ -48,26 +72,33 @@ public enum CoordinateSystem {
         return this == ZERO_BASED;
     }
 
-    /**
-     * Returns the required delta to shift a start position from the <code>current</code> system to the <code>required</code> one.
-     *
-     * @return an integer in the range [-1, 0, 1]
-     */
-    public static int startDelta(CoordinateSystem current, CoordinateSystem required) {
-        if (current == required) {
-            return 0;
-        }
-        return current == ZERO_BASED ? 1 : -1;
+    public Endpoint startEndpoint() {
+        return start;
+    }
+
+    public Endpoint endEndpoint() {
+        return end;
     }
 
     /**
      * Returns the required number of bases to be added to a start position in order to shift the position from
-     * <code>this</code> system to the <code>required</code> coordinate system.
+     * <code>this</code> system to the <code>required</code> endpoint type.
      *
-     * @param required coordinate system
+     * @param required endpoint
      * @return an integer in the range [-1, 0, 1]
      */
-    public int startDelta(CoordinateSystem required) {
-        return startDelta(this, required);
+    public int startDelta(Endpoint required) {
+        return startDelta(startEndpoint(), required);
+    }
+
+    /**
+     * Returns the required number of bases to be added to an end position in order to shift the position from
+     * <code>this</code> system to the <code>required</code> endpoint type.
+     *
+     * @param required endpoint
+     * @return an integer in the range [-1, 0, 1]
+     */
+    public int endDelta(Endpoint required) {
+        return endDelta(endEndpoint(), required);
     }
 }

@@ -27,13 +27,23 @@ public class CoordinateSystemTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ONE_BASED, ONE_BASED, 0",
-            "ONE_BASED, ZERO_BASED, -1",
-            "ZERO_BASED, ZERO_BASED, 0",
-            "ZERO_BASED, ONE_BASED, 1"
+            " ONE_BASED,  CLOSED,   0",
+            " ONE_BASED,    OPEN,  -1",
+            "ZERO_BASED,    OPEN,   0",
+            "ZERO_BASED,  CLOSED,   1"
     })
-    public void startDelta(CoordinateSystem current, CoordinateSystem desired, int expected) {
+    public void startDelta(CoordinateSystem current, Endpoint desired, int expected) {
         assertThat(current.startDelta(desired), equalTo(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            " ONE_BASED,  CLOSED,   0",
+            " ONE_BASED,    OPEN,   1",
+            "ZERO_BASED,    OPEN,   1",
+            "ZERO_BASED,  CLOSED,   0"
+    })
+    public void endDelta(CoordinateSystem current, Endpoint desired, int expected) {
+        assertThat(current.endDelta(desired), equalTo(expected));
+    }
 }
