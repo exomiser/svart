@@ -15,13 +15,32 @@ package org.monarchinitiative.variant.api;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 public enum CoordinateSystem {
+
+    FULLY_CLOSED(Bound.CLOSED, Bound.CLOSED),
+
+    LEFT_OPEN(Bound.OPEN, Bound.CLOSED),
+
+    RIGHT_OPEN(Bound.CLOSED, Bound.OPEN),
+
+    FULLY_OPEN(Bound.OPEN, Bound.OPEN);
+
+    private final Bound startBound;
+    private final Bound endBound;
+
+    CoordinateSystem(Bound startBound, Bound endBound) {
+        this.startBound = startBound;
+        this.endBound = endBound;
+    }
+
     /**
      * A coordinate system where the first base of a sequence is one.
-     * In this co-ordinate system, a region is specified by a <em>closed</em> interval. For example, the region between
+     * In this co-ordinate system, a region is specified by a <em>fully-closed</em> interval. For example, the region between
      * the 3rd and the 7th bases inclusive is [3,7]. The SAM, VCF, GFF and Wiggle formats use the 1-based coordinate
      * system.
      */
-    ONE_BASED(Endpoint.CLOSED, Endpoint.CLOSED),
+    public static CoordinateSystem oneBased() {
+        return FULLY_CLOSED;
+    }
 
     /**
      * A coordinate system where the first base of a sequence is zero. In this coordinate system, a region is specified
@@ -30,75 +49,45 @@ public enum CoordinateSystem {
      * For example, the region between the 3rd and the 7th bases, where the end base is included, is (2,7]. The BAM,
      * BCFv2, BED, and PSL formats use the 0-based coordinate system.
      */
-    ZERO_BASED(Endpoint.OPEN, Endpoint.CLOSED),
-
-    RIGHT_OPEN(Endpoint.CLOSED, Endpoint.OPEN),
-
-    FULLY_OPEN(Endpoint.OPEN, Endpoint.OPEN);
-
-    private final Endpoint start;
-    private final Endpoint end;
-
-    CoordinateSystem(Endpoint start, Endpoint end) {
-        this.start = start;
-        this.end = end;
-    }
-
-    /**
-     * Returns the required delta to shift a start position from the <code>current</code> endpoint to the
-     * <code>required</code> one.
-     *
-     * @return an integer in the range [-1, 0, 1]
-     */
-    public static int startDelta(Endpoint current, Endpoint required) {
-        return current == required ? 0 : current == Endpoint.OPEN ? 1 : -1;
-    }
-
-    /**
-     * Returns the required delta to shift an end position from the <code>current</code> endpoint to the
-     * <code>required</code> one.
-     *
-     * @return an integer in the range [-1, 0, 1]
-     */
-    public static int endDelta(Endpoint current, Endpoint required) {
-        return current == required ? 0 : current == Endpoint.OPEN ? -1 : 1;
+    public static CoordinateSystem zeroBased() {
+        return LEFT_OPEN;
     }
 
     public boolean isOneBased() {
-        return this == ONE_BASED;
+        return this == FULLY_CLOSED;
     }
 
     public boolean isZeroBased() {
-        return this == ZERO_BASED;
+        return this == LEFT_OPEN;
     }
 
-    public Endpoint startEndpoint() {
-        return start;
+    public Bound startBound() {
+        return startBound;
     }
 
-    public Endpoint endEndpoint() {
-        return end;
+    public Bound endBound() {
+        return endBound;
     }
 
     /**
      * Returns the required number of bases to be added to a start position in order to shift the position from
-     * <code>this</code> system to the <code>required</code> endpoint type.
+     * <code>this</code> system to the <code>target</code> system.
      *
-     * @param required endpoint
+     * @param target system
      * @return an integer in the range [-1, 0, 1]
      */
-    public int startDelta(Endpoint required) {
-        return startDelta(startEndpoint(), required);
+    public int startDelta(CoordinateSystem target) {
+        return this.startBound == target.startBound ? 0 : this.startBound == Bound.OPEN ? 1 : -1;
     }
 
     /**
      * Returns the required number of bases to be added to an end position in order to shift the position from
-     * <code>this</code> system to the <code>required</code> endpoint type.
+     * <code>this</code> system to the <code>target</code> system.
      *
-     * @param required endpoint
+     * @param target system
      * @return an integer in the range [-1, 0, 1]
      */
-    public int endDelta(Endpoint required) {
-        return endDelta(endEndpoint(), required);
+    public int endDelta(CoordinateSystem target) {
+        return this.endBound == target.endBound ? 0 : this.endBound == Bound.OPEN ? -1 : 1;
     }
 }

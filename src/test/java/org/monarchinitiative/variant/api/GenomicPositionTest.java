@@ -1,6 +1,5 @@
 package org.monarchinitiative.variant.api;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -102,8 +101,8 @@ public class GenomicPositionTest {
     @ParameterizedTest
     @CsvSource({
             // strand  pos  expected coords  start end
-            "POSITIVE, 3,   ZERO_BASED,   2, 3",
-            "NEGATIVE, 3,   ZERO_BASED,   2, 3",
+            "POSITIVE, 3,   LEFT_OPEN,   2, 3",
+            "NEGATIVE, 3,   LEFT_OPEN,   2, 3",
     })
     public void toRegion(Strand strand, int initPos, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
         // a position is turned into a region of length 1
@@ -120,7 +119,7 @@ public class GenomicPositionTest {
     public void toRegion_singlePadding(int pos, int padding,
                                           int expectedStart, int expectedEnd) {
         GenomicRegion actual = GenomicPosition.of(ctg1, Strand.POSITIVE, Position.of(pos)).toRegion(padding);
-        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(expectedStart), Position.of(expectedEnd));
+        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(expectedStart), Position.of(expectedEnd));
         assertThat(actual, equalTo(expected));
     }
 
@@ -148,7 +147,7 @@ public class GenomicPositionTest {
                                           int upstream, int downstream,
                                           int expectedStart, int expectedEnd) {
         GenomicRegion actual = GenomicPosition.of(ctg1, Strand.POSITIVE, Position.of(pos)).toRegion(upstream, downstream);
-        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(expectedStart), Position.of(expectedEnd));
+        GenomicRegion expected = GenomicRegion.of(ctg1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(expectedStart), Position.of(expectedEnd));
         assertThat(actual, equalTo(expected));
     }
 
@@ -211,16 +210,16 @@ public class GenomicPositionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "3,  ONE_BASED, 2, 2,   false",
-            "3,  ONE_BASED, 2, 3,   false",
-            "3,  ONE_BASED, 3, 3,   false",
-            "3,  ONE_BASED, 4, 4,   true",
-            "3,  ONE_BASED, 5, 5,   true",
+            "3,  FULLY_CLOSED, 2, 2,   false",
+            "3,  FULLY_CLOSED, 2, 3,   false",
+            "3,  FULLY_CLOSED, 3, 3,   false",
+            "3,  FULLY_CLOSED, 4, 4,   true",
+            "3,  FULLY_CLOSED, 5, 5,   true",
 
-            "3,  ZERO_BASED, 1, 2,   false",
-            "3,  ZERO_BASED, 2, 3,   false",
-            "3,  ZERO_BASED, 3, 4,   true",
-            "3,  ZERO_BASED, 4, 5,   true"
+            "3,  LEFT_OPEN, 1, 2,   false",
+            "3,  LEFT_OPEN, 2, 3,   false",
+            "3,  LEFT_OPEN, 3, 4,   true",
+            "3,  LEFT_OPEN, 4, 5,   true"
     })
     public void isUpstreamOfRegion(int pos,
                                    CoordinateSystem coordinateSystem, int start, int end,
@@ -266,8 +265,8 @@ public class GenomicPositionTest {
 //    TODO - candidate for removal, I think we should remove the oneBased/zeroBased positions
 //    @ParameterizedTest
 //    @CsvSource({
-//            "0, ZERO_BASED,   1",
-//            "1, ONE_BASED,    1",
+//            "0, LEFT_OPEN,   1",
+//            "1, FULLY_CLOSED,    1",
 //    })
 //    public void posOneBased(int position, CoordinateSystem coordinateSystem, int expected) {
 //        GenomicPosition pos = GenomicPosition.of(ctg1, Strand.POSITIVE, Position.of(position, ));

@@ -19,11 +19,11 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
     }
 
     public static DefaultGenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.ONE_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition);
     }
 
     public static DefaultGenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.ZERO_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.LEFT_OPEN, startPosition, endPosition);
     }
 
     @Override

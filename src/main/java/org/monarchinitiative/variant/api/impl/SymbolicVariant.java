@@ -34,7 +34,7 @@ public final class SymbolicVariant implements Variant {
         this.startPosition = Objects.requireNonNull(startPosition);
         this.endPosition = Objects.requireNonNull(endPosition);
 
-        int startZeroBased = normalisedStart(Endpoint.OPEN);
+        int startZeroBased = startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN);
         if (startZeroBased >= endPosition.pos()) {
             throw new IllegalArgumentException("start " + startZeroBased + " must be upstream of end " + endPosition.pos());
         }
@@ -75,7 +75,7 @@ public final class SymbolicVariant implements Variant {
      * @return one-based, positive strand symbolic variant
      */
     public static SymbolicVariant oneBased(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, startPosition, endPosition, ref, alt, changeLength);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition, ref, alt, changeLength);
     }
 
     /**
@@ -93,7 +93,7 @@ public final class SymbolicVariant implements Variant {
     }
 
     public static SymbolicVariant zeroBased(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, startPosition, endPosition, ref, alt, changeLength);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, startPosition, endPosition, ref, alt, changeLength);
     }
 
     public static SymbolicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
@@ -130,7 +130,7 @@ public final class SymbolicVariant implements Variant {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        return new SymbolicVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()), ref, alt, changeLength);
+        return new SymbolicVariant(contig, id, strand, coordinateSystem, startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem), ref, alt, changeLength);
     }
 
     @Override

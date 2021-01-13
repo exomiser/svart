@@ -24,7 +24,7 @@ class TestRegion implements Region {
 
     @Override
     public Region withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        return new TestRegion(coordinateSystem, normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()));
+        return new TestRegion(coordinateSystem, startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem));
     }
 
     @Override

@@ -30,7 +30,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
     }
 
     private int checkChangeLength(int changeLength, Position endPosition, VariantType variantType) {
-        int startZeroBased = normalisedStart(Endpoint.OPEN);
+        int startZeroBased = startWithCoordinateSystem(CoordinateSystem.zeroBased());
         if (variantType.baseType() == VariantType.DEL && startZeroBased - (endPosition.pos() - 1) != changeLength) {
             throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Does not match expected " + (startZeroBased - (endPosition.pos() - 1) + " given coordinates " + coordinates()));
         } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
@@ -56,7 +56,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
-        return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
+        return coordinateSystem == CoordinateSystem.LEFT_OPEN ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
     }
 
     protected static void assertNotBreakend(String alt) {
@@ -81,7 +81,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             return (T) this;
         }
         return newVariantInstance(contig(), id, strand(), coordinateSystem,
-                normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()),
+                startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem),
                 ref, alt, changeLength);
     }
 

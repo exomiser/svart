@@ -92,18 +92,18 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
 
 
     /**
-     * Convert the position to a 0 bp-long region in {@link CoordinateSystem#ZERO_BASED} coordinate system with precise
+     * Convert the position to a 0 bp-long region in {@link CoordinateSystem#LEFT_OPEN} coordinate system with precise
      * start/end positions.
      *
      * @return the region
      */
     default GenomicRegion toRegion() {
-        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED,
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.LEFT_OPEN,
                 Position.of(pos() - 1), Position.of(pos()));
     }
 
     /**
-     * Convert the position to a region in {@link CoordinateSystem#ZERO_BASED} by adding specified number of
+     * Convert the position to a region in {@link CoordinateSystem#LEFT_OPEN} by adding specified number of
      * <code>padding</code> nucleotides upstream and downstream from the position. Length of the returned region
      * is <code>2 * padding</code>. The start/end coordinates of the region are precise.
      *
@@ -120,7 +120,7 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
     }
 
     /**
-     * Convert the position to a region in {@link CoordinateSystem#ZERO_BASED} by adding specified number of
+     * Convert the position to a region in {@link CoordinateSystem#LEFT_OPEN} by adding specified number of
      * nucleotides <code>upstream</code> and <code>downstream</code> from the current position. The start/end
      * coordinates of the region are precise.
      * <p>
@@ -143,7 +143,7 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
             throw new IllegalArgumentException("Cannot apply negative padding: " + upstream + ", " + downstream);
         }
 
-        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.ZERO_BASED,
+        return DefaultGenomicRegion.of(contig(), strand(), CoordinateSystem.zeroBased(),
                 Position.of(pos() + upstream),
                 Position.of(pos() + downstream));
     }
@@ -166,9 +166,9 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
     /**
      * Create {@link GenomicPosition} starting from a <code>position</code> in <em>one-based</em> coordinate system.
      * <p>
-     * Note that the method returns a genomic position in {@link CoordinateSystem#ZERO_BASED}.
+     * Note that the method returns a genomic position in {@link CoordinateSystem#LEFT_OPEN}.
      *
-     * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
+     * @return position in {@link CoordinateSystem#LEFT_OPEN} coordinate system
      */
     @Deprecated // we should not think of positions as zero or one based anymore
     static GenomicPosition oneBased(Contig contig, Strand strand, Position position) {
@@ -178,7 +178,7 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
     /**
      * Create {@link GenomicPosition} starting from a <code>position</code> in <em>zero-based</em> coordinate system.
      *
-     * @return position in {@link CoordinateSystem#ZERO_BASED} coordinate system
+     * @return position in {@link CoordinateSystem#LEFT_OPEN} coordinate system
      */
     @Deprecated // we should not think of positions as zero or one based anymore
     static GenomicPosition zeroBased(Contig contig, Strand strand, Position position) {
@@ -186,7 +186,7 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
     }
 
     /**
-     * Create a {@link CoordinateSystem#ZERO_BASED} genomic position at <code>position</code> in the provided
+     * Create a {@link CoordinateSystem#LEFT_OPEN} genomic position at <code>position</code> in the provided
      * <code>coordinateSystem</code> on <code>contig</code> and <code>strand</code>.
      * <p>
      * For example:
@@ -199,7 +199,7 @@ public interface GenomicPosition extends Position, Stranded<GenomicPosition> {
      * GenomicPosition pos = GenomicPosition.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(1))
      * </pre>
      *
-     * @return a position in {@link CoordinateSystem#ZERO_BASED} coordinate system corrected from the input
+     * @return a position in {@link CoordinateSystem#LEFT_OPEN} coordinate system corrected from the input
      * <code>coordinateSystem</code>
      */
     static GenomicPosition of(Contig contig, Strand strand, Position position) {

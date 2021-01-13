@@ -85,11 +85,11 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     /**
-     * @return always {@link CoordinateSystem#ZERO_BASED}
+     * @return always {@link CoordinateSystem#LEFT_OPEN}
      */
     @Override
     public CoordinateSystem coordinateSystem() {
-        return CoordinateSystem.ZERO_BASED;
+        return CoordinateSystem.LEFT_OPEN;
     }
 
     /**

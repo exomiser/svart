@@ -30,7 +30,7 @@ public class BreakendVariantTest {
         assertThat(variant.end(), equalTo(123_456));
         assertThat(variant.strand(), equalTo(Strand.POSITIVE));
         assertThat(variant.variantType(), equalTo(VariantType.BND));
-        assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
 
         assertThat(variant.refLength(), equalTo(1));
         assertThat(variant.changeLength(), equalTo(0));

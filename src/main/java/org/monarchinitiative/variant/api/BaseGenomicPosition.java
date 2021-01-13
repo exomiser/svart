@@ -78,7 +78,7 @@ public abstract class BaseGenomicPosition<T extends GenomicPosition> implements 
         if (this.strand == other)
             return (T) this;
 
-        Position inverted = position.invert(contig, CoordinateSystem.ONE_BASED);
+        Position inverted = position.invert(contig, CoordinateSystem.oneBased());
         return newPositionInstance(contig, other, inverted);
     }
 
@@ -124,7 +124,7 @@ public abstract class BaseGenomicPosition<T extends GenomicPosition> implements 
                 return self();
 
             this.strand = strand;
-            this.position = position.invert(contig, CoordinateSystem.ONE_BASED);
+            this.position = position.invert(contig, CoordinateSystem.FULLY_CLOSED);
             return self();
         }
 

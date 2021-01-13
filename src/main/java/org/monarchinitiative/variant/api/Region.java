@@ -21,12 +21,12 @@ public interface Region extends CoordinateSystemed<Region> {
         return startPosition().pos();
     }
 
-    default int normalisedStart(Endpoint endpoint) {
-        return start() + coordinateSystem().startDelta(endpoint);
+    default int startWithCoordinateSystem(CoordinateSystem target) {
+        return start() + coordinateSystem().startDelta(target);
     }
 
-    default Position normalisedStartPosition(Endpoint endpoint) {
-        return startPosition().shift(coordinateSystem().startDelta(endpoint));
+    default Position startPositionWithCoordinateSystem(CoordinateSystem target) {
+        return startPosition().shift(coordinateSystem().startDelta(target));
     }
 
     /**
@@ -36,12 +36,12 @@ public interface Region extends CoordinateSystemed<Region> {
         return endPosition().pos();
     }
 
-    default int normalisedEnd(Endpoint endpoint) {
-        return end() + coordinateSystem().endDelta(endpoint);
+    default int endWithCoordinateSystem(CoordinateSystem target) {
+        return end() + coordinateSystem().endDelta(target);
     }
 
-    default Position normalisedEndPosition(Endpoint endpoint) {
-        return endPosition().shift(coordinateSystem().endDelta(endpoint));
+    default Position endPositionWithCoordinateSystem(CoordinateSystem target) {
+        return endPosition().shift(coordinateSystem().endDelta(target));
     }
 
     /**
@@ -63,7 +63,7 @@ public interface Region extends CoordinateSystemed<Region> {
     }
 
     default boolean contains(int position) {
-        return normalisedStart(Endpoint.CLOSED) <= position && position <= normalisedEnd(Endpoint.CLOSED);
+        return startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }
 
 
@@ -79,7 +79,7 @@ public interface Region extends CoordinateSystemed<Region> {
 
     default int length() {
         // the easiest way how to calculate length is to use half-open interval coordinates
-        return normalisedEnd(Endpoint.CLOSED) - normalisedStart(Endpoint.OPEN);
+        return endWithCoordinateSystem(CoordinateSystem.LEFT_OPEN) - startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
     static Comparator<Region> naturalOrder() {

@@ -46,12 +46,12 @@ public final class SequenceVariant implements Variant {
 
     public static SequenceVariant oneBased(Contig contig, String id, int pos, String ref, String alt) {
         Position start = Position.of(pos);
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, ref, alt);
     }
 
     public static SequenceVariant zeroBased(Contig contig, String id, int pos, String ref, String alt) {
         Position start = Position.of(pos);
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, start, ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, start, ref, alt);
     }
 
     public static SequenceVariant oneBased(Contig contig, int pos, String ref, String alt) {
@@ -65,9 +65,9 @@ public final class SequenceVariant implements Variant {
     private static Position calculateEnd(Position start, CoordinateSystem coordinateSystem, String ref, String alt) {
         // SNV case
         if ((ref.length() | alt.length()) == 1) {
-            return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.shift(1) : start;
+            return coordinateSystem == CoordinateSystem.LEFT_OPEN ? start.shift(1) : start;
         }
-        return coordinateSystem == CoordinateSystem.ZERO_BASED ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
+        return coordinateSystem == CoordinateSystem.LEFT_OPEN ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
     }
 
     @Override
@@ -100,7 +100,7 @@ public final class SequenceVariant implements Variant {
         if (this.coordinateSystem == coordinateSystem) {
             return this;
         }
-        return new SequenceVariant(contig, id, strand, coordinateSystem, normalisedStartPosition(coordinateSystem.startEndpoint()), normalisedEndPosition(coordinateSystem.endEndpoint()), ref, alt);
+        return new SequenceVariant(contig, id, strand, coordinateSystem, startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem), ref, alt);
     }
 
     @Override

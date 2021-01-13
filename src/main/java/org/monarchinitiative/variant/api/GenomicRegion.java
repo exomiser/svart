@@ -28,22 +28,6 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
     }
 
     /**
-     * @return position representing the start border
-     */
-    default GenomicPosition startGenomicPosition() {
-        // TODO - resolve what exactly to return, returning just the current position might be counterintuitive
-        return GenomicPosition.of(contig(), strand(), startPosition());
-    }
-
-    /**
-     * @return position representing the end border
-     */
-    default GenomicPosition endGenomicPosition() {
-        // TODO - resolve what exactly to return, returning just the current position might be counterintuitive
-        return GenomicPosition.of(contig(), strand(), endPosition());
-    }
-
-    /**
      * @param other chromosomal region
      * @return true if the region shares at least 1 bp with the <code>other</code> region
      */
@@ -120,7 +104,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
      * @return one-based position
      */
     static GenomicRegion oneBased(Contig contig, Strand strand, int startPosition, int endPosition) {
-        return of(contig, strand, CoordinateSystem.ONE_BASED, Position.of(startPosition), Position.of(endPosition));
+        return of(contig, strand, CoordinateSystem.FULLY_CLOSED, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
@@ -129,7 +113,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
      * @return one-based region
      */
     static GenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.ONE_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition);
     }
 
 
@@ -150,7 +134,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
      * @return one-based position
      */
     static GenomicRegion zeroBased(Contig contig, Strand strand, int startPosition, int endPosition) {
-        return of(contig, strand, CoordinateSystem.ZERO_BASED, Position.of(startPosition), Position.of(endPosition));
+        return of(contig, strand, CoordinateSystem.LEFT_OPEN, Position.of(startPosition), Position.of(endPosition));
     }
 
     /**
@@ -159,7 +143,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
      * @return zero-based genomic region
      */
     static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.ZERO_BASED, startPosition, endPosition);
+        return of(contig, strand, CoordinateSystem.LEFT_OPEN, startPosition, endPosition);
     }
 
     /**
@@ -173,7 +157,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
         if (start.contig() != end.contig() || start.strand() != end.strand()) {
             throw new IllegalArgumentException("Cannot create a genomic region from positions located on different contigs/strands");
         }
-        return of(start.contig(), start.strand(), CoordinateSystem.ZERO_BASED, start, end);
+        return of(start.contig(), start.strand(), CoordinateSystem.LEFT_OPEN, start, end);
     }
 
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {

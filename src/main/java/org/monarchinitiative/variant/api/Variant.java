@@ -41,11 +41,11 @@ public interface Variant extends GenomicRegion {
     Variant withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     default Variant toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
     default Variant toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }
 
     @Override

@@ -23,14 +23,14 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
         // TODO - test more thoroughly
         int start = startPosition.pos(), end = endPosition.pos();
-        if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+        if (coordinateSystem == CoordinateSystem.FULLY_CLOSED) {
             if (start < 1 || end > contig.length())
                 throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end [" + 1 + ',' + contig.length() + ']');
             if (start > end + 1)
                 // region [2,1] is an empty region, equivalent to (1,2)
                 throw new IllegalArgumentException("One-based region " + contig.name() + '-' + start + '-' + end + " must have a start position at most one position past the end position");
 
-        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED) {
+        } else if (coordinateSystem == CoordinateSystem.LEFT_OPEN) {
             if (start < 0 || end > contig.length())
                 throw new IllegalArgumentException("Cannot create region " + contig.name() + '-' + start + '-' + end + " with coordinates past the contig end (" + 0 + ',' + contig.length() + ']');
             if (start > end)
@@ -97,18 +97,18 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
             return (T) this;
         }
         return newRegionInstance(contig, strand, requiredCoordinateSystem,
-                normalisedStartPosition(requiredCoordinateSystem.startEndpoint()),
-                normalisedEndPosition(requiredCoordinateSystem.endEndpoint()));
+                startPositionWithCoordinateSystem(requiredCoordinateSystem),
+                endPositionWithCoordinateSystem(requiredCoordinateSystem));
     }
 
     @Override
     public T toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
     @Override
     public T toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }
 
     @Override
@@ -174,7 +174,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         protected Contig contig;
         // we're primarily interested in VCF coordinates so we're defaulting to 1-based coordinates on the + strand
         protected Strand strand = Strand.POSITIVE;
-        protected CoordinateSystem coordinateSystem = CoordinateSystem.ONE_BASED;
+        protected CoordinateSystem coordinateSystem = CoordinateSystem.FULLY_CLOSED;
         protected Position start = Position.of(1);
         protected Position end = start;
 
@@ -203,19 +203,19 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         }
 
         public T asZeroBased() {
-            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+            return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
         }
 
         public T asOneBased() {
-            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+            return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
         }
 
         public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
             if (this.coordinateSystem == coordinateSystem) {
                 return self();
             }
-            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem.startEndpoint()));
-            end = end.shift(this.coordinateSystem.endDelta(coordinateSystem.endEndpoint()));
+            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem));
+            end = end.shift(this.coordinateSystem.endDelta(coordinateSystem));
             this.coordinateSystem = coordinateSystem;
             return self();
         }

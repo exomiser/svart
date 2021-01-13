@@ -20,11 +20,11 @@ public final class DefaultVariant extends BaseVariant<DefaultVariant> {
     }
 
     public static DefaultVariant oneBased(Contig contig, String id, int pos, String ref, String alt) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(pos), ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(pos), ref, alt);
     }
 
     public static DefaultVariant zeroBased(Contig contig, String id, int pos, String ref, String alt) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(pos), ref, alt);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(pos), ref, alt);
     }
 
     public static DefaultVariant oneBased(Contig contig, int pos, String ref, String alt) {
@@ -54,7 +54,7 @@ public final class DefaultVariant extends BaseVariant<DefaultVariant> {
      * @return one-based, positive strand symbolic variant
      */
     public static DefaultVariant oneBased(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, startPosition, endPosition, ref, alt, changeLength);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition, ref, alt, changeLength);
     }
 
     /**
@@ -72,7 +72,7 @@ public final class DefaultVariant extends BaseVariant<DefaultVariant> {
     }
 
     public static DefaultVariant zeroBased(Contig contig, String id, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return of(contig, id, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, startPosition, endPosition, ref, alt, changeLength);
+        return of(contig, id, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, startPosition, endPosition, ref, alt, changeLength);
     }
 
     @Override

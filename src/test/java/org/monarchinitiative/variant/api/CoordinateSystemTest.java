@@ -14,36 +14,40 @@ public class CoordinateSystemTest {
 
 
     @ParameterizedTest
-    @CsvSource({"ONE_BASED, true", "ZERO_BASED, false"})
+    @CsvSource({"FULLY_CLOSED, true", "LEFT_OPEN, false"})
     public void isOneBased(CoordinateSystem coordinateSystem, boolean expected) {
         assertThat(coordinateSystem.isOneBased(), is(expected));
     }
 
     @ParameterizedTest
-    @CsvSource({"ONE_BASED, false", "ZERO_BASED, true"})
+    @CsvSource({"FULLY_CLOSED, false", "LEFT_OPEN, true"})
     public void isZeroBased(CoordinateSystem coordinateSystem, boolean expected) {
         assertThat(coordinateSystem.isZeroBased(), is(expected));
     }
 
     @ParameterizedTest
     @CsvSource({
-            " ONE_BASED,  CLOSED,   0",
-            " ONE_BASED,    OPEN,  -1",
-            "ZERO_BASED,    OPEN,   0",
-            "ZERO_BASED,  CLOSED,   1"
+            " FULLY_CLOSED,  FULLY_CLOSED,   0",
+            " FULLY_CLOSED,  LEFT_OPEN,  -1",
+            " FULLY_CLOSED,  FULLY_OPEN,  -1",
+            "LEFT_OPEN,  LEFT_OPEN,   0",
+            "LEFT_OPEN,  FULLY_CLOSED,   1"
     })
-    public void startDelta(CoordinateSystem current, Endpoint desired, int expected) {
-        assertThat(current.startDelta(desired), equalTo(expected));
+    public void startDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
+        assertThat(current.startDelta(target), equalTo(expected));
     }
 
     @ParameterizedTest
     @CsvSource({
-            " ONE_BASED,  CLOSED,   0",
-            " ONE_BASED,    OPEN,   1",
-            "ZERO_BASED,    OPEN,   1",
-            "ZERO_BASED,  CLOSED,   0"
+            " FULLY_CLOSED,  FULLY_CLOSED,   0",
+            " FULLY_CLOSED, LEFT_OPEN,   0",
+            " FULLY_CLOSED, FULLY_OPEN,   1",
+            " FULLY_CLOSED, RIGHT_OPEN,   1",
+            "LEFT_OPEN, LEFT_OPEN,   0",
+            "LEFT_OPEN,  FULLY_CLOSED,   0",
+            "FULLY_OPEN, FULLY_CLOSED,   -1",
     })
-    public void endDelta(CoordinateSystem current, Endpoint desired, int expected) {
-        assertThat(current.endDelta(desired), equalTo(expected));
+    public void endDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
+        assertThat(current.endDelta(target), equalTo(expected));
     }
 }

@@ -10,7 +10,7 @@ final class UnresolvedBreakend implements Breakend {
 
     private static final String ID = "";
     private static final Strand STRAND = Strand.POSITIVE;
-    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.ONE_BASED;
+    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.FULLY_CLOSED;
     private static final Position POSITION = Position.of(1);
     private static final Contig CONTIG = Contig.unknown();
 

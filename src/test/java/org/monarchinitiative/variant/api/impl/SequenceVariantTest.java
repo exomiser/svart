@@ -75,7 +75,7 @@ public class SequenceVariantTest {
         // a coordinate system itself as these values are identical in both systems. So really it's the _interval_ which has
         // the coordinate system, not the positions.
         // In this case if both positions are zero-based everything fails.
-        Variant snv = SequenceVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(0), "A", "T");
+        Variant snv = SequenceVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "A", "T");
 
         assertThat(snv.startPosition(), equalTo(Position.of(0)));
         assertThat(snv.endPosition(), equalTo(Position.of(1)));

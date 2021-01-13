@@ -6,7 +6,7 @@ package org.monarchinitiative.variant.api;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public enum Endpoint {
+public enum Bound {
 
     /**
      * Open endpoint does <em>not</em> include the coordinate.
