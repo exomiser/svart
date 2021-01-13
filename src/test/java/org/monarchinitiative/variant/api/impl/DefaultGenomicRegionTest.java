@@ -39,16 +39,15 @@ public class DefaultGenomicRegionTest {
         assertThat(instance.withStrand(exptStrand), equalTo(expected));
     }
 
-// TODO - figure out if this test is necessary since only empty region can be created on the "unknown" chromosome
-//    @ParameterizedTest
-//    @CsvSource({
-//            "POSITIVE, FULLY_CLOSED,  1, 1,  NEGATIVE, FULLY_CLOSED,   1, 1",
-//            "POSITIVE, LEFT_OPEN, 0, 1,  NEGATIVE, LEFT_OPEN,  0, 1",
-//    })
-//    public void emptyRegionUnknownChromosomeToOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
-//                                                             Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
-//        GenomicRegion instance = DefaultGenomicRegion.of(Contig.unknown(), inputStrand, inputCoords, Position.of(inputStart, inputCoords.start()), Position.of(inputEnd, inputCoords.end()));
-//        GenomicRegion expected = DefaultGenomicRegion.of(Contig.unknown(), exptStrand, exptCoords, Position.of(exptStart, exptCoords.start()), Position.of(exptEnd, exptCoords.end()));
-//        assertThat(instance.withStrand(exptStrand), equalTo(expected));
-//    }
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, FULLY_CLOSED,  1, 0,  NEGATIVE, FULLY_CLOSED,   1, 0",
+            "POSITIVE, LEFT_OPEN, 0, 0,  NEGATIVE, LEFT_OPEN,  0, 0",
+    })
+    public void emptyRegionUnknownChromosomeToOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
+                                                             Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
+        GenomicRegion instance = DefaultGenomicRegion.of(Contig.unknown(), inputStrand, inputCoords, Position.of(inputStart), Position.of(inputEnd));
+        GenomicRegion expected = DefaultGenomicRegion.of(Contig.unknown(), exptStrand, exptCoords, Position.of(exptStart), Position.of(exptEnd));
+        assertThat(instance.withStrand(exptStrand), equalTo(expected));
+    }
 }
