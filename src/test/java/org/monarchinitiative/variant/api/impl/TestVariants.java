@@ -76,8 +76,7 @@ public class TestVariants {
      * <pre>13  123456  bnd_U   C   CAGTNNNNNCA[2:321682[    6   PASS    SVTYPE=BND;MATEID=bnd_V;EVENT=tra2</pre>
      */
     public static BreakendVariant breakendVariant_UV_withInsertion() {
-        // TODO: shouldn't this be oneBased?
-        Breakend bnd_U = PartialBreakend.zeroBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
+        Breakend bnd_U = PartialBreakend.oneBased(chr13, "bnd_U", Strand.POSITIVE, Position.of(123_456));
         Breakend bnd_V = PartialBreakend.oneBased(chr2, "bnd_V", Strand.POSITIVE, Position.of(321_682));
         return BreakendVariant.of("tra2", bnd_U, bnd_V, "C", "AGTNNNNNCA");
     }

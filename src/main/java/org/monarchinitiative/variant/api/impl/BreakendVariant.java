@@ -36,6 +36,9 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     private BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+        if (left.coordinateSystem() != right.coordinateSystem()) {
+            throw new IllegalStateException("Left and right ends of breakend must have same coordinate system!");
+        }
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
@@ -76,30 +79,30 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public Position startPosition() {
-        return left;
+        return left.startPosition();
     }
 
     @Override
     public Position endPosition() {
-        return left;
+        return left.endPosition();
     }
 
     /**
-     * @return always {@link CoordinateSystem#LEFT_OPEN}
+     * @return the coordinateSystem of the Left side.
      */
     @Override
     public CoordinateSystem coordinateSystem() {
-        return CoordinateSystem.LEFT_OPEN;
+        return left.coordinateSystem();
     }
 
-    /**
-     * No-op.
-     * @param coordinateSystem ignored argument
-     * @return this instance
-     */
     @Override
     public BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        return this;
+        if (left.coordinateSystem() == coordinateSystem) {
+            return this;
+        }
+        Breakend leftAltered = left.withCoordinateSystem(coordinateSystem);
+        Breakend rightAltered = right.withCoordinateSystem(coordinateSystem);
+        return new BreakendVariant(eventId, leftAltered, rightAltered, ref, trailingRef, alt);
     }
 
     /**

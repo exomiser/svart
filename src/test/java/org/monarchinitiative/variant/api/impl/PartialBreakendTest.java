@@ -15,29 +15,28 @@ public class PartialBreakendTest {
 
     @Test
     public void properties() {
-        PartialBreakend three = PartialBreakend.of(ctg1, "a", Strand.POSITIVE, Position.of(3, -2, 1));
+        Position position = Position.of(3, -2, 1);
+        PartialBreakend three = PartialBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position, position);
 
         assertThat(three.contig(), equalTo(ctg1));
         assertThat(three.contigId(), equalTo(1));
         assertThat(three.contigName(), equalTo("1"));
-        assertThat(three.pos(), equalTo(3));
-        assertThat(three.confidenceInterval(), equalTo(ConfidenceInterval.of(-2, 1)));
-        assertThat(three.minPos(), equalTo(1));
-        assertThat(three.maxPos(), equalTo(4));
+        assertThat(three.startPosition(), equalTo(position));
         assertThat(three.strand(), equalTo(Strand.POSITIVE));
         assertThat(three.id(), equalTo("a"));
     }
 
     @Test
     public void withStrand() {
-        PartialBreakend three = PartialBreakend.of(ctg1, "a", Strand.POSITIVE, Position.of(3, -2, 1));
+        Position position = Position.of(3, -2, 1);
+        PartialBreakend three = PartialBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position, position);
 
         assertThat(three.withStrand(Strand.POSITIVE), is(sameInstance(three)));
 
         PartialBreakend breakend = three.withStrand(Strand.NEGATIVE);
         assertThat(breakend.contig(), equalTo(ctg1));
-        assertThat(breakend.pos(), equalTo(8));
-        assertThat(breakend.confidenceInterval(), equalTo(ConfidenceInterval.of(-1, 2)));
+        assertThat(breakend.start(), equalTo(8));
+        assertThat(breakend.startPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-1, 2)));
         assertThat(breakend.id(), is("a"));
     }
 

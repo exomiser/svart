@@ -35,7 +35,7 @@ public class VcfBreakendFormatter {
      */
     static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
         String contig = right.contigName();
-        int pos = right.withStrand(Strand.POSITIVE).pos();
+        int pos = right.toOneBased().withStrand(Strand.POSITIVE).start();
         Strand leftStrand = left.strand();
         Strand rightStrand = right.strand();
 

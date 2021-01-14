@@ -4,7 +4,7 @@ package org.monarchinitiative.variant.api;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Breakend extends GenomicPosition {
+public interface Breakend extends GenomicRegion {
 
     static Breakend unresolved() {
         return UnresolvedBreakend.instance();
@@ -18,6 +18,9 @@ public interface Breakend extends GenomicPosition {
     // override Stranded<T> methods from ChromosomalRegion in order to return the more specific Breakend type
     @Override
     Breakend withStrand(Strand other);
+
+    @Override
+    Breakend withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
      * Convert the breakend to opposite strand.

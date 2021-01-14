@@ -4,17 +4,14 @@ package org.monarchinitiative.variant.api;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-final class UnresolvedBreakend implements Breakend {
+final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> implements Breakend {
 
     private static final UnresolvedBreakend INSTANCE = new UnresolvedBreakend();
 
     private static final String ID = "";
-    private static final Strand STRAND = Strand.POSITIVE;
-    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.FULLY_CLOSED;
-    private static final Position POSITION = Position.of(1);
-    private static final Contig CONTIG = Contig.unknown();
 
     private UnresolvedBreakend() {
+        super(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(0));
     }
 
     static UnresolvedBreakend instance() {
@@ -27,53 +24,8 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
-    public Breakend withStrand(Strand other) {
+    protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
         return this;
-    }
-
-    @Override
-    public Contig contig() {
-        return CONTIG;
-    }
-
-    @Override
-    public Strand strand() {
-        return STRAND;
-    }
-
-    @Override
-    public UnresolvedBreakend withPos(int pos) {
-        return this;
-    }
-
-    @Override
-    public int pos() {
-        return POSITION.pos();
-    }
-
-    @Override
-    public ConfidenceInterval confidenceInterval() {
-        return ConfidenceInterval.precise();
-    }
-
-    @Override
-    public UnresolvedBreakend asPrecise() {
-        return this;
-    }
-
-    @Override
-    public UnresolvedBreakend invert(Contig contig, CoordinateSystem coordinateSystem) {
-        return this;
-    }
-
-    @Override
-    public int minPos() {
-        return POSITION.minPos();
-    }
-
-    @Override
-    public int maxPos() {
-        return POSITION.maxPos();
     }
 
     @Override
@@ -90,10 +42,10 @@ final class UnresolvedBreakend implements Breakend {
     public String toString() {
         return "UnresolvedBreakend{" +
                 "id='" + ID + '\'' +
-                ", strand=" + STRAND +
-                ", coordinateSystem=" + COORDINATE_SYSTEM +
-                ", position=" + POSITION +
-                ", contig=" + CONTIG.id() +
+                ", strand=" + Strand.POSITIVE +
+                ", coordinateSystem=" + CoordinateSystem.FULLY_CLOSED +
+                ", position=" + Position.of(1) +
+                ", contig=" + Contig.unknown().id() +
                 '}';
     }
 }

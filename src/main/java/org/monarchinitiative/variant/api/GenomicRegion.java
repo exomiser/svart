@@ -49,10 +49,6 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         return contig().id() == other.contig().id() && contains((Region<?>) other.withStrand(strand()));
     }
 
-    default boolean contains(GenomicPosition genomicPosition) {
-        return contig().id() == genomicPosition.contig().id() && contains(genomicPosition.withStrand(strand()).pos());
-    }
-
     default GenomicRegion withPadding(int padding) {
         return withPadding(padding, padding);
     }
@@ -140,20 +136,6 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      */
     static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
         return of(contig, strand, CoordinateSystem.LEFT_OPEN, startPosition, endPosition);
-    }
-
-    /**
-     * Create a zero-based genomic region from provided {@link GenomicPosition}s.
-     *
-     * @param start start genomic position
-     * @param end   end genomic position
-     * @return zero-based genomic region
-     */
-    static GenomicRegion of(GenomicPosition start, GenomicPosition end) {
-        if (start.contig() != end.contig() || start.strand() != end.strand()) {
-            throw new IllegalArgumentException("Cannot create a genomic region from positions located on different contigs/strands");
-        }
-        return of(start.contig(), start.strand(), CoordinateSystem.LEFT_OPEN, start, end);
     }
 
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {

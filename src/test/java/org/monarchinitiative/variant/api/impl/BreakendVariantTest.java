@@ -20,7 +20,6 @@ import static org.monarchinitiative.variant.api.TestContigs.*;
  */
 public class BreakendVariantTest {
 
-
     @Test
     public void variantProperties() {
         // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
@@ -30,12 +29,11 @@ public class BreakendVariantTest {
         assertThat(variant.end(), equalTo(123_456));
         assertThat(variant.strand(), equalTo(Strand.POSITIVE));
         assertThat(variant.variantType(), equalTo(VariantType.BND));
-        assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.oneBased()));
 
         assertThat(variant.refLength(), equalTo(1));
         assertThat(variant.changeLength(), equalTo(0));
         assertThat(variant.length(), equalTo(0));
-        assertThat(variant.isZeroBased(), equalTo(true));
     }
 
     @Test
@@ -62,13 +60,13 @@ public class BreakendVariantTest {
 
         Breakend left = bnd_U.left();
         assertThat(left.contig(), equalTo(chr13));
-        assertThat(left.pos(), equalTo(123_456));
+        assertThat(left.start(), equalTo(123_456));
         assertThat(left.id(), equalTo("bnd_U"));
         assertThat(left.strand(), equalTo(Strand.POSITIVE));
 
         Breakend right = bnd_U.right();
         assertThat(right.contig(), equalTo(chr2));
-        assertThat(right.pos(), equalTo(321_682));
+        assertThat(right.start(), equalTo(321_682));
         assertThat(right.id(), equalTo("bnd_V"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
     }
@@ -86,13 +84,13 @@ public class BreakendVariantTest {
 
         Breakend left = bnd_W.left();
         assertThat(left.contig(), equalTo(chr2));
-        assertThat(left.pos(), equalTo(321_681));
+        assertThat(left.start(), equalTo(321_681));
         assertThat(left.id(), equalTo("bnd_W"));
         assertThat(left.strand(), equalTo(Strand.POSITIVE));
 
         Breakend right = bnd_W.right();
         assertThat(right.contig(), equalTo(chr17));
-        assertThat(right.pos(), equalTo(chr17.length() - 198_981));
+        assertThat(right.start(), equalTo(chr17.length() - 198_981));
         assertThat(right.id(), equalTo("bnd_Y"));
         assertThat(right.strand(), equalTo(Strand.NEGATIVE));
     }
@@ -110,13 +108,13 @@ public class BreakendVariantTest {
 
         Breakend left = bnd_V.left();
         assertThat(left.contig(), equalTo(chr2));
-        assertThat(left.pos(), equalTo(chr2.length() - 321_681));
+        assertThat(left.start(), equalTo(chr2.length() - 321_681));
         assertThat(left.id(), equalTo("bnd_V"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
 
         Breakend right = bnd_V.right();
         assertThat(right.contig(), equalTo(chr13));
-        assertThat(right.pos(), equalTo(chr13.length() - 123_456 + 1));
+        assertThat(right.start(), equalTo(chr13.length() - 123_456 + 1));
         assertThat(right.id(), equalTo("bnd_U"));
         assertThat(right.strand(), equalTo(Strand.NEGATIVE));
     }
@@ -134,13 +132,13 @@ public class BreakendVariantTest {
 
         Breakend left = bnd_X.left();
         assertThat(left.contig(), equalTo(chr13));
-        assertThat(left.pos(), equalTo(chr13.length() - 123_456));
+        assertThat(left.start(), equalTo(chr13.length() - 123_456));
         assertThat(left.id(), equalTo("bnd_X"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
 
         Breakend right = bnd_X.right();
         assertThat(right.contig(), equalTo(chr17));
-        assertThat(right.pos(), equalTo(198_983));
+        assertThat(right.start(), equalTo(198_983));
         assertThat(right.id(), equalTo("bnd_Z"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
     }
@@ -176,13 +174,13 @@ public class BreakendVariantTest {
 
         Breakend left = opposite.left();
         assertThat(left.contig(), equalTo(chr17));
-        assertThat(left.pos(), equalTo(chr17.length() - 198_982));
+        assertThat(left.start(), equalTo(chr17.length() - 198_982));
         assertThat(left.id(), equalTo("bnd_Z"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
 
         Breakend right = opposite.right();
         assertThat(right.contig(), equalTo(chr13));
-        assertThat(right.pos(), equalTo(123_457));
+        assertThat(right.start(), equalTo(123_457));
         assertThat(right.id(), equalTo("bnd_X"));
         assertThat(right.strand(), equalTo(Strand.POSITIVE));
 
@@ -228,7 +226,7 @@ public class BreakendVariantTest {
 
         Breakend r = instance.right();
         assertThat(r.contig(), equalTo(chr13));
-        assertThat(r.pos(), equalTo(123_457));
+        assertThat(r.start(), equalTo(123_457));
         assertThat(r.id(), equalTo("bnd_X"));
         assertThat(r.strand(), equalTo(Strand.POSITIVE));
 
@@ -238,7 +236,7 @@ public class BreakendVariantTest {
 
         Breakend oppositeLeft = variant.left();
         assertThat(oppositeLeft.contig(), equalTo(chr13));
-        assertThat(oppositeLeft.pos(), equalTo(chr13.length() - 123_456));
+        assertThat(oppositeLeft.start(), equalTo(chr13.length() - 123_456));
         assertThat(oppositeLeft.id(), equalTo("bnd_X"));
         assertThat(oppositeLeft.strand(), equalTo(Strand.NEGATIVE));
 
@@ -257,7 +255,7 @@ public class BreakendVariantTest {
 
         Breakend l = instance.left();
         assertThat(l.contig(), equalTo(chr2));
-        assertThat(l.pos(), equalTo(321_681));
+        assertThat(l.start(), equalTo(321_681));
         assertThat(l.id(), equalTo("bnd_W"));
         assertThat(l.strand(), equalTo(Strand.POSITIVE));
 
@@ -273,13 +271,13 @@ public class BreakendVariantTest {
 
         Breakend oppositeRight = variant.right();
         assertThat(oppositeRight.contig(), equalTo(chr2));
-        assertThat(oppositeRight.pos(), equalTo(chr2.length() - 321_681 + 1));
+        assertThat(oppositeRight.start(), equalTo(chr2.length() - 321_681 + 1));
         assertThat(oppositeRight.id(), equalTo("bnd_W"));
         assertThat(oppositeRight.strand(), equalTo(Strand.NEGATIVE));
     }
 
     @Test
-    public void insertedSequence_PosPos() {
+    public void insertedSequence_Posstart() {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
         Breakend left = PartialBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456));
@@ -303,13 +301,13 @@ public class BreakendVariantTest {
 
         Breakend l = variant.left();
         assertThat(l.contig(), equalTo(chr2));
-        assertThat(l.pos(), equalTo(chr2.length() - 321_681));
+        assertThat(l.start(), equalTo(chr2.length() - 321_681));
         assertThat(l.id(), equalTo("bndV"));
         assertThat(l.strand(), equalTo(Strand.NEGATIVE));
 
         Breakend r = variant.right();
         assertThat(r.contig(), equalTo(chr13));
-        assertThat(r.pos(), equalTo(chr13.length() - 123_456));
+        assertThat(r.start(), equalTo(chr13.length() - 123_456));
         assertThat(r.id(), equalTo("bndU"));
         assertThat(r.strand(), equalTo(Strand.NEGATIVE));
     }
@@ -341,13 +339,13 @@ public class BreakendVariantTest {
 
         Breakend l = variant.left();
         assertThat(l.contig(), equalTo(chr13));
-        assertThat(l.pos(), equalTo(123_456));
+        assertThat(l.start(), equalTo(123_456));
         assertThat(l.id(), equalTo("bndU"));
         assertThat(l.strand(), equalTo(Strand.POSITIVE));
 
         Breakend r = variant.right();
         assertThat(r.contig(), equalTo(chr2));
-        assertThat(r.pos(), equalTo(321_682));
+        assertThat(r.start(), equalTo(321_682));
         assertThat(r.id(), equalTo("bndV"));
         assertThat(r.strand(), equalTo(Strand.POSITIVE));
     }

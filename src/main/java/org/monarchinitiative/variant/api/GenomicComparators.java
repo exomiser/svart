@@ -33,13 +33,4 @@ class GenomicComparators {
             return Variant.compare(o1, o2);
         }
     }
-
-    enum GenomicPositionNaturalOrderComparator implements Comparator<GenomicPosition> {
-        INSTANCE;
-
-        @Override
-        public int compare(GenomicPosition o1, GenomicPosition o2) {
-            return GenomicPosition.compare(o1, o2);
-        }
-    }
 }
