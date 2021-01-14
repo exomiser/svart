@@ -2,7 +2,7 @@ package org.monarchinitiative.variant.api;
 
 import java.util.Objects;
 
-class TestRegion implements Region {
+class TestRegion implements Region<TestRegion> {
 
     private final Position start, end;
     private final CoordinateSystem coordinateSystem;
@@ -23,7 +23,7 @@ class TestRegion implements Region {
     }
 
     @Override
-    public Region withCoordinateSystem(CoordinateSystem coordinateSystem) {
+    public TestRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
         return new TestRegion(coordinateSystem, startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem));
     }
 

@@ -68,17 +68,18 @@ public interface Position extends Comparable<Position> {
         return pos - pos();
     }
 
-    default int distanceTo(Region region) {
-        region = region.toOneBased();
-        return distanceTo(region.start(), region.end());
+    default int distanceToRegion(Region<?> region) {
+        int start = region.startWithCoordinateSystem(CoordinateSystem.oneBased());
+        int end = region.endWithCoordinateSystem(CoordinateSystem.oneBased());
+        return distanceToRegion(start, end);
     }
 
-    default int distanceTo(int start, int end) {
-        if (start <= pos() && pos() <= end)
+    default int distanceToRegion(int regionStart, int regionEnd) {
+        if (regionStart <= pos() && pos() <= regionEnd)
             return 0;
 
-        int s = start - pos();
-        int e = end - pos();
+        int s = regionStart - pos();
+        int e = regionEnd - pos();
         return Math.abs(s) < Math.abs(e) ? s : e;
     }
 

@@ -12,7 +12,7 @@ import static org.monarchinitiative.variant.api.GenomicComparators.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
+public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRegion> {
 
     /**
      * @return contig where the region is located
@@ -35,7 +35,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
         if (contigId() != other.contigId()) {
             return false;
         }
-        return overlapsWith((Region) other.withStrand(strand()));
+        return overlapsWith((Region<GenomicRegion>) other.withStrand(strand()));
     }
 
     @Override
@@ -46,7 +46,7 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(GenomicRegion other) {
-        return contig().id() == other.contig().id() && contains((Region) other.withStrand(strand()));
+        return contig().id() == other.contig().id() && contains((Region<?>) other.withStrand(strand()));
     }
 
     default boolean contains(GenomicPosition genomicPosition) {
@@ -70,12 +70,8 @@ public interface GenomicRegion extends Region, Stranded<GenomicRegion> {
 
     static int compare(GenomicRegion x, GenomicRegion y) {
         int result = Contig.compare(x.contig(), y.contig());
-        y = y.withCoordinateSystem(x.coordinateSystem());
         if (result == 0) {
-            result = Position.compare(x.startPosition(), y.startPosition());
-        }
-        if (result == 0) {
-            result = Position.compare(x.endPosition(), y.endPosition());
+            result = Region.compare(x, y);
         }
         if (result == 0) {
             result = Strand.compare(x.strand(), y.strand());

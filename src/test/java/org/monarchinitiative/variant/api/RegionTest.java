@@ -46,24 +46,21 @@ public class RegionTest {
             "FULLY_OPEN, 2, 4,   3, true",
             "FULLY_OPEN, 2, 4,   4, false",
 
-            "LEFT_OPEN, 2, 3,   2, false",
-            "LEFT_OPEN, 2, 3,   3, true",
-            "LEFT_OPEN, 2, 3,   4, false",
+            "LEFT_OPEN,  2, 3,   2, false",
+            "LEFT_OPEN,  2, 3,   3, true",
+            "LEFT_OPEN,  2, 3,   4, false",
 
             "RIGHT_OPEN, 3, 4,   2, false",
             "RIGHT_OPEN, 3, 4,   3, true",
             "RIGHT_OPEN, 3, 4,   4, false",
 
-            " FULLY_CLOSED, 3, 3,   2, false",
-            " FULLY_CLOSED, 3, 3,   3, true",
-            " FULLY_CLOSED, 3, 3,   4, false",
+            "FULLY_CLOSED, 3, 3,   2, false",
+            "FULLY_CLOSED, 3, 3,   3, true",
+            "FULLY_CLOSED, 3, 3,   4, false",
     })
-    public void contains_position(CoordinateSystem coordinateSystem, int start, int end,
-                                  int pos, boolean expected) {
+    public void contains_position(CoordinateSystem coordinateSystem, int start, int end, int pos, boolean expected) {
         TestRegion region = TestRegion.of(coordinateSystem, start, end);
-        Position query = Position.of(pos);
-
-        assertThat(region.contains(query), equalTo(expected));
+        assertThat(region.contains(Position.of(pos)), equalTo(expected));
     }
 
     @ParameterizedTest
@@ -85,18 +82,18 @@ public class RegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_OPEN, 1, 2,   0",
-            "LEFT_OPEN, 2, 2,   0",
-            "RIGHT_OPEN, 2, 2,   0",
-            " FULLY_CLOSED, 2, 1,   0",
+            "FULLY_OPEN,   1, 2,   0",
+            "LEFT_OPEN,    2, 2,   0",
+            "RIGHT_OPEN,   2, 2,   0",
+            "FULLY_CLOSED, 2, 1,   0",
 
-            "FULLY_OPEN, 1, 3,   1",
-            "LEFT_OPEN, 1, 2,   1",
-            "RIGHT_OPEN, 2, 3,   1",
-            " FULLY_CLOSED, 2, 2,   1",
+            "FULLY_OPEN,   1, 3,   1",
+            "LEFT_OPEN,    1, 2,   1",
+            "RIGHT_OPEN,   2, 3,   1",
+            "FULLY_CLOSED, 2, 2,   1",
 
-            " FULLY_CLOSED, 2, 3,   2",
-            " FULLY_CLOSED, 2, 4,   3",
+            "FULLY_CLOSED, 2, 3,   2",
+            "FULLY_CLOSED, 2, 4,   3",
     })
     public void length(CoordinateSystem coordinateSystem, int start, int end, int expected) {
         assertThat(TestRegion.of(coordinateSystem,start, end).length(), equalTo(expected));

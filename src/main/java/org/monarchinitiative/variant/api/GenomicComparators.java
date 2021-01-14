@@ -7,7 +7,7 @@ import java.util.Comparator;
  */
 class GenomicComparators {
 
-    enum RegionNaturalOrderComparator implements Comparator<Region> {
+    enum RegionNaturalOrderComparator implements Comparator<Region<?>> {
         INSTANCE;
 
         @Override

@@ -63,20 +63,21 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // region            pos
-            "FULLY_OPEN, 0, 2,   2,   false",
-            "LEFT_OPEN, 0, 1,   2,   false",
-            "RIGHT_OPEN, 1, 2,   2,   false",
-            "FULLY_CLOSED,  1, 1,   2,   false",
-
-            "FULLY_OPEN, 1, 3,   2,   true",
-            "LEFT_OPEN, 1, 2,   2,   true",
-            "RIGHT_OPEN, 2, 3,   2,   true",
-            "FULLY_CLOSED,  2, 2,   2,   true",
-
-            "FULLY_OPEN, 2, 4,   2,   false",
-            "LEFT_OPEN, 2, 3,   2,   false",
-            "RIGHT_OPEN, 3, 4,   2,   false",
-            "FULLY_CLOSED,  3, 3,   2,   false",
+            // region before pos 2
+            "FULLY_OPEN,   0, 2,   2,   false",
+            "LEFT_OPEN,    0, 1,   2,   false",
+            "RIGHT_OPEN,   1, 2,   2,   false",
+            "FULLY_CLOSED, 1, 1,   2,   false",
+            // region containing pos 2
+            "FULLY_OPEN,   1, 3,   2,   true",
+            "LEFT_OPEN,    1, 2,   2,   true",
+            "RIGHT_OPEN,   2, 3,   2,   true",
+            "FULLY_CLOSED, 2, 2,   2,   true",
+            // region after pos 2
+            "FULLY_OPEN,   2, 4,   2,   false",
+            "LEFT_OPEN,    2, 3,   2,   false",
+            "RIGHT_OPEN,   3, 4,   2,   false",
+            "FULLY_CLOSED, 3, 3,   2,   false",
     })
     public void containsPosition(CoordinateSystem coordinateSystem, int start, int end,
                                  int position,
@@ -256,26 +257,6 @@ public class GenomicRegionTest {
         GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(expectedStart), Position.of(expectedEnd));
         assertThat(actual, equalTo(expected));
     }
-
-//    TODO - candidate for removal, not valid anymore
-//    @ParameterizedTest
-//    @CsvSource({
-//            "FULLY_CLOSED,  3, 3,     1",
-//            "LEFT_OPEN, 2, 3,     1",
-//            "FULLY_CLOSED,  2, 3,     2",
-//            "LEFT_OPEN, 1, 3,     2",
-//            "FULLY_CLOSED,  1, 3,     3"
-//    })
-//    public void startEndDifferenceEqualToRegionLength(CoordinateSystem coordinateSystem, int start, int end,
-//                                                      int regionLength) {
-//        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(end));
-//
-//        GenomicPosition regionStart = region.startGenomicPosition();
-//        GenomicPosition regionEnd = region.endGenomicPosition();
-//
-//        assertThat(regionStart.distanceTo(regionEnd), equalTo(region.length()));
-//        assertThat(regionEnd.distanceTo(regionStart), equalTo(-regionLength));
-//    }
 
     @ParameterizedTest
     @CsvSource({

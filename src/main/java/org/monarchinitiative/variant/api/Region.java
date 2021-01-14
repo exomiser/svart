@@ -2,7 +2,7 @@ package org.monarchinitiative.variant.api;
 
 import java.util.Comparator;
 
-public interface Region extends CoordinateSystemed<Region> {
+public interface Region<T> extends CoordinateSystemed<T> {
 
     /**
      * @return start coordinate of the region
@@ -13,6 +13,9 @@ public interface Region extends CoordinateSystemed<Region> {
      * @return end coordinate of the region
      */
     Position endPosition();
+
+    @Override
+    T withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
      * @return start coordinate of the region
@@ -48,15 +51,10 @@ public interface Region extends CoordinateSystemed<Region> {
      * @param other chromosomal region
      * @return true if the <code>other</code> region is fully contained within this region
      */
-    default boolean contains(Region other) {
-        other = other.withCoordinateSystem(coordinateSystem());
-        return contains(other.start(), other.end());
+    default boolean contains(Region<?> other) {
+        other = (Region<?>) other.withCoordinateSystem(coordinateSystem());
+        return start() <= other.start() && other.end() <= end();
     }
-
-    default boolean contains(int start, int end) {
-        return start() <= start && end <= end();
-    }
-
 
     default boolean contains(Position position) {
         return contains(position.pos());
@@ -66,14 +64,15 @@ public interface Region extends CoordinateSystemed<Region> {
         return startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }
 
+    default boolean overlapsWith(Region<?> other) {
+//        other = (Region<?>) other.withCoordinateSystem(coordinateSystem());
+//        return start() <= other.end() && other.start() <= end();
 
-    default boolean overlapsWith(Region other) {
-        other = other.withCoordinateSystem(coordinateSystem());
-        return overlapsWith(other.start(), other.end());
-    }
-
-    default boolean overlapsWith(int start, int end) {
-        return start() <= end && start <= end();
+        int thisClosedStart = this.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        int otherClosedEnd = other.endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        int otherClosedStart = other.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        int thisCloseEnd = this.endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return thisClosedStart <= otherClosedEnd && otherClosedStart <= thisCloseEnd;
     }
 
 
@@ -82,15 +81,15 @@ public interface Region extends CoordinateSystemed<Region> {
         return endWithCoordinateSystem(CoordinateSystem.LEFT_OPEN) - startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
-    static Comparator<Region> naturalOrder() {
+    static Comparator<Region<?>> naturalOrder() {
         return GenomicComparators.RegionNaturalOrderComparator.INSTANCE;
     }
 
-    static int compare(Region x, Region y) {
-        y = y.withCoordinateSystem(x.coordinateSystem());
-        int result = Integer.compare(x.start(), y.start());
+    static int compare(Region<?> x, Region<?> y) {
+        y = (Region<?>) y.withCoordinateSystem(x.coordinateSystem());
+        int result = Position.compare(x.startPosition(), y.startPosition());
         if (result == 0) {
-            result = Integer.compare(x.end(), y.end());
+            result = Position.compare(x.endPosition(), y.endPosition());
         }
         return result;
     }

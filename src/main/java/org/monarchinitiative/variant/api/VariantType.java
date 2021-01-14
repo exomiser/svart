@@ -84,11 +84,16 @@ public enum VariantType {
         this.subType = subType;
     }
 
-    public static VariantType parseType(String value) {
-        if (value.isEmpty()) {
+    /**
+     * Parses the type from the ALT allele.
+     * @param alt
+     * @return
+     */
+    public static VariantType parseType(String alt) {
+        if (alt.isEmpty()) {
             return UNKNOWN;
         }
-        String stripped = trimAngleBrackets(Objects.requireNonNull(value));
+        String stripped = trimAngleBrackets(Objects.requireNonNull(alt));
         switch (stripped) {
             case "SNP":
             case "SNV":
@@ -178,12 +183,22 @@ public enum VariantType {
         if (stripped.startsWith("STR")) {
             return STR;
         }
-        if (isSymbolic(value)) {
+        if (isSymbolic(alt)) {
             return SYMBOLIC;
         }
         return UNKNOWN;
     }
 
+    /**
+     * Returns the {@link VariantType} for the given ref/alt alleles. This method will determine whether the alleles
+     * indicate small sequence variations such as SNP/MNV or INS/DEL or if they indicate a large symbolic or breakend
+     * allele. It is required that the input alleles conform to the VCF specification.
+     *
+     * @param ref reference allele string e.g. [ATGCN]+
+     * @param alt alternate allele string e.g. a symbolic allele, or a breakend replacement string, or match the regular
+     *            expression^([ACGTNacgtn]+|\*|\.)$.
+     * @return the {@link VariantType} calculated from the REF and ALT allele.
+     */
     public static VariantType parseType(String ref, String alt) {
         if (isSymbolic(ref, alt)) {
             return parseType(alt);
