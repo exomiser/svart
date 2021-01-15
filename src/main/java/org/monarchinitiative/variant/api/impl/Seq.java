@@ -21,11 +21,6 @@ public class Seq {
 
     private static final Map<Byte, Byte> IUPAC_COMPLEMENT_MAP = makeIupacByteMap(IUPAC);
 
-    /**
-     *
-     */
-    static final String IUPAC_BASES = "ACGTUWSMKRYBDHVNacgtuwsmkrybdhvn";
-
     private Seq() {
         // static utility class
     }
