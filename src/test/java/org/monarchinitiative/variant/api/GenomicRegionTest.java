@@ -3,7 +3,6 @@ package org.monarchinitiative.variant.api;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.impl.DefaultGenomicRegion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,7 +56,7 @@ public class GenomicRegionTest {
     @Test
     public void flipStrandAndChangeCoordinateSystem() {
         GenomicRegion instance = GenomicRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(0), Position.of(2));
-        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(DefaultGenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
     }
 
     @ParameterizedTest
@@ -83,18 +82,7 @@ public class GenomicRegionTest {
                                  int position,
                                  boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(end));
-        GenomicPosition pos = GenomicPosition.of(chr1, Strand.POSITIVE, Position.of(position));
-
-        assertThat(region.contains(pos), equalTo(expected));
-    }
-
-    @Test
-    public void containsPosition_otherContig() {
-        GenomicRegion oneToThree = GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(1), Position.of(3));
-
-        Contig ctg2 = TestContig.of(2, 200);
-        GenomicPosition other = GenomicPosition.of(ctg2, Strand.POSITIVE, Position.of(2));
-        assertThat(oneToThree.contains(other), equalTo(false));
+        assertThat(region.contains(Position.of(position)), equalTo(expected));
     }
 
     @ParameterizedTest

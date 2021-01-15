@@ -248,9 +248,9 @@ public class DefaultVariantTest {
     @Test
     public void DefaultVariantContainsSnv() {
         Variant largeIns = DefaultVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
-        assertTrue(largeIns.contains(SequenceVariant.oneBased(chr1, 1, "A", "T")));
-        assertTrue(largeIns.contains(SequenceVariant.zeroBased(chr1, 0, "A", "T")));
-        assertFalse(largeIns.contains(SequenceVariant.oneBased(chr1, 200, "C", "A")));
+        assertTrue(largeIns.contains(DefaultVariant.oneBased(chr1, 1, "A", "T")));
+        assertTrue(largeIns.contains(DefaultVariant.zeroBased(chr1, 0, "A", "T")));
+        assertFalse(largeIns.contains(DefaultVariant.oneBased(chr1, 200, "C", "A")));
         assertTrue(largeIns.contains(PartialBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
     }
 

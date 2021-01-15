@@ -1,5 +1,8 @@
 package org.monarchinitiative.variant.api;
 
+import org.monarchinitiative.variant.api.impl.BreakendVariant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
+
 import java.util.Comparator;
 
 import static org.monarchinitiative.variant.api.GenomicComparators.*;
@@ -77,5 +80,23 @@ public interface Variant extends GenomicRegion {
             result = x.alt().compareTo(y.alt());
         }
         return result;
+    }
+
+    static Variant nonSymbolic(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
+        if (VariantType.isSymbolic(alt)) {
+            throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend alleles " + ref + " " + alt);
+        }
+        return DefaultVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
+    }
+
+    static Variant symbolic(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength) {
+        if (!VariantType.isLargeSymbolic(alt)) {
+            throw new IllegalArgumentException("Unable to create symbolic variant from alleles " + ref + " " + alt);
+        }
+        return DefaultVariant.of(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength);
+    }
+
+    static Variant breakend(String eventId, Breakend left, Breakend right, String ref, String alt) {
+        return BreakendVariant.of(eventId, left, right, ref, alt);
     }
 }
