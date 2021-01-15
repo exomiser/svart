@@ -1,5 +1,7 @@
 package org.monarchinitiative.variant.api;
 
+import org.monarchinitiative.variant.api.impl.PartialBreakend;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
@@ -35,5 +37,9 @@ public interface Breakend extends GenomicRegion {
      */
     default boolean isUnresolved() {
         return this.equals(unresolved());
+    }
+
+    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
+        return PartialBreakend.of(contig, id, strand, coordinateSystem, start, end);
     }
 }
