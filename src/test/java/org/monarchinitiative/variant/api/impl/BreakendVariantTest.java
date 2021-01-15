@@ -361,7 +361,7 @@ public class BreakendVariantTest {
 
 //        assertThat(deletion.length(), equalTo(100));
 
-        SymbolicVariant symbolicDeletion = SymbolicVariant.oneBased(chr2, "del1", Position.of(101), Position.of(200), "N", "<DEL>", -99);
+        Variant symbolicDeletion = Variant.symbolic(chr2, "del1", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(101), Position.of(200), "N", "<DEL>", -99);
         assertThat(symbolicDeletion.changeLength(), equalTo(-99));
     }
 }
