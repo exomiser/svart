@@ -1,6 +1,6 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.impl.BreakendVariant;
+import org.monarchinitiative.variant.api.impl.DefaultBreakendVariant;
 import org.monarchinitiative.variant.api.impl.DefaultVariant;
 
 import java.util.Comparator;
@@ -97,6 +97,6 @@ public interface Variant extends GenomicRegion {
     }
 
     static Variant breakend(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        return BreakendVariant.of(eventId, left, right, ref, alt);
+        return DefaultBreakendVariant.of(eventId, left, right, ref, alt);
     }
 }

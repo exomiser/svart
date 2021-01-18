@@ -1,6 +1,6 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.impl.Seq;
+import org.monarchinitiative.variant.api.util.Seq;
 
 import java.util.Objects;
 
@@ -73,9 +73,6 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             throw new IllegalArgumentException("Unable to create variant from breakend allele " + alt);
         }
     }
-
-    // TODO: is this possible - want to remove the need to insanely huge constructors
-//    protected abstract T newVariantInstance(Variant variant, T type);
 
     protected abstract T newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength);
 

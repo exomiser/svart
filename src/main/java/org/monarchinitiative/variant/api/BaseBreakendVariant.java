@@ -1,16 +1,10 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.variant.api.util.Seq;
 
 import java.util.Objects;
 
-/**
- * Implementation of a structural variant that involves two different contigs.
- *
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- * @author Daniel Danis <daniel.danis@jax.org>
- */
-public final class BreakendVariant implements Variant, Breakended {
+public abstract class BaseBreakendVariant<T extends BreakendVariant> extends BaseGenomicRegion<T> implements BreakendVariant {
 
     private final String eventId;
     private final Breakend left;
@@ -23,7 +17,7 @@ public final class BreakendVariant implements Variant, Breakended {
      * We need to store the allele in order to reconstruct the original ref allele if variant is converted again to the
      * original strand.
      */
-    private final String trailingRef;
+    protected final String trailingRef;
 
     /**
      * String representing the inserted sequence without the <em>ref</em> allele, as described in Section 5.4.1 of the
@@ -31,11 +25,8 @@ public final class BreakendVariant implements Variant, Breakended {
      */
     private final String alt;
 
-    public static BreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        return new BreakendVariant(eventId, left, right, ref, "", alt);
-    }
-
-    private BreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+    protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+        super(left.contig(), left.strand(), left.coordinateSystem(), left.startPosition(), left.endPosition());
         if (left.coordinateSystem() != right.coordinateSystem()) {
             throw new IllegalStateException("Left and right ends of breakend must have same coordinate system!");
         }
@@ -47,14 +38,18 @@ public final class BreakendVariant implements Variant, Breakended {
         this.alt = Objects.requireNonNull(alt, "Alt sequence cannot be null");
     }
 
+    protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt);
+
     @Override
-    public String id() {
-        return left.id();
+    protected T newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+        // no-op Not required as the newBreakendVariantInstance returns the same type and this is only required for
+        // the BaseGenomicRegion.withCoordinateSystem and withStrand methods which are overridden in this class
+        return null;
     }
 
     @Override
-    public String mateId() {
-        return right.id();
+    public String id() {
+        return left.id();
     }
 
     @Override
@@ -96,13 +91,14 @@ public final class BreakendVariant implements Variant, Breakended {
     }
 
     @Override
-    public BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem) {
+    @SuppressWarnings("unchecked")
+    public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
         if (left.coordinateSystem() == coordinateSystem) {
-            return this;
+            return (T) this;
         }
         Breakend leftAltered = left.withCoordinateSystem(coordinateSystem);
         Breakend rightAltered = right.withCoordinateSystem(coordinateSystem);
-        return new BreakendVariant(eventId, leftAltered, rightAltered, ref, trailingRef, alt);
+        return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, trailingRef, alt);
     }
 
     /**
@@ -170,13 +166,14 @@ public final class BreakendVariant implements Variant, Breakended {
      * @return this variant with <em>no change</em>
      */
     @Override
-    public BreakendVariant withStrand(Strand other) {
-        return this;
+    @SuppressWarnings("unchecked")
+    public T withStrand(Strand other) {
+        return (T) this;
     }
 
     @Override
-    public BreakendVariant toOppositeStrand() {
-        return new BreakendVariant(eventId, right.toOppositeStrand(), left.toOppositeStrand(),
+    public T toOppositeStrand() {
+        return newBreakendVariantInstance(eventId, right.toOppositeStrand(), left.toOppositeStrand(),
                 Seq.reverseComplement(trailingRef), Seq.reverseComplement(ref), Seq.reverseComplement(alt));
     }
 
@@ -188,8 +185,9 @@ public final class BreakendVariant implements Variant, Breakended {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BreakendVariant)) return false;
-        BreakendVariant that = (BreakendVariant) o;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        BaseBreakendVariant<?> that = (BaseBreakendVariant<?>) o;
         return eventId.equals(that.eventId) &&
                 left.equals(that.left) &&
                 right.equals(that.right) &&
@@ -200,16 +198,61 @@ public final class BreakendVariant implements Variant, Breakended {
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, left, right, ref, trailingRef, alt);
+        return Objects.hash(super.hashCode(), eventId, left, right, ref, trailingRef, alt);
     }
 
     @Override
     public String toString() {
-        return "BreakendVariant{" +
+        return "BaseBreakendVariant{" +
                 "eventId='" + eventId + '\'' +
                 ", left=" + left +
                 ", right=" + right +
+                ", ref=" + ref +
                 ", alt='" + alt + '\'' +
                 '}';
+    }
+
+    protected abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
+
+        protected Breakend left;
+        protected Breakend right;
+        protected String ref = "";
+        protected String alt = "";
+        protected String eventId = "";
+
+        // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
+        // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
+        // to maintain the correct state when finally built.
+
+        public T with(BreakendVariant breakendVariant) {
+            Objects.requireNonNull(breakendVariant, "breakendVariant cannot be null");
+            return with(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), "", breakendVariant.alt());
+        }
+
+        public T with(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+            Objects.requireNonNull(left, "left breakend cannot be null");
+            super.with(left);
+            this.eventId = Objects.requireNonNull(eventId);
+            this.left = Objects.requireNonNull(left);
+            this.right = Objects.requireNonNull(right);
+            this.ref = Objects.requireNonNull(ref);
+            this.alt = Objects.requireNonNull(alt);
+            return self();
+        }
+
+        /**
+         * A no-op override. Breakend variants, with breakends possibly being on different strands are not able to
+         * change their strand.
+         * @param strand
+         * @return the same instance
+         */
+        public T withStrand(Strand strand) {
+            return self();
+        }
+
+        protected abstract BaseGenomicRegion<?> build();
+
+        protected abstract T self();
     }
 }

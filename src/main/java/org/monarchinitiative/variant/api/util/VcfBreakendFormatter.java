@@ -1,6 +1,7 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api.util;
 
 import org.monarchinitiative.variant.api.Breakend;
+import org.monarchinitiative.variant.api.BreakendVariant;
 import org.monarchinitiative.variant.api.Strand;
 
 /**

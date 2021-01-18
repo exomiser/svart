@@ -1,6 +1,6 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.impl.PartialBreakend;
+import org.monarchinitiative.variant.api.impl.DefaultBreakend;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -16,6 +16,10 @@ public interface Breakend extends GenomicRegion {
      * @return id corresponding to id of the record (e.g. VCF) this breakend was created from
      */
     String id();
+
+    default String mateId() {
+        return id();
+    }
 
     // override Stranded<T> methods from ChromosomalRegion in order to return the more specific Breakend type
     @Override
@@ -40,6 +44,6 @@ public interface Breakend extends GenomicRegion {
     }
 
     static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return PartialBreakend.of(contig, id, strand, coordinateSystem, start, end);
+        return DefaultBreakend.of(contig, id, strand, coordinateSystem, start, end);
     }
 }

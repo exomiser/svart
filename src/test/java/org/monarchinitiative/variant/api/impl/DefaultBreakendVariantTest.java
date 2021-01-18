@@ -18,7 +18,7 @@ import static org.monarchinitiative.variant.api.TestContigs.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class BreakendVariantTest {
+public class DefaultBreakendVariantTest {
 
     @Test
     public void variantProperties() {
@@ -43,7 +43,7 @@ public class BreakendVariantTest {
         assertThat(bnd_U.isSymbolic(), equalTo(true));
         assertThat(bnd_U.variantType(), equalTo(VariantType.BND));
         assertThat(bnd_U.id(), equalTo("bnd_U"));
-        assertThat(bnd_U.mateId(), equalTo("bnd_V"));
+        assertThat(bnd_U.right().mateId(), equalTo("bnd_V"));
         assertThat(bnd_U.eventId(), equalTo("tra2"));
     }
 
@@ -280,11 +280,11 @@ public class BreakendVariantTest {
     public void insertedSequence_Posstart() {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
-        Breakend left = PartialBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456));
-        Breakend right = PartialBreakend.zeroBased(chr2, "bndV", Strand.POSITIVE, Position.of(321_681));
+        Breakend left = DefaultBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456));
+        Breakend right = DefaultBreakend.zeroBased(chr2, "bndV", Strand.POSITIVE, Position.of(321_681));
 
         // ref stays the same, while alt is stripped of bases shared with ref
-        BreakendVariant variant = BreakendVariant.of("", left, right, "C", "AGTNNNNNCA");
+        BreakendVariant variant = DefaultBreakendVariant.of("", left, right, "C", "AGTNNNNNCA");
 
         assertThat(variant.eventId(), equalTo(""));
         assertThat(variant.ref(), equalTo("C"));
@@ -316,13 +316,13 @@ public class BreakendVariantTest {
     public void insertedSequence_NegNeg() {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 2  321682  bndV  T  ]13:123456]AGTNNNNNCAT  6  PASS  SVTYPE=BND;MATEID=bndU
-        Breakend left = PartialBreakend.oneBased(chr2, "bndV",Strand.POSITIVE, Position.of(321_682))
+        Breakend left = DefaultBreakend.oneBased(chr2, "bndV",Strand.POSITIVE, Position.of(321_682))
                 .withStrand(Strand.NEGATIVE);
-        Breakend right = PartialBreakend.oneBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456))
+        Breakend right = DefaultBreakend.oneBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456))
                 .withStrand(Strand.NEGATIVE);
 
         // ref stays the same, while alt is reverse-complemented and stripped of bases shared with ref
-        BreakendVariant variant = BreakendVariant.of("", left, right, "T", "TGNNNNNACT");
+        BreakendVariant variant = DefaultBreakendVariant.of("", left, right, "T", "TGNNNNNACT");
 
         assertThat(variant.eventId(), equalTo(""));
         assertThat(variant.ref(), equalTo("T"));
@@ -355,9 +355,9 @@ public class BreakendVariantTest {
     public void deletionAsBreakends() {
         // TODO - we might want to use BreakendVariant to represent intrachromosomal events such as DEL, INS, DUP, etc.
         // chr2:100-200
-        PartialBreakend start = PartialBreakend.zeroBased(chr2, "left", Strand.POSITIVE, Position.of(100));
-        PartialBreakend end = PartialBreakend.oneBased(chr2, "right", Strand.POSITIVE, Position.of(200));
-        BreakendVariant deletion = BreakendVariant.of("del1", start, end, "", "");
+        Breakend start = DefaultBreakend.zeroBased(chr2, "left", Strand.POSITIVE, Position.of(100));
+        Breakend end = DefaultBreakend.oneBased(chr2, "right", Strand.POSITIVE, Position.of(200));
+        BreakendVariant deletion = DefaultBreakendVariant.of("del1", start, end, "", "");
 
 //        assertThat(deletion.length(), equalTo(100));
 

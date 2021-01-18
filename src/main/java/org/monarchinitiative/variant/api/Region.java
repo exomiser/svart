@@ -65,9 +65,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     default boolean overlapsWith(Region<?> other) {
-//        other = (Region<?>) other.withCoordinateSystem(coordinateSystem());
-//        return start() <= other.end() && other.start() <= end();
-
         int thisClosedStart = this.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
         int otherClosedEnd = other.endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
         int otherClosedStart = other.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);

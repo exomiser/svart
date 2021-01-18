@@ -1,9 +1,12 @@
 package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.variant.api.impl.DefaultBreakend;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UseCaseTests {
 
@@ -34,5 +37,15 @@ public class UseCaseTests {
 
         Variant insertion = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(60), "A", "AC");
         assertThat(insertion.overlapsWith(exon), equalTo(true));
+    }
+
+    @Test
+    public void symbolicVariantContainsSnv() {
+        Contig chr1 = TestContig.of(1, 1000);
+        Variant largeIns = Variant.symbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1), Position.of(1), "T", "<INS>", 100);
+        assertTrue(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1), "A", "T")));
+        assertTrue(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(0), "A", "T")));
+        assertFalse(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2), "C", "A")));
+        assertTrue(largeIns.contains(DefaultBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
     }
 }

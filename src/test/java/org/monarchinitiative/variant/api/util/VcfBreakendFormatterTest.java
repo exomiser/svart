@@ -1,6 +1,8 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api.util;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.variant.api.BreakendVariant;
+import org.monarchinitiative.variant.api.impl.TestVariants;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;

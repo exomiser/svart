@@ -1,4 +1,4 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api.util;
 
 import org.junit.jupiter.api.Test;
 

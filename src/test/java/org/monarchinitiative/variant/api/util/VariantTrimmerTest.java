@@ -1,14 +1,13 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api.util;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.monarchinitiative.variant.api.impl.VariantTrimmer.*;
+import static org.monarchinitiative.variant.api.util.VariantTrimmer.*;
 
 class VariantTrimmerTest {
 
@@ -33,7 +32,7 @@ class VariantTrimmerTest {
             "118887583, TCAAAA, TCAAAACAAAA, RIGHT, RETAIN, 118887588, A, ACAAAA",
             "118887583, TCAAAA, TCAAAACAAAA, RIGHT, REMOVE, 118887589, '', CAAAA",
     })
-    void trim(int start, String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, int expStart, String expRef, String expAlt) {
+    public void trim(int start, String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, int expStart, String expRef, String expAlt) {
 
         BaseRetentionStrategy baseRetentionStrategy = baseRetention == BaseRetention.RETAIN ? retainingCommonBase() : removingCommonBase();
 
@@ -71,10 +70,11 @@ class VariantTrimmerTest {
             "1001, TGACGTAACGATT, TGACGTAATAC, LEFT,  RETAIN, 1009, CGATT, TAC",
             // symbolic and breakends
             "1001, C, <INS>, LEFT,  RETAIN, 1001, C, <INS>",
+            "1001, C, <INS>, LEFT,  REMOVE, 1002, '', <INS>",
+            "1001, C, <INS>, RIGHT, REMOVE, 1002, '', <INS>",
             "1001, C, G]17:198982], LEFT,  RETAIN, 1001, C, G]17:198982]",
-
     })
-    void trimVcf(int start, String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, int expStart, String expRef, String expAlt) {
+    public void trimVcf(int start, String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, int expStart, String expRef, String expAlt) {
 
         BaseRetentionStrategy baseRetentionStrategy = baseRetention == BaseRetention.RETAIN ? retainingCommonBase() : removingCommonBase();
 

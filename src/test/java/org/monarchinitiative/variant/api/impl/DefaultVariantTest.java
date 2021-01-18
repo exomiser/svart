@@ -255,7 +255,7 @@ public class DefaultVariantTest {
             assertTrue(largeIns.contains(DefaultVariant.oneBased(chr1, 1, "A", "T")));
             assertTrue(largeIns.contains(DefaultVariant.zeroBased(chr1, 0, "A", "T")));
             assertFalse(largeIns.contains(DefaultVariant.oneBased(chr1, 200, "C", "A")));
-            assertTrue(largeIns.contains(PartialBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
+            assertTrue(largeIns.contains(DefaultBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
         }
 
         @Test

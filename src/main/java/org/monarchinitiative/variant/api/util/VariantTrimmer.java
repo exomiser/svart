@@ -1,5 +1,6 @@
-package org.monarchinitiative.variant.api.impl;
+package org.monarchinitiative.variant.api.util;
 
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.VariantType;
 
 import java.util.Objects;
@@ -7,7 +8,7 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantTrimmer {
+public abstract class VariantTrimmer {
 
     private static final BaseRetentionStrategy RETAINING = new RetainingCommonBase();
     private static final BaseRetentionStrategy REMOVING = new RemovingCommonBase();
@@ -15,11 +16,53 @@ public class VariantTrimmer {
     private VariantTrimmer() {
     }
 
-    public static VariantPosition leftShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
+    public abstract VariantPosition trim(Strand strand, int start, String ref, String alt);
+
+    public static VariantTrimmer leftShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
+        return new LeftShiftingTrimmer(baseRetentionStrategy);
+    }
+
+    private static class LeftShiftingTrimmer extends VariantTrimmer {
+
+        private final BaseRetentionStrategy baseRetentionStrategy;
+
+        private LeftShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
+            this.baseRetentionStrategy = baseRetentionStrategy;
+        }
+
+        @Override
+        public VariantPosition trim(Strand strand, int start, String ref, String alt) {
+            return strand == Strand.POSITIVE ? leftShift(start, ref, alt, baseRetentionStrategy) : rightShift(start, ref, alt, baseRetentionStrategy);
+        }
+    }
+
+    public static VariantTrimmer rightShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
+        return new RightShiftingTrimmer(baseRetentionStrategy);
+    }
+
+    private static class RightShiftingTrimmer extends VariantTrimmer {
+
+        private final BaseRetentionStrategy baseRetentionStrategy;
+
+        private RightShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
+            this.baseRetentionStrategy = baseRetentionStrategy;
+        }
+
+        @Override
+        public VariantPosition trim(Strand strand, int start, String ref, String alt) {
+            return strand == Strand.POSITIVE ? rightShift(start, ref, alt, baseRetentionStrategy) : leftShift(start, ref, alt, baseRetentionStrategy);
+        }
+    }
+
+    static VariantPosition leftShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
         String trimRef = Objects.requireNonNull(ref, "REF string cannot be null");
         String trimAlt = Objects.requireNonNull(alt, "ALT string cannot be null");
+
+        if (VariantType.isLargeSymbolic(alt)) {
+            return baseRetentionStrategy.trimLargeSymbolic(start, ref, alt);
+        }
 
         if (baseRetentionStrategy.cantTrim(ref, alt)) {
             return new VariantPosition(start, ref, alt);
@@ -50,11 +93,15 @@ public class VariantTrimmer {
         return new VariantPosition(trimStart, trimRef, trimAlt);
     }
 
-    public static VariantPosition rightShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
+    static VariantPosition rightShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
         String trimRef = Objects.requireNonNull(ref, "REF string cannot be null");
         String trimAlt = Objects.requireNonNull(alt, "ALT string cannot be null");
+
+        if (VariantType.isLargeSymbolic(alt)) {
+            return baseRetentionStrategy.trimLargeSymbolic(start, ref, alt);
+        }
 
         if (baseRetentionStrategy.cantTrim(ref, alt)) {
             return new VariantPosition(start, ref, alt);
@@ -113,6 +160,9 @@ public class VariantTrimmer {
         boolean cantTrim(String ref, String alt);
 
         int findleftIndex(String ref, String alt);
+
+        VariantPosition trimLargeSymbolic(int start, String ref, String alt);
+
     }
 
     private static class RetainingCommonBase implements BaseRetentionStrategy {
@@ -122,6 +172,11 @@ public class VariantTrimmer {
 
         public boolean cantTrim(String ref, String alt) {
             return (ref.length() == 1 || alt.length() == 1) || VariantType.isSymbolic(alt);
+        }
+
+        @Override
+        public VariantPosition trimLargeSymbolic(int start, String ref, String alt) {
+            return new VariantPosition(start, ref, alt);
         }
 
         @Override
@@ -143,6 +198,11 @@ public class VariantTrimmer {
         @Override
         public boolean cantTrim(String ref, String alt) {
             return (ref.length() == 0 || alt.length() == 0) || VariantType.isSymbolic(alt);
+        }
+
+        @Override
+        public VariantPosition trimLargeSymbolic(int start, String ref, String alt) {
+            return new VariantPosition(start + 1, "", alt);
         }
 
         @Override
@@ -225,5 +285,4 @@ public class VariantTrimmer {
                     '}';
         }
     }
-
 }
