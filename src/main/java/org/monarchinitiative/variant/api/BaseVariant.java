@@ -22,17 +22,18 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         this.ref = Objects.requireNonNull(ref, "ref must not be null");
         this.alt = Objects.requireNonNull(alt, "alt must not be null");
         this.variantType = VariantType.parseType(ref, alt);
-        this.changeLength = checkChangeLength(changeLength, endPosition, variantType);
+        this.changeLength = checkChangeLength(changeLength, variantType);
     }
 
     protected BaseVariant(Builder<?> builder) {
         this(builder.contig, builder.id, builder.strand, builder.coordinateSystem, builder.start, builder.end, builder.ref, builder.alt, builder.changeLength);
     }
 
-    private int checkChangeLength(int changeLength, Position endPosition, VariantType variantType) {
-        int startZeroBased = startWithCoordinateSystem(CoordinateSystem.zeroBased());
-        if (variantType.baseType() == VariantType.DEL && startZeroBased - (endPosition.pos() - 1) != changeLength) {
-            throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Does not match expected " + (startZeroBased - (endPosition.pos() - 1) + " given coordinates " + coordinates()));
+    private int checkChangeLength(int changeLength, VariantType variantType) {
+        int start = startWithCoordinateSystem(CoordinateSystem.oneBased());
+        int end = endWithCoordinateSystem(CoordinateSystem.oneBased());
+        if (variantType.baseType() == VariantType.DEL && start - end != changeLength) {
+            throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Does not match expected " + (start - end) + " given coordinates " + coordinates());
         } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
             throw new IllegalArgumentException("Illegal INS changeLength:" + changeLength + ". Should be > 0 given coordinates " + coordinates());
         } else if (variantType.baseType() == VariantType.DUP && (changeLength <= 0)) {
@@ -56,7 +57,15 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         if (VariantType.isSymbolic(alt)) {
             throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend allele " + alt);
         }
-        return coordinateSystem == CoordinateSystem.LEFT_OPEN ? start.withPos(start.pos() + ref.length()) : start.withPos(start.pos() + ref.length() - 1);
+        // Given the coordinate system (C) and a reference allele starting at start position (S) with Length (L) the end
+        //  position (E) is calculated as:
+        //  C   S  L  E
+        //  FC  1  1  1  (S + L - 1)  ('one-based')
+        //  LO  0  1  1  (S + L)      ('zero-based')
+        //  RO  1  1  2  (S + L)
+        //  FO  0  1  2  (S + L + 1)
+        int endDelta = coordinateSystem == CoordinateSystem.FULLY_CLOSED ? -1 : coordinateSystem == CoordinateSystem.FULLY_OPEN ? 1 : 0;
+        return start.withPos(start.pos() + ref.length() + endDelta);
     }
 
     protected static void assertNotBreakend(String alt) {
@@ -64,6 +73,9 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             throw new IllegalArgumentException("Unable to create variant from breakend allele " + alt);
         }
     }
+
+    // TODO: is this possible - want to remove the need to insanely huge constructors
+//    protected abstract T newVariantInstance(Variant variant, T type);
 
     protected abstract T newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength);
 

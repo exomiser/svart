@@ -1,6 +1,8 @@
 package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.variant.api.impl.DefaultVariant;
 
 import java.util.List;
@@ -9,7 +11,6 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.monarchinitiative.variant.api.TestContigs.chr2;
 
@@ -68,19 +69,36 @@ public class BaseVariantTest {
         assertThat(instance.asZeroBased().onNegativeStrand().onPositiveStrand().asOneBased().build(), equalTo(oneBased));
     }
 
-    @Test
-    public void builderAddsMissingEndAndLength() {
-        Variant instance = TestVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(5), "GA", "T").build();
+    @ParameterizedTest
+    @CsvSource({
+            // SNV/INV/MNV
+            "FULLY_CLOSED, 5, G, T,    5",
+            "LEFT_OPEN,    5, G, T,    6",
+            "RIGHT_OPEN,   5, G, T,    6",
+            "FULLY_OPEN,   5, G, T,    7",
+            // INS
+            "FULLY_CLOSED, 5, GA, T,    6",
+            "LEFT_OPEN,    5, GA, T,    7",
+            "RIGHT_OPEN,   5, GA, T,    7",
+            "FULLY_OPEN,   5, GA, T,    8",
+            // DEL
+            "FULLY_CLOSED, 5, G, AT,    5",
+            "LEFT_OPEN,    5, G, AT,    6",
+            "RIGHT_OPEN,   5, G, AT,    6",
+            "FULLY_OPEN,   5, G, AT,    7",
+    })
+    public void builderAddsMissingEndAndLength(CoordinateSystem coordinateSystem, int start, String ref, String alt, int expectEnd) {
+        Variant instance = TestVariant.builder().with(chr1, "", Strand.POSITIVE, coordinateSystem, Position.of(start), ref, alt).build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo(""));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
-        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
-        assertThat(instance.startPosition(), equalTo(Position.of(5)));
-        assertThat(instance.endPosition(), equalTo(Position.of(6)));
-        assertThat(instance.length(), equalTo(2));
-        assertThat(instance.changeLength(), equalTo(-1));
-        assertThat(instance.ref(), equalTo("GA"));
-        assertThat(instance.alt(), equalTo("T"));
+        assertThat(instance.coordinateSystem(), equalTo(coordinateSystem));
+        assertThat(instance.startPosition(), equalTo(Position.of(start)));
+        assertThat(instance.endPosition(), equalTo(Position.of(expectEnd)));
+        assertThat(instance.length(), equalTo(ref.length()));
+        assertThat(instance.changeLength(), equalTo(alt.length() - ref.length()));
+        assertThat(instance.ref(), equalTo(ref));
+        assertThat(instance.alt(), equalTo(alt));
     }
 
     @Test
