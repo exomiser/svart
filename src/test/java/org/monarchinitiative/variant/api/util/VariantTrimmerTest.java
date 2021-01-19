@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.variant.api.util.VariantTrimmer.*;
 
-class VariantTrimmerTest {
+public class VariantTrimmerTest {
 
     private enum TrimDirection {
         LEFT, RIGHT
