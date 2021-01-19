@@ -26,6 +26,45 @@ class VariantTrimmerTest {
         assertThat(trimmed, equalTo(VariantPosition.of(225_725_424, "C", "<INS>")));
     }
 
+    @Test
+    public void leftShiftOneBasedWithStrand() {
+        VariantTrimmer variantTrimmer = leftShiftingTrimmer(retainingCommonBase());
+
+        TestContig contig = TestContig.of(1, 2000);
+
+        VariantPosition plus = variantTrimmer.trim(Strand.POSITIVE, 1000, "AGTTC", "AGCC");
+        Variant pos = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(plus.start()), plus.ref(), plus.alt());
+
+        VariantPosition minus = variantTrimmer.trim(Strand.NEGATIVE, 997, Seq.reverseComplement("AGTTC"), Seq.reverseComplement("AGCC"));
+        Variant neg = Variant.nonSymbolic(contig, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(minus.start()), minus.ref(), minus.alt());
+        assertThat(pos.withStrand(Strand.NEGATIVE), equalTo(neg));
+        assertThat(neg.withStrand(Strand.POSITIVE), equalTo(pos));
+
+        // check all the reversible operations work in all orders
+        assertThat(neg.toOppositeStrand().toZeroBased().toOppositeStrand().toOneBased(), equalTo(neg));
+        assertThat(neg.toZeroBased().toOppositeStrand().toOneBased().toOppositeStrand(), equalTo(neg));
+    }
+
+    @Test
+    public void rightShiftZeroBasedWithStrand() {
+        VariantTrimmer variantTrimmer = rightShiftingTrimmer(removingCommonBase());
+
+        TestContig contig = TestContig.of(1, 2000);
+
+        VariantPosition plus = variantTrimmer.trim(Strand.POSITIVE, 999, "AGTTC", "AGCC");
+        Variant pos = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(plus.start()), plus.ref(), plus.alt());
+
+        VariantPosition minus = variantTrimmer.trim(Strand.NEGATIVE, 996, Seq.reverseComplement("AGTTC"), Seq.reverseComplement("AGCC"));
+        Variant neg = Variant.nonSymbolic(contig, "", Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, Position.of(minus.start()), minus.ref(), minus.alt());
+
+        assertThat(pos.withStrand(Strand.NEGATIVE), equalTo(neg));
+        assertThat(neg.withStrand(Strand.POSITIVE), equalTo(pos));
+
+        // check all the reversible operations work in all orders
+        assertThat(neg.toOppositeStrand().toOneBased().toOppositeStrand().toZeroBased(), equalTo(neg));
+        assertThat(neg.toOneBased().toOppositeStrand().toZeroBased().toOppositeStrand(), equalTo(neg));
+    }
+
     @ParameterizedTest
     @CsvSource({
             "118887583, TCAAAA, TCAAAACAAAA, LEFT,  RETAIN, 118887583, T, TCAAAA",
