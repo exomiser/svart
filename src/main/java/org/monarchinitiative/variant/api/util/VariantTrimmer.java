@@ -73,7 +73,7 @@ public abstract class VariantTrimmer {
 
         // trim right side
         if (canRightTrim(trimRef, trimAlt)) {
-            int rightIdx = findRightIndex(ref, alt);
+            int rightIdx = baseRetentionStrategy.findRightIndex(ref, alt);
             if (rightIdx > 0) {
                 trimRef = ref.substring(0, ref.length() - rightIdx);
                 trimAlt = alt.substring(0, alt.length() - rightIdx);
@@ -119,10 +119,10 @@ public abstract class VariantTrimmer {
 
         // trim right side
         if (canRightTrim(trimRef, trimAlt)) {
-            int rightIdx = findRightIndex(ref, alt);
+            int rightIdx = baseRetentionStrategy.findRightIndex(trimRef, trimAlt);
             if (rightIdx > 0) {
-                trimRef = ref.substring(0, ref.length() - rightIdx);
-                trimAlt = alt.substring(0, alt.length() - rightIdx);
+                trimRef = trimRef.substring(0, trimRef.length() - rightIdx);
+                trimAlt = trimAlt.substring(0, trimAlt.length() - rightIdx);
             }
         }
 
@@ -139,14 +139,6 @@ public abstract class VariantTrimmer {
         return (ref.length() > 1 || alt.length() > 1) && ref.charAt(0) == alt.charAt(0);
     }
 
-    private static int findRightIndex(String ref, String alt) {
-        int rightIdx = 1;
-        while (rightIdx < ref.length() && rightIdx < alt.length() && ref.charAt(ref.length() - rightIdx) == alt.charAt(alt.length() - rightIdx)) {
-            rightIdx++;
-        }
-        return rightIdx - 1;
-    }
-
     public static BaseRetentionStrategy retainingCommonBase() {
         return RETAINING;
     }
@@ -160,6 +152,8 @@ public abstract class VariantTrimmer {
         boolean cantTrim(String ref, String alt);
 
         int findleftIndex(String ref, String alt);
+
+        int findRightIndex(String ref, String alt);
 
         VariantPosition trimLargeSymbolic(int start, String ref, String alt);
 
@@ -188,6 +182,15 @@ public abstract class VariantTrimmer {
             }
             return leftIdx > 0 && leftIdx == ref.length() || leftIdx == alt.length() ? leftIdx - 1 : leftIdx;
         }
+
+        @Override
+        public int findRightIndex(String ref, String alt) {
+            int rightIdx = 1;
+            while (rightIdx < ref.length() && rightIdx < alt.length() && ref.charAt(ref.length() - rightIdx) == alt.charAt(alt.length() - rightIdx)) {
+                rightIdx++;
+            }
+            return rightIdx - 1;
+        }
     }
 
     private static class RemovingCommonBase implements BaseRetentionStrategy {
@@ -213,6 +216,15 @@ public abstract class VariantTrimmer {
                 leftIdx++;
             }
             return leftIdx > 0 && leftIdx == ref.length() && leftIdx == alt.length() ? leftIdx - 1 : leftIdx;
+        }
+
+        @Override
+        public int findRightIndex(String ref, String alt) {
+            int rightIdx = 0;
+            while (rightIdx < ref.length() && rightIdx < alt.length() && ref.charAt(ref.length() - rightIdx - 1) == alt.charAt(alt.length() - rightIdx - 1)) {
+                rightIdx++;
+            }
+            return rightIdx;
         }
     }
 

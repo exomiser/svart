@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -55,11 +56,17 @@ class VariantTrimmerTest {
             "1001, CCT, CT, LEFT,  RETAIN, 1001 , CC, C",
             // Cases taken from https://github.com/ericminikel/minimal_representation/blob/master/test_minimal_representation.py
             "1001, CTCC, CCCC, LEFT,  RETAIN, 1002, T, C",
+            "1001, CTCC, CCCC, RIGHT,  REMOVE, 1002, T, C",
             "1001, CTCC, CCC, LEFT,  RETAIN, 1001, CT, C",
+            "1001, CTCC, CCC, LEFT,  REMOVE, 1002, T, ''",
+            "1001, CTCC, CCC, RIGHT,  REMOVE, 1002, T, ''",
             "1001, CTCC, CTC, LEFT,  RETAIN, 1002, TC, T",
             "1001, CTAG, CTG, LEFT,  RETAIN, 1002, TA, T",
             "1001, CTCC, CTACC, LEFT,  RETAIN, 1002, T, TA",
             "1001, TCAGCAGCAG, TCAGCAG, LEFT,  RETAIN, 1001, TCAG, T",
+            "1001, TCAGCAGCAG, TCAGCAG, LEFT,  REMOVE, 1002, CAG, ''",
+            "1001, TCAGCAGCAG, TCAGCAG, RIGHT,  RETAIN, 1007, GCAG, G",
+            "1001, TCAGCAGCAG, TCAGCAG, RIGHT,  REMOVE, 1008, CAG, ''",
             "1001, CTT, CTTT, LEFT,  RETAIN, 1001, C, CT",
             "1001, CTT, C, LEFT,  RETAIN, 1001, CTT, C",
             "1001, CTT, CT, LEFT,  RETAIN, 1001, CT, C",
