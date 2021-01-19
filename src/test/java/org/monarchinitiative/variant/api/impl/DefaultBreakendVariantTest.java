@@ -165,20 +165,15 @@ public class DefaultBreakendVariantTest {
         assertThat(bnd_X.right().strand(), equalTo(Strand.POSITIVE));
 
         BreakendVariant opposite = bnd_X.toOppositeStrand();
-        assertThat(opposite.eventId(), equalTo("tra3"));
-        assertThat(opposite.ref(), equalTo(""));
-        assertThat(opposite.alt(), equalTo(""));
-        assertThat(opposite.refLength(), equalTo(0));
-        assertThat(opposite.length(), equalTo(0));
-        assertThat(opposite.changeLength(), equalTo(0));
+        assertThat(bnd_X.toOppositeStrand(), equalTo(bnd_X));
 
-        Breakend left = opposite.left();
+        Breakend left = bnd_X.right().toOppositeStrand();
         assertThat(left.contig(), equalTo(chr17));
         assertThat(left.start(), equalTo(chr17.length() - 198_982));
         assertThat(left.id(), equalTo("bnd_Z"));
         assertThat(left.strand(), equalTo(Strand.NEGATIVE));
 
-        Breakend right = opposite.right();
+        Breakend right = bnd_X.left().toOppositeStrand();
         assertThat(right.contig(), equalTo(chr13));
         assertThat(right.start(), equalTo(123_457));
         assertThat(right.id(), equalTo("bnd_X"));
@@ -186,7 +181,7 @@ public class DefaultBreakendVariantTest {
 
         BreakendVariant original = opposite.toOppositeStrand();
         assertThat(original, equalTo(bnd_X));
-        assertThat(original, not(sameInstance(bnd_X)));
+        assertThat(original, sameInstance(bnd_X));
     }
 
     @Test
@@ -200,13 +195,10 @@ public class DefaultBreakendVariantTest {
         assertThat(positive.alt(), equalTo("AGTNNNNNCA"));
 
         BreakendVariant negative = positive.toOppositeStrand();
-        assertThat(negative.ref(), equalTo(""));
-        assertThat(negative.alt(), equalTo("TGNNNNNACT"));
+        assertThat(negative, sameInstance(variant));
 
         BreakendVariant positiveAgain = negative.toOppositeStrand();
-        assertThat(positiveAgain, not(sameInstance(positive)));
-        assertThat(positiveAgain.ref(), equalTo("C"));
-        assertThat(positiveAgain.alt(), equalTo("AGTNNNNNCA"));
+        assertThat(positiveAgain, sameInstance(positive));
     }
 
     @Test
@@ -221,27 +213,27 @@ public class DefaultBreakendVariantTest {
         assertThat(instance.ref(), equalTo("A"));
         assertThat(instance.alt(), equalTo(""));
 
-        Breakend l = instance.left();
-        assertThat(l.isUnresolved(), equalTo(true));
+        Breakend left = instance.left();
+        assertThat(left.isUnresolved(), equalTo(true));
 
-        Breakend r = instance.right();
-        assertThat(r.contig(), equalTo(chr13));
-        assertThat(r.start(), equalTo(123_457));
-        assertThat(r.id(), equalTo("bnd_X"));
-        assertThat(r.strand(), equalTo(Strand.POSITIVE));
+        Breakend right = instance.right();
+        assertThat(right.contig(), equalTo(chr13));
+        assertThat(right.start(), equalTo(123_457));
+        assertThat(right.id(), equalTo("bnd_X"));
+        assertThat(right.strand(), equalTo(Strand.POSITIVE));
 
 
         BreakendVariant variant = instance.toOppositeStrand();
         assertThat(variant.changeLength(), equalTo(0));
 
-        Breakend oppositeLeft = variant.left();
-        assertThat(oppositeLeft.contig(), equalTo(chr13));
-        assertThat(oppositeLeft.start(), equalTo(chr13.length() - 123_456));
-        assertThat(oppositeLeft.id(), equalTo("bnd_X"));
-        assertThat(oppositeLeft.strand(), equalTo(Strand.NEGATIVE));
+        Breakend rightOpposite = instance.right().toOppositeStrand();
+        assertThat(rightOpposite.contig(), equalTo(chr13));
+        assertThat(rightOpposite.start(), equalTo(chr13.length() - 123_456));
+        assertThat(rightOpposite.id(), equalTo("bnd_X"));
+        assertThat(rightOpposite.strand(), equalTo(Strand.NEGATIVE));
 
-        Breakend oppositeRight = variant.right();
-        assertThat(oppositeRight.isUnresolved(), equalTo(true));
+        Breakend leftOpposite = instance.left().toOppositeStrand();
+        assertThat(leftOpposite.isUnresolved(), equalTo(true));
     }
 
     @Test
@@ -253,31 +245,25 @@ public class DefaultBreakendVariantTest {
         BreakendVariant instance = bnd_W_rightUnresolved();
         assertThat(instance.changeLength(), equalTo(0));
 
-        Breakend l = instance.left();
-        assertThat(l.contig(), equalTo(chr2));
-        assertThat(l.start(), equalTo(321_681));
-        assertThat(l.id(), equalTo("bnd_W"));
-        assertThat(l.strand(), equalTo(Strand.POSITIVE));
+        Breakend left = instance.left();
+        assertThat(left.contig(), equalTo(chr2));
+        assertThat(left.start(), equalTo(321_681));
+        assertThat(left.id(), equalTo("bnd_W"));
+        assertThat(left.strand(), equalTo(Strand.POSITIVE));
 
-        Breakend r = instance.right();
-        assertThat(r.isUnresolved(), equalTo(true));
+        Breakend leftOpposite = left.toOppositeStrand();
+        assertThat(leftOpposite.contig(), equalTo(chr2));
+        assertThat(leftOpposite.start(), equalTo(chr2.length() - 321_681 + 1));
+        assertThat(leftOpposite.id(), equalTo("bnd_W"));
+        assertThat(leftOpposite.strand(), equalTo(Strand.NEGATIVE));
 
-
-        BreakendVariant variant = instance.toOppositeStrand();
-        assertThat(variant.changeLength(), equalTo(0));
-
-        Breakend oppositeLeft = variant.left();
-        assertThat(oppositeLeft.isUnresolved(), equalTo(true));
-
-        Breakend oppositeRight = variant.right();
-        assertThat(oppositeRight.contig(), equalTo(chr2));
-        assertThat(oppositeRight.start(), equalTo(chr2.length() - 321_681 + 1));
-        assertThat(oppositeRight.id(), equalTo("bnd_W"));
-        assertThat(oppositeRight.strand(), equalTo(Strand.NEGATIVE));
+        Breakend right = instance.right();
+        assertThat(right.isUnresolved(), equalTo(true));
+        assertThat(right.toOppositeStrand().isUnresolved(), equalTo(true));
     }
 
     @Test
-    public void insertedSequence_Posstart() {
+    public void insertedSequence_PosStart() {
         // #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO
         // 13  123456  bndU  C  CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bndV
         Breakend left = DefaultBreakend.zeroBased(chr13, "bndU", Strand.POSITIVE, Position.of(123_456));
@@ -292,24 +278,21 @@ public class DefaultBreakendVariantTest {
         assertThat(variant.changeLength(), equalTo(10));
 
         assertThat(variant.withStrand(Strand.POSITIVE), sameInstance(variant));
+        assertThat(variant.toOppositeStrand(), sameInstance(variant));
 
-        variant = variant.toOppositeStrand();
-        assertThat(variant.eventId(), equalTo(""));
-        assertThat(variant.ref(), equalTo(""));
-        assertThat(variant.alt(), equalTo("TGNNNNNACT")); // reverse complement
-        assertThat(variant.changeLength(), equalTo(10));
+        Breakend rightOpposite = right.toOppositeStrand();
+        assertThat(rightOpposite.contig(), equalTo(chr2));
+        assertThat(rightOpposite.start(), equalTo(chr2.length() - 321_681));
+        assertThat(rightOpposite.id(), equalTo("bndV"));
+        assertThat(rightOpposite.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(rightOpposite.toOppositeStrand(), equalTo(variant.right()));
 
-        Breakend l = variant.left();
-        assertThat(l.contig(), equalTo(chr2));
-        assertThat(l.start(), equalTo(chr2.length() - 321_681));
-        assertThat(l.id(), equalTo("bndV"));
-        assertThat(l.strand(), equalTo(Strand.NEGATIVE));
-
-        Breakend r = variant.right();
-        assertThat(r.contig(), equalTo(chr13));
-        assertThat(r.start(), equalTo(chr13.length() - 123_456));
-        assertThat(r.id(), equalTo("bndU"));
-        assertThat(r.strand(), equalTo(Strand.NEGATIVE));
+        Breakend leftOpposite = left.toOppositeStrand();
+        assertThat(leftOpposite.contig(), equalTo(chr13));
+        assertThat(leftOpposite.start(), equalTo(chr13.length() - 123_456));
+        assertThat(leftOpposite.id(), equalTo("bndU"));
+        assertThat(leftOpposite.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(leftOpposite.toOppositeStrand(), equalTo(variant.left()));
     }
 
     @Test
@@ -322,7 +305,7 @@ public class DefaultBreakendVariantTest {
                 .withStrand(Strand.NEGATIVE);
 
         // ref stays the same, while alt is reverse-complemented and stripped of bases shared with ref
-        BreakendVariant variant = DefaultBreakendVariant.of("", left, right, "T", "TGNNNNNACT");
+        BreakendVariant variant = BreakendVariant.of("", left, right, "T", "TGNNNNNACT");
 
         assertThat(variant.eventId(), equalTo(""));
         assertThat(variant.ref(), equalTo("T"));
@@ -330,24 +313,21 @@ public class DefaultBreakendVariantTest {
         assertThat(variant.changeLength(), equalTo(10));
 
         assertThat(variant.withStrand(Strand.NEGATIVE), sameInstance(variant));
+        assertThat(variant.toOppositeStrand(), sameInstance(variant));
 
-        variant = variant.toOppositeStrand();
-        assertThat(variant.eventId(), equalTo(""));
-        assertThat(variant.ref(), equalTo(""));
-        assertThat(variant.alt(), equalTo("AGTNNNNNCA")); // reverse complement
-        assertThat(variant.changeLength(), equalTo(10));
+        Breakend leftOpposite = left.toOppositeStrand();
+        assertThat(leftOpposite.contig(), equalTo(chr2));
+        assertThat(leftOpposite.start(), equalTo(321_682));
+        assertThat(leftOpposite.id(), equalTo("bndV"));
+        assertThat(leftOpposite.strand(), equalTo(Strand.POSITIVE));
+        assertThat(leftOpposite.toOppositeStrand(), equalTo(variant.left()));
 
-        Breakend l = variant.left();
-        assertThat(l.contig(), equalTo(chr13));
-        assertThat(l.start(), equalTo(123_456));
-        assertThat(l.id(), equalTo("bndU"));
-        assertThat(l.strand(), equalTo(Strand.POSITIVE));
-
-        Breakend r = variant.right();
-        assertThat(r.contig(), equalTo(chr2));
-        assertThat(r.start(), equalTo(321_682));
-        assertThat(r.id(), equalTo("bndV"));
-        assertThat(r.strand(), equalTo(Strand.POSITIVE));
+        Breakend rightOpposite = right.toOppositeStrand();
+        assertThat(rightOpposite.contig(), equalTo(chr13));
+        assertThat(rightOpposite.start(), equalTo(123_456));
+        assertThat(rightOpposite.id(), equalTo("bndU"));
+        assertThat(rightOpposite.strand(), equalTo(Strand.POSITIVE));
+        assertThat(rightOpposite.toOppositeStrand(), equalTo(variant.right()));
     }
 
     @Test

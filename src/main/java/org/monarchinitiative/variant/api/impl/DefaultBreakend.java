@@ -12,8 +12,8 @@ public class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> implemen
 
     private final String id;
 
-    private DefaultBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        super(contig, strand, coordinateSystem, start, end);
+    private DefaultBreakend(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        super(contig, strand, coordinateSystem, position, position);
         this.id = Objects.requireNonNull(id);
     }
 
@@ -21,21 +21,21 @@ public class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> implemen
      * Create partial breakend from a closed position coordinate, such as the start position of {@link CoordinateSystem#FULLY_CLOSED}.
      */
     public static DefaultBreakend oneBased(Contig contig, String id, Strand strand, Position position) {
-        return of(contig, id, strand, CoordinateSystem.oneBased(), position, position);
+        return of(contig, id, strand, CoordinateSystem.oneBased(), position);
     }
 
     /**
      * Create partial breakend from an open position coordinate, such as a start position in {@link CoordinateSystem#LEFT_OPEN}.
      */
     public static DefaultBreakend zeroBased(Contig contig, String id, Strand strand, Position position) {
-        return of(contig, id, strand, CoordinateSystem.zeroBased(), position, position);
+        return of(contig, id, strand, CoordinateSystem.zeroBased(), position);
     }
 
     /**
      * Create partial breakend from coordinates in the given {@link CoordinateSystem}.
      */
-    public static DefaultBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return new DefaultBreakend(contig, id, strand, coordinateSystem, start, end);
+    public static DefaultBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position position) {
+        return new DefaultBreakend(contig, id, strand, coordinateSystem, position);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> implemen
 
     @Override
     protected DefaultBreakend newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return new DefaultBreakend(contig, id, strand, coordinateSystem, start, end);
+        return new DefaultBreakend(contig, id, strand, coordinateSystem, start);
     }
 
     @Override

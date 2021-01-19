@@ -1,7 +1,5 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.util.Seq;
-
 import java.util.Objects;
 
 public abstract class BaseBreakendVariant<T extends BreakendVariant> extends BaseGenomicRegion<T> implements BreakendVariant {
@@ -11,21 +9,13 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     private final Breakend right;
     // Ref allele from the VCF record
     private final String ref;
-
-    /**
-     * When variant is converted to the opposite strand, then the reverse complemented ref allele is stored here.
-     * We need to store the allele in order to reconstruct the original ref allele if variant is converted again to the
-     * original strand.
-     */
-    protected final String trailingRef;
-
     /**
      * String representing the inserted sequence without the <em>ref</em> allele, as described in Section 5.4.1 of the
      * <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF v4.2 specification</a>
      */
     private final String alt;
 
-    protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+    protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
         super(left.contig(), left.strand(), left.coordinateSystem(), left.startPosition(), left.endPosition());
         if (left.coordinateSystem() != right.coordinateSystem()) {
             throw new IllegalStateException("Left and right ends of breakend must have same coordinate system!");
@@ -34,11 +24,10 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
         this.ref = Objects.requireNonNull(ref, "Ref sequence cannot be null");
-        this.trailingRef = Objects.requireNonNull(trailingRef, "Ref sequence cannot be null");
         this.alt = Objects.requireNonNull(alt, "Alt sequence cannot be null");
     }
 
-    protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt);
+    protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String alt);
 
     @Override
     protected T newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
@@ -98,7 +87,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         }
         Breakend leftAltered = left.withCoordinateSystem(coordinateSystem);
         Breakend rightAltered = right.withCoordinateSystem(coordinateSystem);
-        return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, trailingRef, alt);
+        return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, alt);
     }
 
     /**
@@ -172,9 +161,9 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public T toOppositeStrand() {
-        return newBreakendVariantInstance(eventId, right.toOppositeStrand(), left.toOppositeStrand(),
-                Seq.reverseComplement(trailingRef), Seq.reverseComplement(ref), Seq.reverseComplement(alt));
+        return (T) this;
     }
 
     @Override
@@ -192,13 +181,12 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
                 left.equals(that.left) &&
                 right.equals(that.right) &&
                 ref.equals(that.ref) &&
-                trailingRef.equals(that.trailingRef) &&
                 alt.equals(that.alt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), eventId, left, right, ref, trailingRef, alt);
+        return Objects.hash(super.hashCode(), eventId, left, right, ref, alt);
     }
 
     @Override
@@ -227,10 +215,10 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
 
         public T with(BreakendVariant breakendVariant) {
             Objects.requireNonNull(breakendVariant, "breakendVariant cannot be null");
-            return with(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), "", breakendVariant.alt());
+            return with(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), breakendVariant.alt());
         }
 
-        public T with(String eventId, Breakend left, Breakend right, String ref, String trailingRef, String alt) {
+        public T with(String eventId, Breakend left, Breakend right, String ref, String alt) {
             Objects.requireNonNull(left, "left breakend cannot be null");
             super.with(left);
             this.eventId = Objects.requireNonNull(eventId);

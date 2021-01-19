@@ -48,7 +48,7 @@ public class UseCaseTests {
         assertTrue(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1), "A", "T")));
         assertTrue(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(0), "A", "T")));
         assertFalse(largeIns.contains(Variant.nonSymbolic(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2), "C", "A")));
-        assertTrue(largeIns.contains(DefaultBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
+        assertTrue(largeIns.contains(Breakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1))));
     }
 
     @Test

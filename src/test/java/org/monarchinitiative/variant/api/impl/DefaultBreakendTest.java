@@ -16,7 +16,7 @@ public class DefaultBreakendTest {
     @Test
     public void properties() {
         Position position = Position.of(3, -2, 1);
-        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position, position);
+        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position);
 
         assertThat(three.contig(), equalTo(ctg1));
         assertThat(three.contigId(), equalTo(1));
@@ -29,7 +29,7 @@ public class DefaultBreakendTest {
     @Test
     public void withStrand() {
         Position position = Position.of(3, -2, 1);
-        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position, position);
+        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position);
 
         assertThat(three.withStrand(Strand.POSITIVE), is(sameInstance(three)));
 

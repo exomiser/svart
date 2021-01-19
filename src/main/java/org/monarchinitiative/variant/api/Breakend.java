@@ -43,7 +43,7 @@ public interface Breakend extends GenomicRegion {
         return this.equals(unresolved());
     }
 
-    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return DefaultBreakend.of(contig, id, strand, coordinateSystem, start, end);
+    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position pos) {
+        return DefaultBreakend.of(contig, id, strand, coordinateSystem, pos);
     }
 }

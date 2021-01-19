@@ -20,7 +20,7 @@ public class VcfBreakendFormatter {
      * @param variant breakend variant
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
-    static String makeAltVcfField(BreakendVariant variant) {
+    public static String makeAltVcfField(BreakendVariant variant) {
         String alt = variant.strand().isPositive() ? variant.alt() : Seq.reverseComplement(variant.alt());
         return makeAltVcfField(variant.left(), variant.right(), variant.ref(), alt);
     }
@@ -34,7 +34,7 @@ public class VcfBreakendFormatter {
      * @param ins   string with <em>inserted</em> sequence on {@link Strand#POSITIVE}
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
-    static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
+    public static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
         String contig = right.contigName();
         int pos = right.toOneBased().withStrand(Strand.POSITIVE).start();
         Strand leftStrand = left.strand();
