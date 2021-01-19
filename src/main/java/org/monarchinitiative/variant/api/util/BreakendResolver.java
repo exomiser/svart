@@ -52,14 +52,8 @@ public class BreakendResolver {
             throw new IllegalArgumentException("Unknown mate contig `" + mateContigName + '`');
         }
 
-        Position matePos = null;
-        try {
-            int pos = Integer.parseInt(altMatcher.group("pos"));
-            matePos = Position.of(pos, ciEnd);
-        } catch (NumberFormatException ignored) {
-            // swallow, this should not happen since we catch the situation where the `pos` group is not
-            // integer only upstream
-        }
+        int pos = Integer.parseInt(altMatcher.group("pos"));
+        Position matePos = Position.of(pos, ciEnd);
 
         // figure out strands and the inserted sequence
         String head = altMatcher.group("head");
