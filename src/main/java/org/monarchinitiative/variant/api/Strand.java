@@ -2,24 +2,29 @@
 package org.monarchinitiative.variant.api;
 
 /**
- * Contains the 4 strand types from GFF3. This is a superset of BED which only defines [+, -, .]
+ * Contains definitions of <em>positive</em> (+) and <em>negative</em> (-) nucleotide sequence strand types.
+ * This is a subset of BED which defines {+, -, .}.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public enum Strand {
-    UNSTRANDED, UNKNOWN, POSITIVE, NEGATIVE;
+
+    POSITIVE("+"), NEGATIVE("-");
+
+    private final String symbol;
+
+    Strand(String symbol) {
+        this.symbol = symbol;
+    }
 
     public static Strand parseStrand(String value) {
         switch (value) {
-            case "+":
-                return POSITIVE;
             case "-":
                 return NEGATIVE;
-            case ".":
-                return UNSTRANDED;
-            case "?":
+            case "+":
             default:
-                return UNKNOWN;
+                return POSITIVE;
         }
     }
 
@@ -32,17 +37,15 @@ public enum Strand {
     }
 
     public Strand opposite() {
-        switch (this) {
-            case POSITIVE:
-                return NEGATIVE;
-            case NEGATIVE:
-                return POSITIVE;
-            default:
-                return this;
-        }
+        return this == POSITIVE ? NEGATIVE : POSITIVE;
     }
 
     static int compare(Strand x, Strand y) {
         return x.compareTo(y);
+    }
+
+    @Override
+    public String toString() {
+        return symbol;
     }
 }

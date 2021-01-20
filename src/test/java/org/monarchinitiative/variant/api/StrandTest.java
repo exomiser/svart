@@ -9,16 +9,14 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class StrandTest {
+public class StrandTest {
 
     @ParameterizedTest
     @CsvSource({
             "POSITIVE, NEGATIVE",
-            "NEGATIVE, POSITIVE",
-            "UNKNOWN, UNKNOWN",
-            "UNSTRANDED, UNSTRANDED",
+            "NEGATIVE, POSITIVE"
     })
-    void opposite(Strand strand, Strand expected) {
+    public void opposite(Strand strand, Strand expected) {
         assertThat(strand.opposite(), equalTo(expected));
     }
 
@@ -26,10 +24,8 @@ class StrandTest {
     @CsvSource({
             "POSITIVE, true",
             "NEGATIVE, false",
-            "UNKNOWN, false",
-            "UNSTRANDED, false",
     })
-    void isPositive(Strand strand, boolean expected) {
+    public void isPositive(Strand strand, boolean expected) {
         assertThat(strand.isPositive(), equalTo(expected));
     }
 
@@ -37,10 +33,8 @@ class StrandTest {
     @CsvSource({
             "POSITIVE, false",
             "NEGATIVE, true",
-            "UNKNOWN, false",
-            "UNSTRANDED, false",
     })
-    void isNegative(Strand strand, boolean expected) {
+    public void isNegative(Strand strand, boolean expected) {
         assertThat(strand.isNegative(), equalTo(expected));
     }
 
@@ -48,11 +42,18 @@ class StrandTest {
     @CsvSource({
             "+, POSITIVE",
             "-, NEGATIVE",
-            "., UNSTRANDED",
-            "?, UNKNOWN",
-            "*, UNKNOWN",
     })
-    void parseStrand(String value, Strand expected) {
+    public void parseStrand(String value, Strand expected) {
         assertThat(Strand.parseStrand(value), equalTo(expected));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, +",
+            "NEGATIVE, -",
+    })
+    public void toString(Strand strand, String expected) {
+        assertThat(strand.toString(), equalTo(expected));
+    }
+
 }

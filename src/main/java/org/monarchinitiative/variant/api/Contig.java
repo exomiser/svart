@@ -1,9 +1,10 @@
 package org.monarchinitiative.variant.api;
 
-import org.monarchinitiative.variant.api.impl.ContigDefault;
+import org.monarchinitiative.variant.api.impl.DefaultContig;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface Contig extends Comparable<Contig> {
 
@@ -14,13 +15,21 @@ public interface Contig extends Comparable<Contig> {
     // Zero is reserved as the 'unknown' value.
     int id();
 
-    // Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
+    // Sequence-name column 0 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
     String name();
 
     /**
      * @return contig sequence role
      */
     SequenceRole sequenceRole();
+
+    // Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT. This may be a duplicate of
+    // the sequenceName field for chromosomes, but for unlocalised scaffolds, alt loci, patches etc will point to the chromosome on which they
+    // are located.
+    String assignedMolecule();
+
+    // Assigned-Molecule-Location/Type column 3 (zero-based) of the assembly report file. One of Chromosome, Mitochondrion, na
+    AssignedMoleculeType assignedMoleculeType();
 
     // Sequence-Length column 8 (zero-based) of assembly-report
     int length();
@@ -72,12 +81,17 @@ public interface Contig extends Comparable<Contig> {
 
     boolean equals(Object o);
 
-    static Contig of(int id, String name, SequenceRole sequenceRole, int length, String genbankAccession, String refSeqAccession, String ucscName) {
-        return new ContigDefault(id, name, sequenceRole, length, genbankAccession, refSeqAccession, ucscName);
+    static Contig of(int id, String name, SequenceRole sequenceRole, String assignedMolecule, AssignedMoleculeType assignedMoleculeType, int length, String genbankAccession, String refSeqAccession, String ucscName) {
+        return DefaultContig.of(id, name, sequenceRole, assignedMolecule, assignedMoleculeType, length, genbankAccession, refSeqAccession, ucscName);
     }
 
     static Contig unknown() {
         return UnknownContig.instance();
+    }
+
+    @Override
+    default int compareTo(Contig o) {
+        return compare(this, o);
     }
 
     static int compare(Contig x, Contig y) {

@@ -2,87 +2,43 @@ package org.monarchinitiative.variant.api;
 
 /**
  * Position with a confidence level expressed using a {@link ConfidenceInterval}.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Position extends Comparable<Position>, CoordinateSystemed<Position> {
+public interface Position extends Comparable<Position> {
 
     /**
-     * Create precise position using given coordinate system.
+     * Creates a new {@link Position} using the pos argument with the same {@link ConfidenceInterval} around the point.
      *
-     * @param pos              position coordinate
-     * @param coordinateSystem coordinate system
-     * @return precise position
+     * @param pos numeric position for the new instance
+     * @return a new Position instance with the same {@link ConfidenceInterval} as the instance it was derived from
      */
-    static Position of(int pos, CoordinateSystem coordinateSystem) {
-        return of(coordinateSystem, pos, ConfidenceInterval.precise());
-    }
-
-    static Position of(int pos, CoordinateSystem coordinateSystem, int ciUpstream, int ciDownstream) {
-        return of(coordinateSystem, pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
-    }
-
-    /**
-     * Create 1-based precise position.
-     *
-     * @param pos position coordinate
-     * @return precise position
-     */
-    static Position oneBased(int pos) {
-        return oneBased(pos, ConfidenceInterval.precise());
-    }
-
-    static Position oneBased(int pos, ConfidenceInterval confidenceInterval) {
-        return of(CoordinateSystem.ONE_BASED, pos, confidenceInterval);
-    }
-
-    static Position zeroBased(int pos) {
-        return zeroBased(pos, ConfidenceInterval.precise());
-    }
-
-    static Position zeroBased(int pos, ConfidenceInterval confidenceInterval) {
-        return of(CoordinateSystem.ZERO_BASED, pos, confidenceInterval);
-    }
-
-    /**
-     *
-     * @param coordinateSystem The coordinate system of the pos argument.
-     * @param pos The position in the stated coordinate system
-     * @param confidenceInterval confidence interval around the given position
-     * @return a {@link Position} in the given coordinateSystem with the specified confidenceInterval
-     */
-    static Position of(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
-        return coordinateSystem == CoordinateSystem.ONE_BASED ? new OneBasedPosition(pos, confidenceInterval) : new ZeroBasedPosition(pos, confidenceInterval);
-    }
-
     Position withPos(int pos);
 
     /**
+     * Creates a new {@link Position} using the delta argument to increment/decrement with pos with the same {@link ConfidenceInterval} around the resulting point.
      *
-     * @param delta
+     * @param delta amount by which to shift the position. Positive inputs will increase the value of pos, negative decrease it.
      * @return a Position shifted by the provided delta
-     * */
-    Position shiftPos(int delta);
+     */
+    default Position shift(int delta) {
+        return delta == 0 ? this : withPos(pos() + delta);
+    }
 
     /**
-     * @return one based position
+     * @return the numeric position
      */
     int pos();
-
-    int zeroBasedPos();
-
-    int oneBasedPos();
 
     /**
      * @return confidence interval associated with the position
      */
     ConfidenceInterval confidenceInterval();
 
-    default int minPos() {
-        return confidenceInterval().minPos(pos());
-    }
+    int minPos();
 
-    default int maxPos() {
-        return confidenceInterval().maxPos(pos());
-    }
+    int maxPos();
 
     /**
      * @return true if this position is precise (CI = [0,0])
@@ -91,21 +47,88 @@ public interface Position extends Comparable<Position>, CoordinateSystemed<Posit
         return confidenceInterval().isPrecise();
     }
 
+    Position asPrecise();
+
+    /**
+     * Inverts the current {@link Position} to the opposite end of the given {@link Contig} using the
+     * {@link CoordinateSystem} provided.
+     *
+     * @param contig  {@link Contig} on which the position is located
+     * @param coordinateSystem {@link CoordinateSystem} the Position is being used in
+     * @return a new position at the opposite end of the {@link Contig} on which the current {@link Position} is located
+     */
+    Position invert(Contig contig, CoordinateSystem coordinateSystem);
+
+
+    default int distanceTo(Position position) {
+        return distanceTo(position.pos());
+    }
+
+    default int distanceTo(int pos) {
+        return pos - pos();
+    }
+
+    default int distanceToRegion(Region<?> region) {
+        int start = region.startWithCoordinateSystem(CoordinateSystem.oneBased());
+        int end = region.endWithCoordinateSystem(CoordinateSystem.oneBased());
+        return distanceToRegion(start, end);
+    }
+
+    default int distanceToRegion(int regionStart, int regionEnd) {
+        if (regionStart <= pos() && pos() <= regionEnd)
+            return 0;
+
+        int s = regionStart - pos();
+        int e = regionEnd - pos();
+        return Math.abs(s) < Math.abs(e) ? s : e;
+    }
+
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.
      *
-     * @param o
-     * @return a natural ordering of positions IN ZERO-BASED COORDINATES.
+     * @param o other {@link Position} to compare with.
+     * @return a natural ordering of positions.
      */
+    @Override
     default int compareTo(Position o) {
         return compare(this, o);
     }
 
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     *
+     * @param x first {@link Position} to compare.
+     * @param y second {@link Position} to compare.
+     * @return a natural ordering of positions with more precise positions being ordered before less precise ones.
+     */
     static int compare(Position x, Position y) {
-        int result = Integer.compare(x.zeroBasedPos(), y.zeroBasedPos());
+        int result = Integer.compare(x.pos(), y.pos());
         if (result == 0) {
             result = ConfidenceInterval.compare(x.confidenceInterval(), y.confidenceInterval());
         }
         return result;
+    }
+
+    /**
+     * Create precise position.
+     *
+     * @param pos position coordinate
+     * @return precise position
+     */
+    static Position of(int pos) {
+        return PrecisePosition.of(pos);
+    }
+
+    static Position of(int pos, int ciUpstream, int ciDownstream) {
+        return of(pos, ConfidenceInterval.of(ciUpstream, ciDownstream));
+    }
+
+    /**
+     * @param pos                The numeric position - this should be an unsigned integer.
+     * @param confidenceInterval confidence interval around the given position
+     * @return a {@link Position} with the specified confidenceInterval
+     */
+    static Position of(int pos, ConfidenceInterval confidenceInterval) {
+        return confidenceInterval.isPrecise() ? PrecisePosition.of(pos) : ImprecisePosition.of(pos, confidenceInterval);
     }
 }

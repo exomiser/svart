@@ -2,17 +2,16 @@ package org.monarchinitiative.variant.api;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Daniel Danis <daniel.danis@jax.org>
  */
-final class UnresolvedBreakend implements Breakend {
+final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> implements Breakend {
 
     private static final UnresolvedBreakend INSTANCE = new UnresolvedBreakend();
 
     private static final String ID = "";
-    private static final Strand STRAND = Strand.UNKNOWN;
-    private static final Position POSITION = Position.oneBased(1);
-    private static final Contig CONTIG = Contig.unknown();
 
     private UnresolvedBreakend() {
+        super(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(0));
     }
 
     static UnresolvedBreakend instance() {
@@ -25,18 +24,8 @@ final class UnresolvedBreakend implements Breakend {
     }
 
     @Override
-    public Breakend withStrand(Strand strand) {
+    protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
         return this;
-    }
-
-    @Override
-    public Contig contig() {
-        return CONTIG;
-    }
-
-    @Override
-    public Position position() {
-        return POSITION;
     }
 
     @Override
@@ -53,9 +42,10 @@ final class UnresolvedBreakend implements Breakend {
     public String toString() {
         return "UnresolvedBreakend{" +
                 "id='" + ID + '\'' +
-                ", strand=" + STRAND +
-                ", position=" + POSITION +
-                ", contig=" + CONTIG +
+                ", strand=" + Strand.POSITIVE +
+                ", coordinateSystem=" + CoordinateSystem.FULLY_CLOSED +
+                ", position=" + Position.of(1) +
+                ", contig=" + Contig.unknown().id() +
                 '}';
     }
 }

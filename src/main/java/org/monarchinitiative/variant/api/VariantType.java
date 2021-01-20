@@ -84,8 +84,16 @@ public enum VariantType {
         this.subType = subType;
     }
 
-    public static VariantType parseType(String value) {
-        String stripped = trimAngleBrackets(Objects.requireNonNull(value));
+    /**
+     * Parses the type from the ALT allele.
+     * @param alt
+     * @return
+     */
+    public static VariantType parseType(String alt) {
+        if (alt.isEmpty()) {
+            return UNKNOWN;
+        }
+        String stripped = trimAngleBrackets(Objects.requireNonNull(alt));
         switch (stripped) {
             case "SNP":
             case "SNV":
@@ -145,12 +153,14 @@ public enum VariantType {
             default:
                 // fall-through
         }
+        if (stripped.startsWith("BND")) {
+            return BND;
+        }
+        if (isBreakend(stripped)) {
+            return BND;
+        }
         // in other cases where we don't recognise the exact type, use the closest type or sub-type
         // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN
-        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
-        if (stripped.startsWith("STR")) {
-            return STR;
-        }
         if (stripped.startsWith("DEL:ME")) {
             return DEL_ME;
         }
@@ -169,15 +179,26 @@ public enum VariantType {
         if (stripped.startsWith("CNV")) {
             return CNV;
         }
-        if (stripped.startsWith("BND")) {
-            return BND;
+        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
+        if (stripped.startsWith("STR")) {
+            return STR;
         }
-        if (isSymbolic(value)) {
+        if (isSymbolic(alt)) {
             return SYMBOLIC;
         }
         return UNKNOWN;
     }
 
+    /**
+     * Returns the {@link VariantType} for the given ref/alt alleles. This method will determine whether the alleles
+     * indicate small sequence variations such as SNP/MNV or INS/DEL or if they indicate a large symbolic or breakend
+     * allele. It is required that the input alleles conform to the VCF specification.
+     *
+     * @param ref reference allele string e.g. [ATGCN]+
+     * @param alt alternate allele string e.g. a symbolic allele, or a breakend replacement string, or match the regular
+     *            expression^([ACGTNacgtn]+|\*|\.)$.
+     * @return the {@link VariantType} calculated from the REF and ALT allele.
+     */
     public static VariantType parseType(String ref, String alt) {
         if (isSymbolic(ref, alt)) {
             return parseType(alt);
@@ -207,15 +228,36 @@ public enum VariantType {
     }
 
     public static boolean isLargeSymbolic(String allele) {
-        return allele.length() > 1 && allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>';
+        return allele.length() > 1 && (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>');
     }
 
     public static boolean isSingleBreakend(String allele) {
-        return allele.length() > 1 && allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.';
+        return allele.length() > 1 && (allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.');
     }
 
     public static boolean isMatedBreakend(String allele) {
-        return allele.length() > 1 && allele.contains("[") || allele.length() > 1 && allele.contains("]");
+        return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
+    }
+
+    /**
+     * Returns true if the provided allele matches the string '*'. This is defined in VCF 4.3 as "allele missing due to
+     * overlapping deletion"
+     *
+     * @param allele
+     * @return true if the input allele equals '*'
+     */
+    public static boolean isMissingUpstreamDeletion(String allele) {
+        return allele.equals("*");
+    }
+
+    /**
+     * Returns true if the provided allele matches the string '.'. This is defined in VCF 4.3 as missing or "no  variant"
+     *
+     * @param allele
+     * @return
+     */
+    public static boolean isMissing(String allele) {
+        return allele.equals(".");
     }
 
     private static String trimAngleBrackets(String value) {

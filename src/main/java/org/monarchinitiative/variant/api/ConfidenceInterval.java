@@ -67,7 +67,7 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
         return Math.abs(lowerBound) + upperBound;
     }
 
-    public ConfidenceInterval toOppositeStrand() {
+    public ConfidenceInterval invert() {
         return isPrecise() ? PRECISE : new ConfidenceInterval(Math.negateExact(upperBound), Math.abs(lowerBound));
     }
 
@@ -102,9 +102,6 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
 
     @Override
     public String toString() {
-        return "ConfidenceInterval{" +
-                "lowerBound=" + lowerBound +
-                ", upperBound=" + upperBound +
-                '}';
+        return isPrecise() ? "" : "(-" + -lowerBound + ", +" + upperBound + ')';
     }
 }
