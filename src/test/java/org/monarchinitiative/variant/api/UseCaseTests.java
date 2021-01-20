@@ -2,8 +2,12 @@ package org.monarchinitiative.variant.api;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.variant.api.impl.DefaultBreakend;
+import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
 import org.monarchinitiative.variant.api.util.VariantTrimmer;
 import org.monarchinitiative.variant.api.util.VariantTrimmer.VariantPosition;
+
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -69,5 +73,37 @@ public class UseCaseTests {
     private Variant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
         VariantPosition firstTrimmed = variantTrimmer.trim(strand, start.pos(), ref, alt);
         return Variant.nonSymbolic(contig, id, strand, coordinateSystem, start.withPos(firstTrimmed.start()), firstTrimmed.ref(), firstTrimmed.alt());
+    }
+
+    @Test
+    public void checkGeneContainsVariant() {
+        // Load the Human GRCh37.13 assembly from a NCBI assembly report
+        GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        // FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
+        Contig chr10b37 = b37.contigByName("10");
+        GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 123_237_848, 123_357_972);
+        // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
+        Variant snv = Variant.nonSymbolic(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(123_256_215), "T", "G");
+        // Because svart knows about coordinate systems and strands it is possible to...
+        // keep the gene on the positive strand:
+        // GenomicRegion{contig=10, strand=+, coordinateSystem=FULLY_CLOSED, startPosition=123237848, endPosition=123357972}
+        assertThat(fgfr2Gene.contains(snv), equalTo(true));
+        // or use it on the negative strand:
+        // GenomicRegion{contig=10, strand=-, coordinateSystem=FULLY_CLOSED, startPosition=12176776, endPosition=12296900}
+        assertThat(fgfr2Gene.toNegativeStrand().contains(snv), equalTo(true));
+    }
+
+    @Test
+    public void emptyRegionsWithDifferentCoordinateSystems() {
+        // these are empty regions and can be used to represent a 'slice' in-between two bases
+        GenomicRegion oneBasedEmpty = GenomicRegion.oneBased(Contig.unknown(), 1, 0);
+        GenomicRegion zeroBasedEmpty = GenomicRegion.zeroBased(Contig.unknown(), 0, 0);
+
+        assertThat(oneBasedEmpty.contains(zeroBasedEmpty), equalTo(true));
+        // convert coordinate systems using convenience methods
+        assertThat(oneBasedEmpty.toZeroBased(), equalTo(zeroBasedEmpty));
+        // convert coordinate systems using specific systems
+        assertThat(oneBasedEmpty.withCoordinateSystem(CoordinateSystem.LEFT_OPEN), equalTo(zeroBasedEmpty));
+        System.out.println(oneBasedEmpty);
     }
 }
