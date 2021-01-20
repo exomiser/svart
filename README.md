@@ -69,7 +69,7 @@ GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/reso
 Contig chr10b37 = b37.contigByName("10");
 GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 123_237_848, 123_357_972);
 // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
-Variant snv = Variant.nonSymbolic(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(123_256_215), "T", "G");
+Variant snv = Variant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(123_256_215), "T", "G");
 // Because svart knows about coordinate systems and strands it is possible to...
 // keep the gene on the positive strand:
 // GenomicRegion{contig=10, strand=+, coordinateSystem=FULLY_CLOSED, startPosition=123237848, endPosition=123357972}

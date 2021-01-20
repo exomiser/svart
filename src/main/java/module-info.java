@@ -1,3 +1,3 @@
-module org.monarchitiative.variant.api {
-    exports org.monarchinitiative.variant.api;
+module org.monarchitiative.svart {
+    exports org.monarchinitiative.svart;
 }
