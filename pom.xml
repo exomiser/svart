@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.monarchinitiative.variant</groupId>
-    <artifactId>variant-api</artifactId>
+    <groupId>org.monarchinitiative.svart</groupId>
+    <artifactId>svart</artifactId>
     <version>1.0-SNAPSHOT</version>
     <description>a library to ease representation of variants and performing genomic manipulations</description>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/exomiser/variant-api/issues</url>
+        <url>https://github.com/exomiser/svart/issues</url>
     </issueManagement>
     <inceptionYear>2020</inceptionYear>
 
@@ -35,9 +35,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/exomiser/variant-api.git</connection>
-        <developerConnection>scm:git:git@github.com:exomiser/variant-api.git</developerConnection>
-        <url>https://github.com/exomiser/variant-api</url>
+        <connection>scm:git:https://github.com/exomiser/svart.git</connection>
+        <developerConnection>scm:git:git@github.com:exomiser/svart.git</developerConnection>
+        <url>https://github.com/exomiser/svart</url>
         <tag>HEAD</tag>
     </scm>
 
