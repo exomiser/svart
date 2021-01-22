@@ -57,8 +57,8 @@ class PrecisePosition implements Position {
 
     @Override
     public Position invert(Contig contig, CoordinateSystem coordinateSystem) {
-        int adjustedContigLength = contig.length() + CoordinateSystem.LEFT_OPEN.startDelta(coordinateSystem) + CoordinateSystem.LEFT_OPEN.endDelta(coordinateSystem);
-        return new PrecisePosition(adjustedContigLength - pos);
+        int inverted = Coordinates.invertPosition(coordinateSystem, pos, contig);
+        return new PrecisePosition(inverted);
     }
 
     @Override

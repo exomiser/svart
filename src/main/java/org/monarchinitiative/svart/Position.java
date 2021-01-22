@@ -59,7 +59,6 @@ public interface Position extends Comparable<Position> {
      */
     Position invert(Contig contig, CoordinateSystem coordinateSystem);
 
-
     default int distanceTo(Position position) {
         return distanceTo(position.pos());
     }

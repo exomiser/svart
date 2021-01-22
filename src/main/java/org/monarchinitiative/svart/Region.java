@@ -52,8 +52,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(Region<?> other) {
-        other = (Region<?>) other.withCoordinateSystem(coordinateSystem());
-        return start() <= other.start() && other.end() <= end();
+        return start() <= other.startWithCoordinateSystem(coordinateSystem()) && other.endWithCoordinateSystem(coordinateSystem()) <= end();
     }
 
     default boolean contains(Position position) {
@@ -65,17 +64,11 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     default boolean overlapsWith(Region<?> other) {
-        int thisClosedStart = this.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
-        int otherClosedEnd = other.endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
-        int otherClosedStart = other.startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
-        int thisCloseEnd = this.endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
-        return thisClosedStart <= otherClosedEnd && otherClosedStart <= thisCloseEnd;
+        return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
     }
 
-
     default int length() {
-        // the easiest way how to calculate length is to use half-open interval coordinates
-        return endWithCoordinateSystem(CoordinateSystem.LEFT_OPEN) - startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return Coordinates.length(coordinateSystem(), start(), end());
     }
 
     static Comparator<Region<?>> naturalOrder() {
@@ -83,10 +76,9 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     static int compare(Region<?> x, Region<?> y) {
-        y = (Region<?>) y.withCoordinateSystem(x.coordinateSystem());
-        int result = Position.compare(x.startPosition(), y.startPosition());
+        int result = Position.compare(x.startPosition(), y.startPositionWithCoordinateSystem(x.coordinateSystem()));
         if (result == 0) {
-            result = Position.compare(x.endPosition(), y.endPosition());
+            result = Position.compare(x.endPosition(), y.endPositionWithCoordinateSystem(x.coordinateSystem()));
         }
         return result;
     }

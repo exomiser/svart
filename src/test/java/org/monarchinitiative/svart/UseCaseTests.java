@@ -102,6 +102,5 @@ public class UseCaseTests {
         assertThat(oneBasedEmpty.toZeroBased(), equalTo(zeroBasedEmpty));
         // convert coordinate systems using specific systems
         assertThat(oneBasedEmpty.withCoordinateSystem(CoordinateSystem.LEFT_OPEN), equalTo(zeroBasedEmpty));
-        System.out.println(oneBasedEmpty);
     }
 }

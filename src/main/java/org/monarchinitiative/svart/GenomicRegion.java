@@ -27,6 +27,9 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         return contig().name();
     }
 
+    @Override
+    GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem);
+
     /**
      * @param other chromosomal region
      * @return true if the region shares at least 1 bp with the <code>other</code> region
@@ -35,18 +38,32 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         if (contigId() != other.contigId()) {
             return false;
         }
-        return overlapsWith((Region<GenomicRegion>) other.withStrand(strand()));
+        if (this.strand() == other.strand()) {
+            return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        }
+        int otherEnd = invertOtherPosition(other.coordinateSystem(), other.start());
+        int otherStart = invertOtherPosition(other.coordinateSystem(), other.end());
+        return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
-    @Override
-    GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem);
+    private int invertOtherPosition(CoordinateSystem otherCoordinateSystem, int pos) {
+        return Coordinates.invertPosition(otherCoordinateSystem, pos, contig());
+    }
 
     /**
      * @param other chromosomal region
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(GenomicRegion other) {
-        return contig().id() == other.contig().id() && contains((Region<?>) other.withStrand(strand()));
+        if (contig().id() != other.contig().id()) {
+            return false;
+        }
+        if (this.strand() == other.strand()) {
+            return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        }
+        int otherEnd = invertOtherPosition(other.coordinateSystem(), other.start());
+        int otherStart = invertOtherPosition(other.coordinateSystem(), other.end());
+        return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
     default GenomicRegion withPadding(int padding) {
