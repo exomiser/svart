@@ -41,13 +41,31 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         if (this.strand() == other.strand()) {
             return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
         }
-        int otherEnd = invertOtherPosition(other.coordinateSystem(), other.start());
-        int otherStart = invertOtherPosition(other.coordinateSystem(), other.end());
+        int otherStart = other.startOnStrand(this.strand());
+        int otherEnd = other.endOnStrand(this.strand());
         return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
-    private int invertOtherPosition(CoordinateSystem otherCoordinateSystem, int pos) {
-        return Coordinates.invertPosition(otherCoordinateSystem, pos, contig());
+    /**
+     * Returns the start position for this region on the given strand. The resulting position will be given in the
+     * coordinates indicated by the coordinateSystem of the object instance.
+     *
+     * @param strand target {@link Strand} for which the start position is required
+     * @return start coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
+     */
+    default int startOnStrand(Strand strand) {
+        return this.strand() == strand ? start() : Coordinates.invertPosition(coordinateSystem(), end(), contig());
+    }
+
+    /**
+     * Returns the end position for this region on the given strand. The resulting position will be given in the
+     * coordinates indicated by the coordinateSystem of the object instance.
+     *
+     * @param strand target {@link Strand} for which the end position is required
+     * @return end coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
+     */
+    default int endOnStrand(Strand strand) {
+        return this.strand() == strand ? end() : Coordinates.invertPosition(coordinateSystem(), start(), contig());
     }
 
     /**
@@ -61,8 +79,8 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         if (this.strand() == other.strand()) {
             return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
         }
-        int otherEnd = invertOtherPosition(other.coordinateSystem(), other.start());
-        int otherStart = invertOtherPosition(other.coordinateSystem(), other.end());
+        int otherStart = other.startOnStrand(this.strand());
+        int otherEnd = other.endOnStrand(this.strand());
         return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
