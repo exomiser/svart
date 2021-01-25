@@ -108,7 +108,7 @@ public class UseCaseTests {
     @Test
     public void parseGenomicRegionFromBedFile() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
-        GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        GenomicAssembly b37 = GenomicAssemblies.read(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
         // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
         GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");

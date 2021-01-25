@@ -6,6 +6,7 @@ import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.GenomicAssembly;
 import org.monarchinitiative.svart.SequenceRole;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +24,7 @@ public class GenomicAssemblyParserTest {
 
     @Test
     public void error() {
-        assertThrows(RuntimeException.class, ()-> GenomicAssemblyParser.parseAssembly(Path.of("wibble")));
+        assertThrows(RuntimeException.class, () -> GenomicAssemblyParser.parseAssembly(Path.of("wibble")));
     }
 
     @Test
@@ -115,6 +116,19 @@ public class GenomicAssemblyParserTest {
     @Test
     public void contigs() {
         assertThat(grch37p13.contigs().size(), equalTo(297));
+    }
+
+    @Test
+    public void grcm38p6FromInputStream() throws Exception {
+        GenomicAssembly mm10 = GenomicAssemblyParser.parseAssembly(Files.newInputStream(Path.of("src/test/resources/GCF_000001635.26_GRCm38.p6_assembly_report.txt")));
+        assertThat(mm10.name(), equalTo("GRCm38.p6"));
+        assertThat(mm10.organismName(), equalTo("Mus musculus (house mouse)"));
+        assertThat(mm10.taxId(), equalTo("10090"));
+        assertThat(mm10.contigByName("1").id(), equalTo(1));
+        assertThat(mm10.contigByName("19").id(), equalTo(19));
+        assertThat(mm10.contigByName("X").id(), equalTo(20));
+        assertThat(mm10.contigByName("Y").id(), equalTo(21));
+        assertThat(mm10.contigByName("MT").id(), equalTo(22));
     }
 
     @Test
