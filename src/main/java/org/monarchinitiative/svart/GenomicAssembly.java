@@ -21,10 +21,11 @@
 package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
+import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.SortedSet;
 
 /**
@@ -83,5 +84,24 @@ public interface GenomicAssembly {
                 .refSeqAccession(refSeqAccession)
                 .contigs(contigs)
                 .build();
+    }
+
+    /**
+     * Reads a {@link GenomicAssembly} from a file path. The file should be in the format of the NCBI assembly_report.txt
+     *
+     * @param path Path to the assembly_report.txt file
+     * @return a {@link GenomicAssembly}
+     */
+    static GenomicAssembly readAssembly(Path path) {
+        return GenomicAssemblyParser.parseAssembly(path);
+    }
+
+    /**
+     * Reads a {@link GenomicAssembly} from an input stream.
+     * @param inputStream input stream to the assembly_report.txt file
+     * @return a {@link GenomicAssembly}
+     */
+    static GenomicAssembly readAssembly(InputStream inputStream) {
+        return GenomicAssemblyParser.parseAssembly(inputStream);
     }
 }

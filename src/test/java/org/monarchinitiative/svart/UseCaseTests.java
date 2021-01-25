@@ -1,7 +1,6 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
 
@@ -77,7 +76,7 @@ public class UseCaseTests {
     @Test
     public void checkGeneContainsVariant() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
-        GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
         Contig chr10b37 = b37.contigByName("10");
         GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, FULLY_CLOSED, 123_237_848, 123_357_972);
@@ -108,7 +107,7 @@ public class UseCaseTests {
     @Test
     public void parseGenomicRegionFromBedFile() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
-        GenomicAssembly b37 = GenomicAssemblies.read(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
         // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
         GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");
