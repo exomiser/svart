@@ -20,6 +20,11 @@
 
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 
 /**
@@ -67,4 +72,16 @@ public interface GenomicAssembly {
 //# RefSeq assembly accession: GCF_000001405.39
 //# RefSeq assembly and GenBank assemblies identical: no
 
+    default GenomicAssembly of(String name, String organismName, String taxId, String submitter, String date, String genBankAccession, String refSeqAccession, Collection<Contig> contigs) {
+        return DefaultGenomicAssembly.builder()
+                .name(name)
+                .organismName(organismName)
+                .taxId(taxId)
+                .submitter(submitter)
+                .date(date)
+                .genBankAccession(genBankAccession)
+                .refSeqAccession(refSeqAccession)
+                .contigs(contigs)
+                .build();
+    }
 }

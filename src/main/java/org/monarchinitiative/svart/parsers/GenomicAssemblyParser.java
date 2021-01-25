@@ -7,8 +7,7 @@ import org.monarchinitiative.svart.SequenceRole;
 import org.monarchinitiative.svart.impl.DefaultContig;
 import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,11 +22,23 @@ import java.util.List;
 public class GenomicAssemblyParser {
 
     public static GenomicAssembly parseAssembly(Path assemblyReportPath) {
+        try (BufferedReader bufferedReader = Files.newBufferedReader(assemblyReportPath)) {
+            return parseAssembly(bufferedReader);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to parse assembly file " + assemblyReportPath, e);
+        }
+    }
+
+    public static GenomicAssembly parseAssembly(InputStream inputStream) {
+        return parseAssembly(new InputStreamReader(inputStream));
+    }
+
+    public static GenomicAssembly parseAssembly(Reader reader) {
         List<String> headerLines = new ArrayList<>();
         List<String> assembledMoleculeLines = new ArrayList<>();
         List<String> otherMoleculeLines = new ArrayList<>();
 
-        try (BufferedReader bufferedReader = Files.newBufferedReader(assemblyReportPath)) {
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
             for (String line; (line = bufferedReader.readLine()) != null;) {
                 if (line.startsWith("#")) {
                     headerLines.add(line);
@@ -39,7 +50,7 @@ public class GenomicAssemblyParser {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse assembly file " + assemblyReportPath, e);
+            throw new RuntimeException("Unable to parse assembly " +  e);
         }
 
         DefaultGenomicAssembly.Builder assemblyBuilder = DefaultGenomicAssembly.builder();

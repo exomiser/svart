@@ -1,0 +1,89 @@
+# Assembly name:  GRCm39
+# Description:    Genome Reference Consortium Mouse Build 39
+# Organism name:  Mus musculus (house mouse)
+# Infraspecific name:  strain=C57BL/6J
+# Taxid:          10090
+# BioProject:     PRJNA20689
+# Submitter:      Genome Reference Consortium
+# Date:           2020-06-24
+# Assembly type:  haploid
+# Release type:   major
+# Assembly level: Chromosome
+# Genome representation: full
+# RefSeq category: Reference Genome
+# GenBank assembly accession: GCA_000001635.9
+# RefSeq assembly accession: GCF_000001635.27
+# RefSeq assembly and GenBank assemblies identical: yes
+#
+## Assembly-Units:
+## GenBank Unit Accession	RefSeq Unit Accession	Assembly-Unit name
+## GCA_000000055.3	GCF_000000055.20	Primary Assembly (C57BL/6J)
+## GCA_000004175.1	GCF_000004175.1	non-nuclear
+#
+# Ordered by chromosome/plasmid; the chromosomes/plasmids are followed by
+# unlocalized scaffolds.
+# Unplaced scaffolds are listed at the end.
+# RefSeq is equal or derived from GenBank object.
+#
+# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
+1	assembled-molecule	1	Chromosome	CM000994.3	=	NC_000067.7	C57BL/6J	195154279	na
+2	assembled-molecule	2	Chromosome	CM000995.3	=	NC_000068.8	C57BL/6J	181755017	na
+3	assembled-molecule	3	Chromosome	CM000996.3	=	NC_000069.7	C57BL/6J	159745316	na
+4	assembled-molecule	4	Chromosome	CM000997.3	=	NC_000070.7	C57BL/6J	156860686	na
+5	assembled-molecule	5	Chromosome	CM000998.3	=	NC_000071.7	C57BL/6J	151758149	na
+6	assembled-molecule	6	Chromosome	CM000999.3	=	NC_000072.7	C57BL/6J	149588044	na
+7	assembled-molecule	7	Chromosome	CM001000.3	=	NC_000073.7	C57BL/6J	144995196	na
+8	assembled-molecule	8	Chromosome	CM001001.3	=	NC_000074.7	C57BL/6J	130127694	na
+9	assembled-molecule	9	Chromosome	CM001002.3	=	NC_000075.7	C57BL/6J	124359700	na
+10	assembled-molecule	10	Chromosome	CM001003.3	=	NC_000076.7	C57BL/6J	130530862	na
+11	assembled-molecule	11	Chromosome	CM001004.3	=	NC_000077.7	C57BL/6J	121973369	na
+12	assembled-molecule	12	Chromosome	CM001005.3	=	NC_000078.7	C57BL/6J	120092757	na
+13	assembled-molecule	13	Chromosome	CM001006.3	=	NC_000079.7	C57BL/6J	120883175	na
+14	assembled-molecule	14	Chromosome	CM001007.3	=	NC_000080.7	C57BL/6J	125139656	na
+15	assembled-molecule	15	Chromosome	CM001008.3	=	NC_000081.7	C57BL/6J	104073951	na
+16	assembled-molecule	16	Chromosome	CM001009.3	=	NC_000082.7	C57BL/6J	98008968	na
+17	assembled-molecule	17	Chromosome	CM001010.3	=	NC_000083.7	C57BL/6J	95294699	na
+18	assembled-molecule	18	Chromosome	CM001011.3	=	NC_000084.7	C57BL/6J	90720763	na
+19	assembled-molecule	19	Chromosome	CM001012.3	=	NC_000085.7	C57BL/6J	61420004	na
+X	assembled-molecule	X	Chromosome	CM001013.3	=	NC_000086.8	C57BL/6J	169476592	na
+Y	assembled-molecule	Y	Chromosome	CM001014.3	=	NC_000087.8	C57BL/6J	91455967	na
+MMCHR1_RANDOM_CTG1	unlocalized-scaffold	1	Chromosome	GL456210.1	=	NT_166280.1	C57BL/6J	169725	na
+MMCHR1_RANDOM_CTG2	unlocalized-scaffold	1	Chromosome	GL456211.1	=	NT_166281.1	C57BL/6J	241735	na
+MMCHR1_RANDOM_CTG3	unlocalized-scaffold	1	Chromosome	GL456212.1	=	NT_166282.1	C57BL/6J	153618	na
+MMCHR1_RANDOM_CTG5	unlocalized-scaffold	1	Chromosome	GL456221.1	=	NT_162750.1	C57BL/6J	206961	na
+MMCHR1_RANDOM_CTG7	unlocalized-scaffold	1	Chromosome	GL456239.1	=	NT_166338.1	C57BL/6J	40056	na
+MMCHR1_RANDOM_CTG6	unlocalized-scaffold	1	Chromosome	MU069434.1	=	NW_023337852.1	C57BL/6J	8412	na
+MMCHR4UN_CTG6	unlocalized-scaffold	4	Chromosome	JH584295.1	=	NT_187055.1	C57BL/6J	1976	na
+MMCHR5_RANDOM_CTG4	unlocalized-scaffold	5	Chromosome	GL456354.1	=	NT_166438.1	C57BL/6J	195993	na
+MMCHR5_RANDOM_CTG1	unlocalized-scaffold	5	Chromosome	JH584296.1	=	NT_187056.1	C57BL/6J	199368	na
+MMCHR5_RANDOM_CTG2	unlocalized-scaffold	5	Chromosome	JH584297.1	=	NT_187057.1	C57BL/6J	205776	na
+MMCHR5_RANDOM_CTG3	unlocalized-scaffold	5	Chromosome	JH584298.1	=	NT_187058.1	C57BL/6J	184189	na
+MMCHR5_RANDOM_CTG5	unlocalized-scaffold	5	Chromosome	JH584299.1	=	NT_187059.1	C57BL/6J	953012	na
+MMCHR7_RANDOM_CTG1	unlocalized-scaffold	7	Chromosome	GL456219.1	=	NT_166307.1	C57BL/6J	175968	na
+MMCHRX_RANDOM_CTG2	unlocalized-scaffold	X	Chromosome	GL456233.2	=	NT_165789.3	C57BL/6J	559103	na
+MMCHRY_CTGU1	unlocalized-scaffold	Y	Chromosome	JH584300.1	=	NT_187060.1	C57BL/6J	182347	na
+MMCHRY_CTGU2	unlocalized-scaffold	Y	Chromosome	JH584301.1	=	NT_187061.1	C57BL/6J	259875	na
+MMCHRY_CTGU3	unlocalized-scaffold	Y	Chromosome	JH584302.1	=	NT_187062.1	C57BL/6J	155838	na
+MMCHRY_CTGU4	unlocalized-scaffold	Y	Chromosome	JH584303.1	=	NT_187063.1	C57BL/6J	158099	na
+MSCHRUN_CTG13	unplaced-scaffold	na	na	GL456359.1	=	NT_166443.1	C57BL/6J	22974	na
+MSCHRUN_CTG14	unplaced-scaffold	na	na	GL456360.1	=	NT_166444.1	C57BL/6J	31704	na
+MSCHRUN_CTG21	unplaced-scaffold	na	na	GL456366.1	=	NT_166450.1	C57BL/6J	47073	na
+MSCHRUN_CTG2	unplaced-scaffold	na	na	GL456367.1	=	NT_166451.1	C57BL/6J	42057	na
+MSCHRUN_CTG22	unplaced-scaffold	na	na	GL456368.1	=	NT_166452.1	C57BL/6J	20208	na
+MSCHRUN_CTG19	unplaced-scaffold	na	na	GL456370.1	=	NT_166454.1	C57BL/6J	26764	na
+MSCHRUN_CTG16	unplaced-scaffold	na	na	GL456372.1	=	NT_166456.1	C57BL/6J	28664	na
+MSCHRUN_CTG3	unplaced-scaffold	na	na	GL456378.1	=	NT_166462.1	C57BL/6J	31602	na
+MSCHRUN_CTG20	unplaced-scaffold	na	na	GL456379.1	=	NT_166463.1	C57BL/6J	72385	na
+MSCHRUN_CTG4	unplaced-scaffold	na	na	GL456381.1	=	NT_166465.1	C57BL/6J	25871	na
+MSCHRUN_CTG5	unplaced-scaffold	na	na	GL456382.1	=	NT_166466.1	C57BL/6J	23158	na
+MSCHRUN_CTG6	unplaced-scaffold	na	na	GL456383.1	=	NT_166467.1	C57BL/6J	38659	na
+MSCHRUN_CTG7	unplaced-scaffold	na	na	GL456385.1	=	NT_166469.1	C57BL/6J	35240	na
+MSCHRUN_CTG17	unplaced-scaffold	na	na	GL456387.1	=	NT_166471.1	C57BL/6J	24685	na
+MSCHRUN_CTG18	unplaced-scaffold	na	na	GL456389.1	=	NT_166473.1	C57BL/6J	28772	na
+MSCHRUN_CTG9	unplaced-scaffold	na	na	GL456390.1	=	NT_166474.1	C57BL/6J	24668	na
+MSCHRUN_CTG10	unplaced-scaffold	na	na	GL456392.1	=	NT_166476.1	C57BL/6J	23629	na
+MSCHRUN_CTG12	unplaced-scaffold	na	na	GL456394.1	=	NT_166478.1	C57BL/6J	24323	na
+MSCHRUN_CTG15	unplaced-scaffold	na	na	GL456396.1	=	NT_166480.1	C57BL/6J	21240	na
+MSCHRUN_CTG23	unplaced-scaffold	na	na	JH584304.1	=	NT_187064.1	C57BL/6J	114452	na
+MSCHRUN_CTG24	unplaced-scaffold	na	na	MU069435.1	=	NW_023337853.1	C57BL/6J	31129	na
+MT	assembled-molecule	MT	Mitochondrion	AY172335.1	=	NC_005089.1	non-nuclear	16299	chrM
