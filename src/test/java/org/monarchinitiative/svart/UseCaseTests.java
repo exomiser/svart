@@ -3,6 +3,7 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
+import org.monarchinitiative.svart.util.VcfConverter;
 
 import java.nio.file.Path;
 
@@ -135,5 +136,25 @@ public class UseCaseTests {
         Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, Integer.parseInt(fields[2]), contig));
         Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, Integer.parseInt(fields[1]), contig));
         return GenomicRegion.of(contig, strand, LEFT_OPEN, start, end);
+    }
+
+    @Test
+    public void breakendsAreAlmostLikeNonBreakends() {
+        GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        VcfConverter vcfConverter = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+        // VCF file, parsed with the HTSJDK to get a VariantContext instance...
+        // CHR	POS	ID	REF	ALT
+        // chr1	12345	rs123456	C	T	6	PASS	.
+        Variant snv = vcfConverter.convert("chr1", "rs123456", 12345, "CCC", "TCC");
+        // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
+        Variant ins = vcfConverter.convertSymbolic("chr1", "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
+        // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        Variant bnd = vcfConverter.convertBreakend("1", "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+
+        assertThat(snv.ref(), equalTo(ins.ref()));
+        assertThat(snv.ref(), equalTo(bnd.ref()));
+        assertThat(snv.overlapsWith(ins), equalTo(true));
+        assertThat(snv.overlapsWith(bnd), equalTo(true));
+        assertThat(bnd.variantType(), equalTo(VariantType.BND));
     }
 }
