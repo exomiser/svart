@@ -20,7 +20,7 @@ public class VcfConverterTest {
     public class ConvertNonSymbolicTests {
 
         @Test
-        void convert() {
+        public void convert() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
             Variant snv = instance.convert("chr1", "rs123456", 12345, "C", "T");
@@ -28,7 +28,7 @@ public class VcfConverterTest {
         }
 
         @Test
-        void trimsInput() {
+        public void trimsInput() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
             Variant snv = instance.convert("chr1", "rs123456", 12345, "CCC", "TCC");
@@ -36,7 +36,7 @@ public class VcfConverterTest {
         }
 
         @Test
-        void throwsExceptionWithMultiAllelicSite() {
+        public void throwsExceptionWithMultiAllelicSite() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	CCC	TC, TCC	6	PASS	.
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convert("chr1", "rs123456", 12345, "CCC", "TC, TCC"));
@@ -44,13 +44,13 @@ public class VcfConverterTest {
         }
 
         @Test
-        void throwsExceptionWithSymbolicAllele() {
+        public void throwsExceptionWithSymbolicAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convert("chr1", "rs123456", 12345, "C", "<DEL>"));
             assertThat(exception.getMessage(), equalTo("Illegal symbolic alt allele <DEL>"));
         }
 
         @Test
-        void throwsExceptionWithBreakendAllele() {
+        public void throwsExceptionWithBreakendAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convert("chr1", "rs123456", 12345, "C", "C[2:321682["));
             assertThat(exception.getMessage(), equalTo("Illegal symbolic alt allele C[2:321682["));
         }
@@ -60,7 +60,7 @@ public class VcfConverterTest {
     public class ConvertSymbolicTests {
 
         @Test
-        void convertSymbolic() {
+        public void convertSymbolic() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
             Variant ins = instance.convertSymbolic("chr1", "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
@@ -68,13 +68,13 @@ public class VcfConverterTest {
         }
 
         @Test
-        void throwsExceptionWithNonSymbolicAllele() {
+        public void throwsExceptionWithNonSymbolicAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convertSymbolic("chr1", "rs123456", Position.of(12345), Position.of(12345), "C", "T", 0));
             assertThat(exception.getMessage(), equalTo("Illegal non-symbolic or breakend alt allele T"));
         }
 
         @Test
-        void throwsExceptionWithBreakendAllele() {
+        public void throwsExceptionWithBreakendAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convertSymbolic("chr1", "rs123456", Position.of(12345), Position.of(12345), "C", "C[2:321682[", 0));
             assertThat(exception.getMessage(), equalTo("Illegal non-symbolic or breakend alt allele C[2:321682["));
         }
@@ -84,7 +84,7 @@ public class VcfConverterTest {
     public class ConvertBreakendTests {
 
         @Test
-        void convertBreakend() {
+        public void convertBreakend() {
             // CHR	POS	ID	REF	ALT
             // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
             Variant bnd = instance.convertBreakend("1", "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
@@ -95,13 +95,13 @@ public class VcfConverterTest {
         }
 
         @Test
-        void throwsExceptionWithNonSymbolicAllele() {
+        public void throwsExceptionWithNonSymbolicAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convertBreakend("chr1", "rs123456", Position.of(12345), "C", "T", ConfidenceInterval.precise(), "", ""));
             assertThat(exception.getMessage(), equalTo("Illegal non-breakend alt allele T"));
         }
 
         @Test
-        void throwsExceptionWithSymbolicAllele() {
+        public void throwsExceptionWithSymbolicAllele() {
             Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.convertBreakend("chr1", "rs123456", Position.of(12345), "C", "<DEL>", ConfidenceInterval.precise(), "", ""));
             assertThat(exception.getMessage(), equalTo("Illegal non-breakend alt allele <DEL>"));
         }
