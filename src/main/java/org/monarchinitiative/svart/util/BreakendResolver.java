@@ -2,6 +2,7 @@ package org.monarchinitiative.svart.util;
 
 import org.monarchinitiative.svart.*;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,4 +101,23 @@ public class BreakendResolver {
                 leftStrand.isPositive() ? altSeq : Seq.reverseComplement(altSeq));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BreakendResolver that = (BreakendResolver) o;
+        return genomicAssembly.equals(that.genomicAssembly);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genomicAssembly);
+    }
+
+    @Override
+    public String toString() {
+        return "BreakendResolver{" +
+                "genomicAssembly=" + genomicAssembly.name() +
+                '}';
+    }
 }

@@ -34,6 +34,26 @@ public abstract class VariantTrimmer {
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? leftShift(start, ref, alt, baseRetentionStrategy) : rightShift(start, ref, alt, baseRetentionStrategy);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            LeftShiftingTrimmer that = (LeftShiftingTrimmer) o;
+            return baseRetentionStrategy.equals(that.baseRetentionStrategy);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(baseRetentionStrategy);
+        }
+
+        @Override
+        public String toString() {
+            return "LeftShiftingTrimmer{" +
+                    "baseRetentionStrategy=" + baseRetentionStrategy +
+                    '}';
+        }
     }
 
     public static VariantTrimmer rightShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
@@ -51,6 +71,26 @@ public abstract class VariantTrimmer {
         @Override
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? rightShift(start, ref, alt, baseRetentionStrategy) : leftShift(start, ref, alt, baseRetentionStrategy);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RightShiftingTrimmer that = (RightShiftingTrimmer) o;
+            return baseRetentionStrategy.equals(that.baseRetentionStrategy);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(baseRetentionStrategy);
+        }
+
+        @Override
+        public String toString() {
+            return "RightShiftingTrimmer{" +
+                    "baseRetentionStrategy=" + baseRetentionStrategy +
+                    '}';
         }
     }
 
@@ -191,6 +231,11 @@ public abstract class VariantTrimmer {
             }
             return rightIdx - 1;
         }
+
+        @Override
+        public String toString() {
+            return "RetainingCommonBase";
+        }
     }
 
     private static class RemovingCommonBase implements BaseRetentionStrategy {
@@ -225,6 +270,11 @@ public abstract class VariantTrimmer {
                 rightIdx++;
             }
             return rightIdx;
+        }
+
+        @Override
+        public String toString() {
+            return "RemovingCommonBase";
         }
     }
 
