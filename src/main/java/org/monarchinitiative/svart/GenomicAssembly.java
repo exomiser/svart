@@ -73,7 +73,7 @@ public interface GenomicAssembly {
 //# RefSeq assembly accession: GCF_000001405.39
 //# RefSeq assembly and GenBank assemblies identical: no
 
-    default GenomicAssembly of(String name, String organismName, String taxId, String submitter, String date, String genBankAccession, String refSeqAccession, Collection<Contig> contigs) {
+    static GenomicAssembly of(String name, String organismName, String taxId, String submitter, String date, String genBankAccession, String refSeqAccession, Collection<Contig> contigs) {
         return DefaultGenomicAssembly.builder()
                 .name(name)
                 .organismName(organismName)
