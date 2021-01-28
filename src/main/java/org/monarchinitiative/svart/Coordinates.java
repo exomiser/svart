@@ -1,6 +1,8 @@
 package org.monarchinitiative.svart;
 
 
+import java.util.Objects;
+
 import static org.monarchinitiative.svart.CoordinateSystem.LEFT_OPEN;
 
 /**
@@ -15,15 +17,15 @@ import static org.monarchinitiative.svart.CoordinateSystem.LEFT_OPEN;
 public class Coordinates {
 
     private Coordinates() {
-       // uninstantiable
+        // uninstantiable
     }
 
     /**
      * Returns the length of a region, in bases, for the given coordinates.
      *
      * @param coordinateSystem coordinate system for the positions
-     * @param start start coordinate of the region
-     * @param end end coordinate of the region
+     * @param start            start coordinate of the region
+     * @param end              end coordinate of the region
      * @return length of the region in bases
      */
     public static int length(CoordinateSystem coordinateSystem, int start, int end) {
@@ -40,8 +42,8 @@ public class Coordinates {
      * coordinate of 1 (i.e. the first base): invert(1) -> 5, invert(5) -> 1.
      *
      * @param coordinateSystem for the position
-     * @param pos position on the {@link Contig} in the given {@link CoordinateSystem}
-     * @param contig on which the coordinate lies.
+     * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
+     * @param contig           on which the coordinate lies.
      * @return the inverted coordinate on the {@link Contig}
      */
     public static int invertPosition(CoordinateSystem coordinateSystem, int pos, Contig contig) {
@@ -58,11 +60,11 @@ public class Coordinates {
      * that overlap(a, b) = overlap(b, a). The input {@link CoordinateSystem} are not required to match.
      *
      * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
-     * @param aStart start coordinate of interval a
-     * @param aEnd end coordinate of interval a
+     * @param aStart  start coordinate of interval a
+     * @param aEnd    end coordinate of interval a
      * @param bSystem {@link CoordinateSystem} for interval described by positions bStart and bEnd
-     * @param bStart start coordinate of interval b
-     * @param bEnd end coordinate of interval b
+     * @param bStart  start coordinate of interval b
+     * @param bEnd    end coordinate of interval b
      * @return true indicating intervals a and b overlap or false if they do not.
      */
     public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
@@ -82,11 +84,11 @@ public class Coordinates {
      * not required to match.
      *
      * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
-     * @param aStart start coordinate of interval a
-     * @param aEnd end coordinate of interval a
+     * @param aStart  start coordinate of interval a
+     * @param aEnd    end coordinate of interval a
      * @param bSystem {@link CoordinateSystem} for interval described by positions bStart and bEnd
-     * @param bStart start coordinate of interval b
-     * @param bEnd end coordinate of interval b
+     * @param bStart  start coordinate of interval b
+     * @param bEnd    end coordinate of interval b
      * @return true indicating interval a fully contains b or false if it does not.
      */
     public static boolean aContainsB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
@@ -103,5 +105,67 @@ public class Coordinates {
 
     private static int closedEnd(CoordinateSystem coordinateSystem, int end) {
         return coordinateSystem.endBound() == Bound.CLOSED ? end : end - 1;
+    }
+
+    /**
+     * Checks whether a given set of coordinates is valid. This checks that the coordinates do not overflow the bounds
+     * of the {@link Contig} and that the coordinates are provided in the correct orientation, i.e. indicate an empty or
+     * positive interval where the end is generally 'downstream' or numerically greater than the start. Exceptions here
+     * are empty intervals where:
+     * <p>
+     * fully-closed,  end = start - 1;
+     * <p>
+     * half-open,     end = start;
+     * <p>
+     * fully-open,    end = start + 1.
+     * <p>
+     * Invalid coordinates will result in an unrecoverable exception being thrown.
+     *
+     * @param coordinateSystem for the given coordinates
+     * @param contig           on which the coordinates lie.
+     * @param start            start of the interval
+     * @param end              end of the interval
+     */
+    public static void validateCoordinates(CoordinateSystem coordinateSystem, Contig contig, int start, int end) {
+        Objects.requireNonNull(coordinateSystem);
+        Objects.requireNonNull(contig);
+        switch (coordinateSystem) {
+            case FULLY_CLOSED:
+                if (start < 1 || end > contig.length()) {
+                    throw new CoordinatesOutOfBoundsException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+                }
+                if (start > end + 1) {
+                    // region [2,1] is an empty region, equivalent to (1,2)
+                    throw new InvalidCoordinatesException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at most one place past the end position");
+                }
+                break;
+            case LEFT_OPEN:
+                if (start < 0 || end > contig.length()) {
+                    throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
+                }
+                if (start > end) {
+                    // region (1,1] is an empty region, equivalent to (1,2)
+                    throw new InvalidCoordinatesException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
+                }
+                break;
+            case RIGHT_OPEN:
+                if (start < 1 || end > contig.length() + 1) {
+                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
+                }
+                if (start > end) {
+                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
+                    throw new InvalidCoordinatesException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
+                }
+                break;
+            case FULLY_OPEN:
+                if (start < 0 || end > contig.length() + 1) {
+                    throw new CoordinatesOutOfBoundsException("Fully-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + (contig.length() + 1) + ')');
+                }
+                if (start >= end) {
+                    // region in FULLY_OPEN coordinates - empty (1, 2), (1, 3) == [2, 2] == (1, 2] == [2, 3)
+                    throw new InvalidCoordinatesException("Fully-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at least one place before end position");
+                }
+                break;
+        }
     }
 }
