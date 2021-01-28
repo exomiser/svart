@@ -155,7 +155,10 @@ public class UseCaseTests {
         assertThat(snv.ref(), equalTo(bnd.ref()));
         assertThat(snv.overlapsWith(ins), equalTo(true));
         assertThat(snv.overlapsWith(bnd), equalTo(true));
-        assertThat(bnd.variantType(), equalTo(VariantType.BND));
+        assertThat(snv.isSymbolic(), equalTo(false));
+        assertThat(ins.isSymbolic(), equalTo(true));
+        assertThat(bnd.isSymbolic(), equalTo(true));
+        assertThat(bnd.isBreakend(), equalTo(true));
     }
 
     @Test

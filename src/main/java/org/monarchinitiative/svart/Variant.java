@@ -63,7 +63,11 @@ public interface Variant extends GenomicRegion {
     default boolean isSymbolic() {
         return VariantType.isSymbolic(alt());
     }
-    
+
+    default boolean isBreakend() {
+        return VariantType.isBreakend(alt()) || variantType() == VariantType.BND;
+    }
+
     static Comparator<? super Variant> naturalOrder() {
         return VariantNaturalOrderComparator.INSTANCE;
     }

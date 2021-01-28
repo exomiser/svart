@@ -33,6 +33,12 @@ public class DefaultVariantTest {
         }
 
         @Test
+        public void shouldNotBeBreakend() {
+            Variant instance = DefaultVariant.oneBased(chr1, 1, "A", "T");
+            assertThat(instance.isBreakend(), equalTo(false));
+        }
+
+        @Test
         public void snvOneBased() {
             Variant snv = DefaultVariant.oneBased(chr1, 1, "A", "T");
 
@@ -303,6 +309,18 @@ public class DefaultVariantTest {
         public void shouldBeSymbolic() {
             Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
             assertThat(instance.isSymbolic(), equalTo(true));
+        }
+
+        @Test
+        public void shouldNotBeBreakend() {
+            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            assertThat(instance.isBreakend(), equalTo(false));
+        }
+
+        @Test
+        public void shouldBeBreakend() {
+            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<BND>", 100);
+            assertThat(instance.isBreakend(), equalTo(true));
         }
 
         @Test

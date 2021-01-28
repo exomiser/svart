@@ -30,6 +30,7 @@ public class DefaultBreakendVariantTest {
         assertThat(variant.strand(), equalTo(Strand.POSITIVE));
         assertThat(variant.variantType(), equalTo(VariantType.BND));
         assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.oneBased()));
+        assertThat(variant.isBreakend(), equalTo(true));
 
         assertThat(variant.refLength(), equalTo(1));
         assertThat(variant.changeLength(), equalTo(0));
@@ -276,6 +277,8 @@ public class DefaultBreakendVariantTest {
         assertThat(variant.ref(), equalTo("C"));
         assertThat(variant.alt(), equalTo("AGTNNNNNCA"));
         assertThat(variant.changeLength(), equalTo(10));
+        assertThat(variant.isBreakend(), equalTo(true));
+
 
         assertThat(variant.withStrand(Strand.POSITIVE), sameInstance(variant));
         assertThat(variant.toOppositeStrand(), sameInstance(variant));
