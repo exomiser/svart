@@ -13,12 +13,12 @@ public class VcfConverter {
 
     private final GenomicAssembly genomicAssembly;
     private final VariantTrimmer variantTrimmer;
-    private final BreakendResolver breakendResolver;
+    private final VcfBreakendResolver vcfBreakendResolver;
 
     public VcfConverter(GenomicAssembly genomicAssembly, VariantTrimmer variantTrimmer) {
         this.genomicAssembly = Objects.requireNonNull(genomicAssembly);
         this.variantTrimmer = Objects.requireNonNull(variantTrimmer);
-        this.breakendResolver = new BreakendResolver(genomicAssembly);
+        this.vcfBreakendResolver = new VcfBreakendResolver(genomicAssembly);
     }
 
     public Variant convert(String chr, String id, int pos, String ref, String alt) {
@@ -46,7 +46,7 @@ public class VcfConverter {
             throw new IllegalArgumentException("Illegal non-breakend alt allele " + alt);
         }
         Contig contig = genomicAssembly.contigByName(chr);
-        return breakendResolver.resolve(eventId, id, mateId, contig, position, ciEnd, ref, alt);
+        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciEnd, ref, alt);
     }
 
     @Override
@@ -54,12 +54,12 @@ public class VcfConverter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VcfConverter that = (VcfConverter) o;
-        return genomicAssembly.equals(that.genomicAssembly) && variantTrimmer.equals(that.variantTrimmer) && breakendResolver.equals(that.breakendResolver);
+        return genomicAssembly.equals(that.genomicAssembly) && variantTrimmer.equals(that.variantTrimmer) && vcfBreakendResolver.equals(that.vcfBreakendResolver);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomicAssembly, variantTrimmer, breakendResolver);
+        return Objects.hash(genomicAssembly, variantTrimmer, vcfBreakendResolver);
     }
 
     @Override

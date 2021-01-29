@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class BreakendResolverTest {
+public class VcfBreakendResolverTest {
 
     public static final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 249250621, "NC_000001.10", "CM000663.1", "chr1");
     public static final Contig chr2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 243_199_373, "CM000664.1", "NC_000002.11", "chr2");
@@ -28,7 +28,7 @@ public class BreakendResolverTest {
             .contigs(List.of(chr1, chr2, chr13, chr17))
             .build();
 
-    private final BreakendResolver parser = new BreakendResolver(ASSEMBLY);
+    private final VcfBreakendResolver parser = new VcfBreakendResolver(ASSEMBLY);
 
     @Test
     public void resolve_PosPos() {
