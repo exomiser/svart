@@ -79,6 +79,26 @@ public class RegionTest {
         assertThat(region.overlapsWith(query), equalTo(expected));
     }
 
+
+    @ParameterizedTest
+    @CsvSource({
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 1, 2,  -1",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 2, 3,  0",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 3, 4,  0",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 4, 5,  0",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 5, 6,  0",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 6, 7,  0",
+            "FULLY_CLOSED, 4, 5,   FULLY_CLOSED, 7, 8,  1",
+    })
+    public void distanceTo(CoordinateSystem coordinateSystem, int start, int end,
+                           CoordinateSystem queryCoordinateSystem, int queryStart, int queryEnd,
+                           int expected) {
+        TestRegion region = TestRegion.of(coordinateSystem, start, end);
+        TestRegion query = TestRegion.of(queryCoordinateSystem, queryStart, queryEnd);
+
+        assertThat(region.distanceTo(query), equalTo(expected));
+    }
+
     @ParameterizedTest
     @CsvSource({
             "FULLY_OPEN,   1, 2,   0",

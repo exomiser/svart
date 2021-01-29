@@ -248,4 +248,93 @@ public class CoordinatesTest {
         }
 
     }
+
+    @Nested
+    public class DistanceTo {
+
+        @ParameterizedTest
+        @CsvSource({
+                // overlapping regions, thus distance is 0
+                "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,  2, 3,    0",
+                "FULLY_CLOSED, 1, 2,   LEFT_OPEN,     1, 3,    0",
+                "FULLY_CLOSED, 1, 2,   RIGHT_OPEN,    2, 4,    0",
+                "FULLY_CLOSED, 1, 2,   FULLY_OPEN,    1, 4,    0",
+
+                "LEFT_OPEN,    0, 2,   FULLY_CLOSED,  2, 3,    0",
+                "LEFT_OPEN,    0, 2,   LEFT_OPEN,     1, 3,    0",
+                "LEFT_OPEN,    0, 2,   RIGHT_OPEN,    2, 4,    0",
+                "LEFT_OPEN,    0, 2,   FULLY_OPEN,    1, 4,    0",
+
+                "RIGHT_OPEN,   1, 3,   FULLY_CLOSED,  2, 3,    0",
+                "RIGHT_OPEN,   1, 3,   LEFT_OPEN,     1, 3,    0",
+                "RIGHT_OPEN,   1, 3,   RIGHT_OPEN,    2, 4,    0",
+                "RIGHT_OPEN,   1, 3,   FULLY_OPEN,    1, 4,    0",
+
+                "FULLY_OPEN,   0, 3,   FULLY_CLOSED,  2, 3,    0",
+                "FULLY_OPEN,   0, 3,   LEFT_OPEN,     1, 3,    0",
+                "FULLY_OPEN,   0, 3,   RIGHT_OPEN,    2, 4,    0",
+                "FULLY_OPEN,   0, 3,   FULLY_OPEN,    1, 4,    0",
+        })
+        public void overlapping(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
+            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                // adjacent, thus distance is 0
+                "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,    3, 4,    0",
+                "FULLY_CLOSED, 1, 2,   LEFT_OPEN,       2, 4,    0",
+                "FULLY_CLOSED, 1, 2,   RIGHT_OPEN,      3, 5,    0",
+                "FULLY_CLOSED, 1, 2,   FULLY_OPEN,      2, 5,    0",
+
+                "LEFT_OPEN,    0, 2,   FULLY_CLOSED,    3, 4,    0",
+                "LEFT_OPEN,    0, 2,   LEFT_OPEN,       2, 4,    0",
+                "LEFT_OPEN,    0, 2,   RIGHT_OPEN,      3, 5,    0",
+                "LEFT_OPEN,    0, 2,   FULLY_OPEN,      2, 5,    0",
+
+                "RIGHT_OPEN,   1, 3,   FULLY_CLOSED,    3, 4,    0",
+                "RIGHT_OPEN,   1, 3,   LEFT_OPEN,       2, 4,    0",
+                "RIGHT_OPEN,   1, 3,   RIGHT_OPEN,      3, 5,    0",
+                "RIGHT_OPEN,   1, 3,   FULLY_OPEN,      2, 5,    0",
+
+                "FULLY_OPEN,   0, 3,   FULLY_CLOSED,    3, 4,    0",
+                "FULLY_OPEN,   0, 3,   LEFT_OPEN,       2, 4,    0",
+                "FULLY_OPEN,   0, 3,   RIGHT_OPEN,      3, 5,    0",
+                "FULLY_OPEN,   0, 3,   FULLY_OPEN,      2, 5,    0",
+        })
+        public void adjacent(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
+            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                // all possible combinations of coordinate systems
+                "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,    5, 6,    2",
+                "FULLY_CLOSED, 1, 2,   LEFT_OPEN,       4, 6,    2",
+                "FULLY_CLOSED, 1, 2,   RIGHT_OPEN,      5, 7,    2",
+                "FULLY_CLOSED, 1, 2,   FULLY_OPEN,      4, 7,    2",
+
+                "LEFT_OPEN,    0, 2,   FULLY_CLOSED,    5, 6,    2",
+                "LEFT_OPEN,    0, 2,   LEFT_OPEN,       4, 6,    2",
+                "LEFT_OPEN,    0, 2,   RIGHT_OPEN,      5, 7,    2",
+                "LEFT_OPEN,    0, 2,   FULLY_OPEN,      4, 7,    2",
+
+                "RIGHT_OPEN,   1, 3,   FULLY_CLOSED,    5, 6,    2",
+                "RIGHT_OPEN,   1, 3,   LEFT_OPEN,       4, 6,    2",
+                "RIGHT_OPEN,   1, 3,   RIGHT_OPEN,      5, 7,    2",
+                "RIGHT_OPEN,   1, 3,   FULLY_OPEN,      4, 7,    2",
+
+                "FULLY_OPEN,   0, 3,   FULLY_CLOSED,    5, 6,    2",
+                "FULLY_OPEN,   0, 3,   LEFT_OPEN,       4, 6,    2",
+                "FULLY_OPEN,   0, 3,   RIGHT_OPEN,      5, 7,    2",
+                "FULLY_OPEN,   0, 3,   FULLY_OPEN,      4, 7,    2",
+        })
+        public void distanceIsTwo(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
+            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+        }
+    }
+
 }

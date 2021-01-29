@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -222,6 +223,39 @@ public class GenomicRegionTest {
         Contig ctg2 = TestContig.of(2, 200);
         GenomicRegion other = GenomicRegion.oneBased(ctg2, Strand.POSITIVE, Position.of(2), Position.of(3));
         assertThat(oneToThree.contains(other), equalTo(false));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, 4, 5,   POSITIVE, 1,  2,  -1",
+            "POSITIVE, 4, 5,   NEGATIVE, 9, 10,  -1",
+            "POSITIVE, 4, 5,   POSITIVE, 2,  3,   0",
+            "POSITIVE, 4, 5,   NEGATIVE, 8,  9,   0",
+            "POSITIVE, 4, 5,   POSITIVE, 3,  4,   0",
+            "POSITIVE, 4, 5,   NEGATIVE, 7,  8,   0",
+            "POSITIVE, 4, 5,   POSITIVE, 6,  7,   0",
+            "POSITIVE, 4, 5,   NEGATIVE, 4,  5,   0",
+            "POSITIVE, 4, 5,   POSITIVE, 7,  8,   1",
+            "POSITIVE, 4, 5,   NEGATIVE, 3,  4,   1",
+    })
+    public void distanceTo(Strand xStrand, int xStart, int xEnd,
+                           Strand yStrand, int yStart, int yEnd,
+                           int expected) {
+        Contig ctg1 = TestContig.of(1, 10);
+        GenomicRegion x = GenomicRegion.of(ctg1, xStrand, CoordinateSystem.oneBased(), Position.of(xStart), Position.of(xEnd));
+        GenomicRegion y = GenomicRegion.of(ctg1, yStrand, CoordinateSystem.oneBased(), Position.of(yStart), Position.of(yEnd));
+        assertThat(x.distanceTo(y), equalTo(expected));
+    }
+
+    @Test
+    public void distanceTo_otherContig() {
+        GenomicRegion x = GenomicRegion.of(TestContig.of(1, 10), Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1), Position.of(2));
+        GenomicRegion y = GenomicRegion.of(TestContig.of(2, 10), Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1), Position.of(2));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> x.distanceTo(y));
+        assertThat(e.getMessage(), equalTo("Cannot calculate distance between regions on different contigs: 1 <-> 2"));
+
+        IllegalArgumentException f = assertThrows(IllegalArgumentException.class, () -> y.distanceTo(x));
+        assertThat(f.getMessage(), equalTo("Cannot calculate distance between regions on different contigs: 2 <-> 1"));
     }
 
     @Test
