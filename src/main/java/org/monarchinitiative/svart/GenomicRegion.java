@@ -54,7 +54,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return start coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int startOnStrand(Strand strand) {
-        return this.strand() == strand ? start() : Coordinates.invertPosition(coordinateSystem(), end(), contig());
+        return this.strand() == strand ? start() : Coordinates.invertPosition(coordinateSystem(), contig(), end());
     }
 
     /**
@@ -65,7 +65,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return end coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int endOnStrand(Strand strand) {
-        return this.strand() == strand ? end() : Coordinates.invertPosition(coordinateSystem(), start(), contig());
+        return this.strand() == strand ? end() : Coordinates.invertPosition(coordinateSystem(), contig(), start());
     }
 
     /**
@@ -114,73 +114,21 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
 
     boolean equals(Object o);
 
-    /**
-     * Create genomic position using <em>one-based</em> coordinate system with <em>precise</em> positions on the
-     * <em>forward</em> strand.
-     *
-     * @return one-based position
-     */
-    static GenomicRegion oneBased(Contig contig, int startPosition, int endPosition) {
-        return oneBased(contig, Strand.POSITIVE, Position.of(startPosition), Position.of(endPosition));
-    }
 
     /**
-     * Create genomic position using <em>one-based</em> coordinate system with <em>precise</em> positions on the
-     * <em>forward</em> strand.
+     * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code> with
+     * precise start and end coordinates
      *
-     * @return one-based position
+     * @return a genomic region
      */
-    static GenomicRegion oneBased(Contig contig, Strand strand, int startPosition, int endPosition) {
-        return of(contig, strand, CoordinateSystem.FULLY_CLOSED, Position.of(startPosition), Position.of(endPosition));
-    }
-
-    /**
-     * Create genomic region using <em>one-based</em> coordinate system.
-     *
-     * @return one-based region
-     */
-    static GenomicRegion oneBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition);
-    }
-
-
-    /**
-     * Create genomic position using <em>zero-based</em> coordinate system with <em>precise</em> positions on the
-     * <em>positive</em> strand.
-     *
-     * @return zero-based genomic region
-     */
-    static GenomicRegion zeroBased(Contig contig, int startPosition, int endPosition) {
-        return zeroBased(contig, Strand.POSITIVE, startPosition, endPosition);
-    }
-
-    /**
-     * Create genomic position using <em>one-based</em> coordinate system with <em>precise</em> positions on the
-     * <em>forward</em> strand.
-     *
-     * @return one-based position
-     */
-    static GenomicRegion zeroBased(Contig contig, Strand strand, int startPosition, int endPosition) {
-        return of(contig, strand, CoordinateSystem.LEFT_OPEN, Position.of(startPosition), Position.of(endPosition));
-    }
-
-    /**
-     * Create genomic region using coordinates in <em>zero-based</em> coordinate system.
-     *
-     * @return zero-based genomic region
-     */
-    static GenomicRegion zeroBased(Contig contig, Strand strand, Position startPosition, Position endPosition) {
-        return of(contig, strand, CoordinateSystem.LEFT_OPEN, startPosition, endPosition);
-    }
-
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
         return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end));
     }
 
     /**
-     * Create genomic position on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
+     * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
      *
-     * @return a position
+     * @return a genomic position
      */
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
         return DefaultGenomicRegion.of(contig, strand, coordinateSystem, startPosition, endPosition);

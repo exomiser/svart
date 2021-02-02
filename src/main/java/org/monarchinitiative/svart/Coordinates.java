@@ -42,11 +42,11 @@ public class Coordinates {
      * coordinate of 1 (i.e. the first base): invert(1) -> 5, invert(5) -> 1.
      *
      * @param coordinateSystem for the position
-     * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
      * @param contig           on which the coordinate lies.
+     * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
      * @return the inverted coordinate on the {@link Contig}
      */
-    public static int invertPosition(CoordinateSystem coordinateSystem, int pos, Contig contig) {
+    public static int invertPosition(CoordinateSystem coordinateSystem, Contig contig, int pos) {
         return contig.length() + lengthDelta(coordinateSystem) - pos;
     }
 
@@ -105,6 +105,29 @@ public class Coordinates {
 
     private static int closedEnd(CoordinateSystem coordinateSystem, int end) {
         return coordinateSystem.endBound() == Bound.CLOSED ? end : end - 1;
+    }
+
+    /**
+     * Returns the required delta to be added to a start position in order to produce an end position in the given
+     * {@link CoordinateSystem}. The start position <em>must</em> be in the same coordinate system as provided to this
+     * method in order that the correct delta be returned.
+     * <p>
+     * The end delta value is used, for example, when calculating the end position of a region. Given the coordinate
+     * system (C) and a reference allele starting at start position (S) with Length (L), the end position (E) is
+     * calculated by adding the delta (D). i.e. E = S + L + D
+     * <pre>
+     *   C   S  L  E   D
+     *   FC  1  1  1  -1  (S + L - 1)  ('one-based')
+     *   LO  0  1  1   0  (S + L)      ('zero-based')
+     *   RO  1  1  2   0  (S + L)
+     *   FO  0  1  2  +1  (S + L + 1)
+     * </pre>
+     *
+     * @param coordinateSystem The coordinateSystem of the required delta
+     * @return a delta of -1, 0 or +1 to be added to the start position.
+     */
+    public static int endDelta(CoordinateSystem coordinateSystem) {
+        return coordinateSystem == CoordinateSystem.FULLY_CLOSED ? -1 : coordinateSystem == CoordinateSystem.FULLY_OPEN ? 1 : 0;
     }
 
     /**

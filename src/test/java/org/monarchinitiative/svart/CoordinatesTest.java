@@ -65,7 +65,7 @@ public class CoordinatesTest {
     })
     public void invert(CoordinateSystem coordinateSystem, int pos, int expected) {
         Contig contig = TestContig.of(1, 5);
-        assertThat(Coordinates.invertPosition(coordinateSystem, pos, contig), equalTo(expected));
+        assertThat(Coordinates.invertPosition(coordinateSystem, contig, pos), equalTo(expected));
     }
 
     @Nested
@@ -246,6 +246,16 @@ public class CoordinatesTest {
             Exception exception = assertThrows(InvalidCoordinatesException.class, () -> Coordinates.validateCoordinates(coordinateSystem, contig, start, end));
             assertThat(exception.getMessage(), containsString("coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position"));
         }
+    }
 
+    @ParameterizedTest
+    @CsvSource({
+        "FULLY_CLOSED, -1",
+        "LEFT_OPEN,     0",
+        "RIGHT_OPEN,    0",
+        "FULLY_OPEN,    1",
+    })
+    public void endDelta(CoordinateSystem coordinateSystem, int expected) {
+        assertThat(Coordinates.endDelta(coordinateSystem), equalTo(expected));
     }
 }

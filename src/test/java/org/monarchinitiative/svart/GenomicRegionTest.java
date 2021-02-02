@@ -18,45 +18,45 @@ public class GenomicRegionTest {
 
     @Test
     public void oneBasedSingleBase() {
-        GenomicRegion instance = GenomicRegion.oneBased(chr1, Strand.POSITIVE, 1, 1);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1));
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.oneBased(chr1, Strand.NEGATIVE, 5, 5)));
-        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegion.zeroBased(chr1, Strand.NEGATIVE, 4, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(5), Position.of(5))));
+        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, Position.of(4), Position.of(5))));
     }
 
     @Test
     public void zeroBasedSingleBase() {
-        GenomicRegion instance = GenomicRegion.zeroBased(chr1, Strand.POSITIVE, 0, 1);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(1));
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.zeroBased(chr1, Strand.NEGATIVE, 4, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, Position.of(4), Position.of(5))));
     }
 
     @Test
     public void oneBasedMultiBase() {
-        GenomicRegion instance = GenomicRegion.oneBased(chr1, Strand.POSITIVE, 1, 2);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(2));
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(4), Position.of(5))));
     }
 
     @Test
     public void zeroBasedMultiBase() {
-        GenomicRegion instance = GenomicRegion.zeroBased(chr1, Strand.POSITIVE, 0, 2);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(2));
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.zeroBased(chr1, Strand.NEGATIVE, 3, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, Position.of(3), Position.of(5))));
     }
 
     @Test
     public void flipStrandAndChangeCoordinateSystem() {
-        GenomicRegion instance = GenomicRegion.zeroBased(chr1, Strand.POSITIVE, Position.of(0), Position.of(2));
-        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegion.oneBased(chr1, Strand.NEGATIVE, Position.of(4), Position.of(5))));
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(2));
+        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(4), Position.of(5))));
     }
 
     @ParameterizedTest
@@ -218,9 +218,9 @@ public class GenomicRegionTest {
 
     @Test
     public void containsRegion_otherContig() {
-        GenomicRegion oneToThree = GenomicRegion.oneBased(chr1, Strand.POSITIVE, Position.of(1), Position.of(3));
+        GenomicRegion oneToThree = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(3));
         Contig ctg2 = TestContig.of(2, 200);
-        GenomicRegion other = GenomicRegion.oneBased(ctg2, Strand.POSITIVE, Position.of(2), Position.of(3));
+        GenomicRegion other = GenomicRegion.of(ctg2, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(2), Position.of(3));
         assertThat(oneToThree.contains(other), equalTo(false));
     }
 
