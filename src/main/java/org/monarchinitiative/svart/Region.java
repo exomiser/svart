@@ -67,6 +67,21 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
     }
 
+    /**
+     * Returns the distance between <code>this</code> and the <code>other</code> regions. The distance represents
+     * the number of bases present between the regions.
+     * <p>
+     * The distance is zero if the <code>a</code> and <code>b</code>
+     * are adjacent or if they overlap. The distance is positive if <code>a</code> is downstream of <code>b</code>
+     * and negative if <code>a</code> is located downstream from <code>b</code>.
+     *
+     * @param other region
+     * @return distance from <code>this</code> region to the <code>other</code> region
+     */
+    default int distanceTo(Region<?> other) {
+        return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+    }
+
     default int length() {
         return Coordinates.length(coordinateSystem(), start(), end());
     }

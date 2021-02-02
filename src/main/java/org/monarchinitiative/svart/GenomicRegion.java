@@ -84,6 +84,29 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
+    /**
+     * Returns the distance between <code>this</code> and the <code>other</code> regions. The distance represents
+     * the number of bases present between the regions.
+     * <p>
+     * The distance is zero if the <code>a</code> and <code>b</code>
+     * are adjacent or if they overlap. The distance is positive if <code>a</code> is downstream of <code>b</code>
+     * and negative if <code>a</code> is located downstream from <code>b</code>.
+     *
+     * @param other genomic region
+     * @return distance from <code>this</code> region to the <code>other</code> region
+     */
+    default int distanceTo(GenomicRegion other) {
+        if (contig().id() != other.contig().id()) {
+            throw new IllegalArgumentException("Cannot calculate distance between regions on different contigs: " + contig().id() + " <-> " + other.contig().id());
+        }
+        if (this.strand() == other.strand()) {
+            return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        }
+        int otherStart = other.startOnStrand(this.strand());
+        int otherEnd = other.endOnStrand(this.strand());
+        return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+    }
+
     default GenomicRegion withPadding(int padding) {
         return withPadding(padding, padding);
     }
