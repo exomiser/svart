@@ -57,6 +57,13 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         return this.strand() == strand ? start() : Coordinates.invertPosition(coordinateSystem(), contig(), end());
     }
 
+    default int startOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
+        if (this.strand() == strand && this.coordinateSystem() == coordinateSystem) {
+            return start();
+        }
+        return startOnStrand(strand) + coordinateSystem().startDelta(coordinateSystem);
+    }
+
     /**
      * Returns the end position for this region on the given strand. The resulting position will be given in the
      * coordinates indicated by the coordinateSystem of the object instance.
@@ -66,6 +73,13 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      */
     default int endOnStrand(Strand strand) {
         return this.strand() == strand ? end() : Coordinates.invertPosition(coordinateSystem(), contig(), start());
+    }
+
+    default int endOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
+        if (this.strand() == strand && this.coordinateSystem() == coordinateSystem) {
+            return end();
+        }
+        return endOnStrand(strand) + coordinateSystem().endDelta(coordinateSystem);
     }
 
     /**
@@ -100,11 +114,11 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
             throw new IllegalArgumentException("Cannot calculate distance between regions on different contigs: " + contig().id() + " <-> " + other.contig().id());
         }
         if (this.strand() == other.strand()) {
-            return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+            return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
         }
         int otherStart = other.startOnStrand(this.strand());
         int otherEnd = other.endOnStrand(this.strand());
-        return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+        return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
     }
 
     default GenomicRegion withPadding(int padding) {

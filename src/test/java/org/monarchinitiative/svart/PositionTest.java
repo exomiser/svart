@@ -136,6 +136,6 @@ public class PositionTest {
     public void invert(int pos, int expected) {
         Contig contig = TestContig.of(1, 5);
         CoordinateSystem any = CoordinateSystem.FULLY_OPEN;
-        assertThat(Position.of(pos).invert(contig, any), equalTo(Position.of(expected)));
+        assertThat(Position.of(pos).invert(any, contig), equalTo(Position.of(expected)));
     }
 }

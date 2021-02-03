@@ -79,7 +79,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @return distance from <code>this</code> region to the <code>other</code> region
      */
     default int distanceTo(Region<?> other) {
-        return Coordinates.distanceTo(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
     }
 
     default int length() {

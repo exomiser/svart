@@ -23,8 +23,8 @@ class ImprecisePosition implements Position {
     }
 
     @Override
-    public Position invert(Contig contig, CoordinateSystem coordinateSystem) {
-        int inverted = Coordinates.invertPosition(coordinateSystem, pos, contig);
+    public Position invert(CoordinateSystem coordinateSystem, Contig contig) {
+        int inverted = Coordinates.invertPosition(coordinateSystem, contig, pos);
         return Position.of(inverted, confidenceInterval().invert());
     }
 

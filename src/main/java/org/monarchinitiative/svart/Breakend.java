@@ -8,8 +8,8 @@ import org.monarchinitiative.svart.impl.DefaultBreakend;
  */
 public interface Breakend extends GenomicRegion {
 
-    static Breakend unresolved() {
-        return UnresolvedBreakend.instance();
+    static Breakend unresolved(CoordinateSystem coordinateSystem) {
+        return UnresolvedBreakend.instance(coordinateSystem);
     }
 
     /**
@@ -40,10 +40,10 @@ public interface Breakend extends GenomicRegion {
      * @return <code>true</code> if the breakend is unresolved
      */
     default boolean isUnresolved() {
-        return this.equals(unresolved());
+        return this.equals(unresolved(coordinateSystem()));
     }
 
-    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position pos) {
-        return DefaultBreakend.of(contig, id, strand, coordinateSystem, pos);
+    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
+        return DefaultBreakend.of(contig, id, strand, coordinateSystem, start, end);
     }
 }

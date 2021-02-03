@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.BaseBreakendVariant;
+import org.monarchinitiative.svart.BaseVariant;
 import org.monarchinitiative.svart.Breakend;
 
 /**
@@ -11,12 +12,16 @@ import org.monarchinitiative.svart.Breakend;
  */
 public final class DefaultBreakendVariant extends BaseBreakendVariant<DefaultBreakendVariant> {
 
-    public static DefaultBreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        return new DefaultBreakendVariant(eventId, left, right, ref, alt);
-    }
-
     private DefaultBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
         super(eventId, left, right, ref, alt);
+    }
+
+    private DefaultBreakendVariant(Builder builder) {
+        super(builder);
+    }
+
+    public static DefaultBreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
+        return new DefaultBreakendVariant(eventId, left, right, ref, alt);
     }
 
     @Override
@@ -43,5 +48,22 @@ public final class DefaultBreakendVariant extends BaseBreakendVariant<DefaultBre
                 ", ref=" + ref() +
                 ", alt='" + alt() + '\'' +
                 '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder extends BaseBreakendVariant.Builder<Builder> {
+
+        @Override
+        public DefaultBreakendVariant build() {
+            return new DefaultBreakendVariant(self());
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
     }
 }

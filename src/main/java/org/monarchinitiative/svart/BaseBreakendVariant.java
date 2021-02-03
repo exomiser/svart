@@ -17,14 +17,22 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
 
     protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
         super(left.contig(), left.strand(), left.coordinateSystem(), left.startPosition(), left.endPosition());
-        if (left.coordinateSystem() != right.coordinateSystem()) {
-            throw new IllegalStateException("Left and right ends of breakend must have same coordinate system!");
-        }
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
         this.ref = Objects.requireNonNull(ref, "Ref sequence cannot be null");
         this.alt = Objects.requireNonNull(alt, "Alt sequence cannot be null");
+        //check alt is either empty or contains [ATGC]+ / IUPAC bases in VcfBreakendResolver
+        if (left.coordinateSystem() != right.coordinateSystem()) {
+            throw new IllegalStateException("Breakend variant left and right breakends must have same coordinate system!");
+        }
+        if (left.isUnresolved()) {
+            throw new IllegalArgumentException("Left breakend cannot be unresolved.");
+        }
+    }
+
+    protected BaseBreakendVariant(Builder<?> builder) {
+        this(builder.eventId, builder.left, builder.right, builder.ref, builder.alt);
     }
 
     protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String alt);
@@ -63,7 +71,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
 
     @Override
     public Position startPosition() {
-        return left.startPosition();
+        return left.startPosition().shift(-ref.length());
     }
 
     @Override
@@ -88,22 +96,6 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         Breakend leftAltered = left.withCoordinateSystem(coordinateSystem);
         Breakend rightAltered = right.withCoordinateSystem(coordinateSystem);
         return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, alt);
-    }
-
-    /**
-     * @return length of the sequence inserted between breakends
-     */
-    @Override
-    public int length() {
-        return alt.length();
-    }
-
-    /**
-     * @return length of the ref allele
-     */
-    @Override
-    public int refLength() {
-        return ref.length();
     }
 
     /**
@@ -205,7 +197,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
                 '}';
     }
 
-    protected abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
+    public abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
 
         protected Breakend left;
         protected Breakend right;
@@ -244,7 +236,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
             return self();
         }
 
-        protected abstract BaseGenomicRegion<?> build();
+        protected abstract BaseBreakendVariant<?> build();
 
         protected abstract T self();
     }

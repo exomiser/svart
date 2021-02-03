@@ -1,6 +1,5 @@
 package org.monarchinitiative.svart.impl;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.*;
 
@@ -17,36 +16,41 @@ public class DefaultBreakendTest {
     @Test
     public void properties() {
         Position position = Position.of(3, -2, 1);
-        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position);
+        Breakend breakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.zeroBased(), position, position);
 
-        MatcherAssert.assertThat(three.contig(), equalTo(ctg1));
-        MatcherAssert.assertThat(three.contigId(), equalTo(1));
-        MatcherAssert.assertThat(three.contigName(), equalTo("1"));
-        MatcherAssert.assertThat(three.startPosition(), equalTo(position));
-        MatcherAssert.assertThat(three.strand(), equalTo(Strand.POSITIVE));
-        assertThat(three.id(), equalTo("a"));
+        assertThat(breakend.contig(), equalTo(ctg1));
+        assertThat(breakend.strand(), equalTo(Strand.POSITIVE));
+        assertThat(breakend.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(breakend.startPosition(), equalTo(position));
+        assertThat(breakend.endPosition(), equalTo(position));
+        assertThat(breakend.id(), equalTo("a"));
     }
 
     @Test
     public void withStrand() {
         Position position = Position.of(3, -2, 1);
-        DefaultBreakend three = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.oneBased(), position);
+        Breakend posBreakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.zeroBased(), position, position);
 
-        MatcherAssert.assertThat(three.withStrand(Strand.POSITIVE), is(sameInstance(three)));
+        assertThat(posBreakend.withStrand(Strand.POSITIVE), is(sameInstance(posBreakend)));
 
-        DefaultBreakend breakend = three.withStrand(Strand.NEGATIVE);
-        MatcherAssert.assertThat(breakend.contig(), equalTo(ctg1));
-        MatcherAssert.assertThat(breakend.start(), equalTo(8));
-        MatcherAssert.assertThat(breakend.startPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-1, 2)));
-        assertThat(breakend.id(), is("a"));
+        Breakend negBreakend = posBreakend.withStrand(Strand.NEGATIVE);
+        assertThat(negBreakend.contig(), equalTo(ctg1));
+        assertThat(negBreakend.strand(), equalTo(Strand.NEGATIVE));
+        assertThat(negBreakend.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(negBreakend.start(), equalTo(7));
+        assertThat(negBreakend.end(), equalTo(7));
+        assertThat(negBreakend.id(), is("a"));
     }
 
     @Test
     public void unresolved() {
-        Breakend unresolved = Breakend.unresolved();
+        Breakend unresolved = Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
         assertThat(unresolved.isUnresolved(), equalTo(true));
         assertThat(unresolved.contig(), equalTo(Contig.unknown()));
         assertThat(unresolved.strand(), equalTo(Strand.POSITIVE));
+        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(unresolved.start(), equalTo(0));
+        assertThat(unresolved.end(), equalTo(0));
         assertThat(unresolved.id(), equalTo(""));
     }
 }

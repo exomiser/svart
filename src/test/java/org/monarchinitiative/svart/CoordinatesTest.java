@@ -286,8 +286,8 @@ public class CoordinatesTest {
                 "FULLY_OPEN,   0, 3,   FULLY_OPEN,    1, 4,    0",
         })
         public void overlapping(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
-            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
-            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+            assertThat(Coordinates.distanceAToB(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceAToB(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
         }
 
         @ParameterizedTest
@@ -314,8 +314,8 @@ public class CoordinatesTest {
                 "FULLY_OPEN,   0, 3,   FULLY_OPEN,      2, 5,    0",
         })
         public void adjacent(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
-            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
-            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+            assertThat(Coordinates.distanceAToB(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceAToB(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
         }
 
         @ParameterizedTest
@@ -342,8 +342,8 @@ public class CoordinatesTest {
                 "FULLY_OPEN,   0, 3,   FULLY_OPEN,      4, 7,    2",
         })
         public void distanceIsTwo(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
-            assertThat(Coordinates.distanceTo(x, xStart, xEnd, y, yStart, yEnd), is(expected));
-            assertThat(Coordinates.distanceTo(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
+            assertThat(Coordinates.distanceAToB(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+            assertThat(Coordinates.distanceAToB(y, yStart, yEnd, x, xStart, xEnd), is(-expected));
         }
     }
 

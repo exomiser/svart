@@ -1,12 +1,11 @@
 package org.monarchinitiative.svart.util;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,103 +17,151 @@ import static org.hamcrest.Matchers.*;
  */
 public class VcfBreakendResolverTest {
 
-    public static final Contig chr1 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 249250621, "NC_000001.10", "CM000663.1", "chr1");
-    public static final Contig chr2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 243_199_373, "CM000664.1", "NC_000002.11", "chr2");
-    public static final Contig chr13 = Contig.of(3, "13", SequenceRole.ASSEMBLED_MOLECULE, "13", AssignedMoleculeType.CHROMOSOME, 115_169_878, "CM000675.1", "NC_000013.10", "chr13");
-    public static final Contig chr17 = Contig.of(4, "17", SequenceRole.ASSEMBLED_MOLECULE, "17", AssignedMoleculeType.CHROMOSOME, 83_257_441, "CM000679.2", "NC_000017.11", "chr17");
+    private final GenomicAssembly assembly = testAssembly(TestContig.of(1, 5), TestContig.of(2, 10));
 
-    private static final GenomicAssembly ASSEMBLY = DefaultGenomicAssembly.builder().name("TestAssembly").name("test").organismName("Wookie")
-            .taxId("9607").date("3021-01-15").submitter("Han").genBankAccession("GB1").refSeqAccession("RS1")
-            .contigs(List.of(chr1, chr2, chr13, chr17))
-            .build();
-
-    private final VcfBreakendResolver parser = new VcfBreakendResolver(ASSEMBLY);
-
-    @Test
-    public void resolve_PosPos() {
-        // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        BreakendVariant variant = parser.resolve("tra2", "bnd_U", "bnd_V", chr13,
-                Position.of(123_456), ConfidenceInterval.precise(), "C", "C[2:321682[");
-
-        // Breakended bits
-        assertThat(variant.mateId(), equalTo("bnd_V"));
-        assertThat(variant.eventId(), equalTo("tra2"));
-
-        // Variant bits
-        assertThat(variant.id(), equalTo("bnd_U"));
-        assertThat(variant.ref(), equalTo("C"));
-        assertThat(variant.alt(), equalTo("")); // no inserted sequence
-        assertThat(variant.refLength(), equalTo(1));
-        assertThat(variant.changeLength(), equalTo(0)); // length of the inserted sequence
-        assertThat(variant.length(), equalTo(0)); // length of the inserted sequence
-        assertThat(variant.variantType(), equalTo(VariantType.BND));
-        assertThat(variant.isSymbolic(), equalTo(true));
-
-        // Left breakend
-        Breakend left = variant.left();
-        assertThat(left.id(), equalTo("bnd_U"));
-        assertThat(left.isUnresolved(), equalTo(false));
-        assertThat(left.contig(), equalTo(chr13));
-        assertThat(left.startPosition(), equalTo(Position.of(123_456)));
-        assertThat(left.endPosition(), equalTo(Position.of(123_456)));
-        assertThat(left.strand(), equalTo(Strand.POSITIVE));
-        assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.oneBased()));
-
-        // Right breakend
-        Breakend right = variant.right();
-        assertThat(right.id(), equalTo("bnd_V"));
-        assertThat(right.isUnresolved(), equalTo(false));
-        assertThat(right.contig(), equalTo(chr2));
-        assertThat(right.startPosition(), equalTo(Position.of(321_682)));
-        assertThat(right.endPosition(), equalTo(Position.of(321_682)));
-        assertThat(right.strand(), equalTo(Strand.POSITIVE));
-        assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.oneBased()));
-    }
-
-    @Test
-    public void resolve_NegPos() {
-        // 13  123457  bnd_X   A   [17:198983[A    6   PASS    SVTYPE=BND;MATEID=bnd_Z;EVENT=tra3
-        BreakendVariant variant = parser.resolve("tra3", "bnd_X", "bnd_Z", chr13,
-                Position.of(123_457), ConfidenceInterval.precise(), "A", "[17:198983[A");
-
-        assertThat(variant.left().contig(), equalTo(chr13));
-        assertThat(variant.left().startPosition(), equalTo(Position.of(chr13.length() - 123_457 + 1)));
-        assertThat(variant.left().strand(), equalTo(Strand.NEGATIVE));
-
-        assertThat(variant.right().contig(), equalTo(chr17));
-        assertThat(variant.right().startPosition(), equalTo(Position.of(198_983)));
-        assertThat(variant.right().strand(), equalTo(Strand.POSITIVE));
-    }
-
-    @Test
-    public void resolve_PosNeg() {
-        // 2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND;MATEID=bnd_Y;EVENT=tra1
-        BreakendVariant variant = parser.resolve("tra1", "bnd_W", "bnd_Y", chr2,
-                Position.of(321_681), ConfidenceInterval.precise(), "G", "G]17:198982]");
-
-        assertThat(variant.left().contig(), equalTo(chr2));
-        assertThat(variant.left().startPosition(), equalTo(Position.of(321_681)));
-        assertThat(variant.left().strand(), equalTo(Strand.POSITIVE));
-
-        assertThat(variant.right().contig(), equalTo(chr17));
-        assertThat(variant.right().startPosition(), equalTo(Position.of(chr17.length() - 198_982 + 1)));
-        assertThat(variant.right().strand(), equalTo(Strand.NEGATIVE));
+    private GenomicAssembly testAssembly(Contig... contigs) {
+        return GenomicAssembly.of("TestAssembly", "Wookie", "9607", "Han", "3021-01-15", "GB1", "RS1", Arrays.asList(contigs));
     }
 
     @ParameterizedTest
     @CsvSource(value = {
-            "C,  C(2:321682[,      Invalid breakend alt record C(2:321682[",
-            "C,  C[2:32I682[,      Invalid breakend alt record C[2:32I682[",
-            "C,  C[X:321682[,      Unknown mate contig `X`",
-            "C,  C[2:321682[G,     Sequence present both at the beginning (`C`) and the end (`G`) of alt field",
-            "C,  G[2:321682[,      Invalid breakend alt `G[2:321682[`. No match for ref allele `C` neither at the beginning nor at the end",
-            "C,  [2:321682[G,      Invalid breakend alt `[2:321682[G`. No match for ref allele `C` neither at the beginning nor at the end",
-            "C,  C[2:321682],      Invalid bracket orientation in `C[2:321682]`",
+            "CT,  CT[2:7[,    Invalid breakend! Ref allele 'CT' must be single base",
+            "C,  C(2:7[,      Invalid breakend alt record C(2:7[",
+            "C,  C[2:A[,      Invalid breakend alt record C[2:A[",
+            "C,  C[X:7[,      Unknown mate contig `X`",
+            "C,  C[2:7[G,     Sequence present both at the beginning (`C`) and the end (`G`) of alt field",
+            "C,  G[2:7[,      Invalid breakend alt `G[2:7[`. No matching ref allele `C` at beginning or end of alt sequence",
+            "C,  [2:7[G,      Invalid breakend alt `[2:7[G`. No matching ref allele `C` at beginning or end of alt sequence",
+            "C,  C[2:7],      Invalid bracket orientation in `C[2:7]`",
     })
-    public void resolve_invalidInput(String ref, String alt, String message) {
+    public void invalidInput(String ref, String alt, String message) {
+        VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> parser.resolve("tra2", "bnd_U", "bnd_V", chr13,
-                        Position.of(123_456), ConfidenceInterval.precise(), ref, alt));
+                () -> instance.resolve("tra2", "bnd_U", "bnd_V", assembly.contigById(1), Position.of(3), ConfidenceInterval.precise(), ref, alt));
         assertThat(e.getMessage(), equalTo(message));
+    }
+
+    @Nested
+    public class AlleleSequenceTests {
+
+        @ParameterizedTest
+        @CsvSource({
+                "bndA, bndB, chr1, 3, C, CAGTNNNNNCA[chr2:6[,    chr1, POSITIVE, 3, 3, C, AGTNNNNNCA",
+                "bndA, bndB, chr1, 3, C, CAGTNNNNNCA]chr2:6],    chr1, POSITIVE, 3, 3, C, AGTNNNNNCA",
+                "bndA, bndB, chr1, 3, C, ]chr2:6]AGTNNNNNCAC,    chr1, NEGATIVE, 2, 2, G, TGNNNNNACT",
+                "bndA, bndB, chr1, 3, C, [chr2:6[AGTNNNNNCAC,    chr1, NEGATIVE, 2, 2, G, TGNNNNNACT",
+                "bndA, '', chr1, 3, C, C.,                       chr1, POSITIVE, 3, 3, C, .",
+                "bndA, '', chr1, 3, C, .C,                       chr1, NEGATIVE, 2, 2, G, .",
+        })
+        public void parseAlleles(String id, String mateId, String leftChr, int leftPos, String ref, String alt,
+                                 String leftContig, Strand leftStrand, int leftStart, int leftEnd,
+                                 String exptRef, String exptAlt) {
+
+            GenomicAssembly assembly = testAssembly(TestContig.of(1, 5), TestContig.of(2, 10));
+
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+            BreakendVariant variant = instance.resolve("event1", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
+            assertThat(variant.eventId(), equalTo("event1"));
+            assertThat(variant.mateId(), equalTo(mateId));
+            assertThat(variant.id(), equalTo(id));
+            assertThat(variant.contig(), equalTo(assembly.contigByName(leftContig)));
+            assertThat(variant.strand(), equalTo(leftStrand));
+            assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(variant.start(), equalTo(leftStart));
+            assertThat(variant.end(), equalTo(leftEnd));
+            assertThat(variant.ref(), equalTo(exptRef));
+            assertThat(variant.alt(), equalTo(exptAlt));
+        }
+    }
+
+    @Nested
+    public class CoordinateTests {
+
+        @ParameterizedTest
+        @CsvSource({
+                // id, mateId, leftChr, leftPos, ref, alt,  expected left coordinates
+                "bndA, bndB, chr1, 3, C, C[chr2:6[,       chr1, POSITIVE, 4, 3",
+                "bndA, bndB, chr1, 3, C, C]chr2:6],       chr1, POSITIVE, 4, 3",
+                "bndA, bndB, chr1, 3, C, ]chr2:6]C,       chr1, NEGATIVE, 3, 2",
+                "bndA, bndB, chr1, 3, C, [chr2:6[C,       chr1, NEGATIVE, 3, 2",
+                "bndA, bndB, chr1, 3, C, C.,              chr1, POSITIVE, 4, 3",
+                "bndA, bndB, chr1, 3, C, .C,              chr1, NEGATIVE, 3, 2",
+        })
+        public void leftBreakend(String id, String mateId, String leftChr, int leftPos, String ref, String alt, String leftContig, Strand leftStrand, int leftStart, int leftEnd) {
+
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+
+            // bndA         |
+            // ctg1 +  1 2 3 4 5
+            // ctg1 +  A G C T T
+            // ctg1 -  T C G A A
+            // ctg1 -  5 4 3 2 1
+
+            // bndB             |
+            // ctg2 +  1 2 3 4 5 6 7 8 9 10
+            // ctg2 +  T G A C C T C G T G
+            // ctg2 -  A C T G G A G C A C
+            // ctg2 - 10 9 8 7 6 5 4 3 2 1
+
+            // tra2:ctg1:+   1 2 3
+            // tra2:ctg1:+   A G C
+            // tra2:ctg2:+         T C G T G
+            // tra2:ctg2:+         6 7 8 9 10
+
+            // ctg1	3	bndA	C	C[ctg2:5[	.	PASS	SVTYPE=BND;MATEID=bndB;EVENT=tra2
+            BreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
+            Breakend left = variant.left();
+            assertThat(left.id(), equalTo("bndA"));
+            assertThat(left.contig(), equalTo(assembly.contigByName(leftContig)));
+            assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(left.start(), equalTo(leftStart));
+            assertThat(left.end(), equalTo(leftEnd));
+            assertThat(left.strand(), equalTo(leftStrand));
+        }
+
+
+        @ParameterizedTest
+        @CsvSource({
+                // id, mateId, leftChr, leftPos, ref, alt,  expected right coordinates
+                "bndA, bndB, chr1, 3, C, C[chr2:8[,       chr2, POSITIVE, 8, 7",
+                "bndA, bndB, chr1, 3, C, C]chr2:8],       chr2, NEGATIVE, 4, 3",
+                "bndA, bndB, chr1, 3, C, ]chr2:8]C,       chr2, NEGATIVE, 4, 3",
+                "bndA, bndB, chr1, 3, C, [chr2:8[C,       chr2, POSITIVE, 8, 7",
+                "bndA, '', chr1, 3, C, C.,                chr0, POSITIVE, 1, 0",
+                "bndA, '', chr1, 3, C, .C,                chr0, POSITIVE, 1, 0",
+        })
+        public void rightBreakend(String id, String mateId, String leftChr, int leftPos, String ref, String alt, String rightContig, Strand rightStrand, int rightStart, int rightEnd) {
+
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+
+            // bndA         |
+            // ctg1 +  1 2 3 4 5
+            // ctg1 +  A G C T T
+            // ctg1 -  T C G A A
+            // ctg1 -  5 4 3 2 1
+
+            // bndB                 |
+            // ctg2 +  1 2 3 4 5 6 7 8 9 10
+            // ctg2 +  T G A C C T C G T G
+            // ctg2 -  A C T G G A G C A C
+            // ctg2 - 10 9 8 7 6 5 4 3 2 1
+
+            // tra2:ctg1:+   1 2 3
+            // tra2:ctg1:+   A G C
+            // tra2:ctg2:+         T C G T G
+            // tra2:ctg2:+         6 7 8 9 10
+
+            // ctg1	3	bndA	C	C[ctg2:5[	.	PASS	SVTYPE=BND;MATEID=bndB;EVENT=tra2
+            BreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
+
+            Breakend right = variant.right();
+            assertThat(right.id(), equalTo(mateId));
+            assertThat(right.contig(), equalTo(assembly.contigByName(rightContig)));
+            assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(right.start(), equalTo(rightStart));
+            assertThat(right.end(), equalTo(rightEnd));
+            assertThat(right.strand(), equalTo(rightStrand));
+        }
+
     }
 }

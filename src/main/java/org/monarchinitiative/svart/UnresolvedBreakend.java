@@ -6,16 +6,29 @@ package org.monarchinitiative.svart;
  */
 final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> implements Breakend {
 
-    private static final UnresolvedBreakend INSTANCE = new UnresolvedBreakend();
+    private static final UnresolvedBreakend FULLY_CLOSED = new UnresolvedBreakend(CoordinateSystem.FULLY_CLOSED, 1);
+    private static final UnresolvedBreakend LEFT_OPEN = new UnresolvedBreakend(CoordinateSystem.LEFT_OPEN, 0);
+    private static final UnresolvedBreakend RIGHT_OPEN = new UnresolvedBreakend(CoordinateSystem.RIGHT_OPEN, 1);
+    private static final UnresolvedBreakend FULLY_OPEN = new UnresolvedBreakend(CoordinateSystem.FULLY_OPEN, 0);
 
     private static final String ID = "";
 
-    private UnresolvedBreakend() {
-        super(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(0));
+    private UnresolvedBreakend(CoordinateSystem coordinateSystem, int start) {
+        super(Contig.unknown(), Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(start + Coordinates.endDelta(coordinateSystem)));
     }
 
-    static UnresolvedBreakend instance() {
-        return INSTANCE;
+    static UnresolvedBreakend instance(CoordinateSystem coordinateSystem) {
+        switch (coordinateSystem){
+            case FULLY_CLOSED:
+                return FULLY_CLOSED;
+            case LEFT_OPEN:
+                return LEFT_OPEN;
+            case RIGHT_OPEN:
+                return RIGHT_OPEN;
+            case FULLY_OPEN:
+                return FULLY_OPEN;
+        }
+        throw new IllegalArgumentException("Unknown coordinateSystem!");
     }
 
     @Override
@@ -25,7 +38,7 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
 
     @Override
     protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return this;
+        return instance(coordinateSystem);
     }
 
     @Override
@@ -41,11 +54,12 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
     @Override
     public String toString() {
         return "UnresolvedBreakend{" +
-                "id='" + ID + '\'' +
+                "contig=" + Contig.unknown().id() +
+                ", id='" + ID + '\'' +
                 ", strand=" + Strand.POSITIVE +
-                ", coordinateSystem=" + CoordinateSystem.FULLY_CLOSED +
-                ", position=" + Position.of(1) +
-                ", contig=" + Contig.unknown().id() +
+                ", coordinateSystem=" + coordinateSystem() +
+                ", start=" + start() +
+                ", end=" + end() +
                 '}';
     }
 }

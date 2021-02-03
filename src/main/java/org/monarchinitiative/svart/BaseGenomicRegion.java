@@ -79,8 +79,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         if (this.strand == strand) {
             return (T) this;
         }
-        Position start = startPosition.invert(contig, coordinateSystem);
-        Position end = endPosition.invert(contig, coordinateSystem);
+        Position start = startPosition.invert(coordinateSystem, contig);
+        Position end = endPosition.invert(coordinateSystem, contig);
         return newRegionInstance(contig, strand, coordinateSystem, end, start);
     }
 
@@ -195,13 +195,13 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
                 return self();
             }
             this.strand = strand;
-            Position invertedStart = start.invert(contig, coordinateSystem);
-            start = end.invert(contig, coordinateSystem);
+            Position invertedStart = start.invert(coordinateSystem, contig);
+            start = end.invert(coordinateSystem, contig);
             end = invertedStart;
             return self();
         }
 
-        protected abstract GenomicRegion build();
+        protected abstract BaseGenomicRegion<?> build();
 
         protected abstract T self();
     }

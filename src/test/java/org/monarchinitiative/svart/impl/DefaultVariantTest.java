@@ -18,29 +18,29 @@ public class DefaultVariantTest {
 
         @Test
         public void throwsIllegalArgumentWithSymbolicAllele() {
-            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.oneBased(chr1, 1, "A", "<INS>"));
+            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "<INS>"));
         }
 
         @Test
         public void throwsIllegalArgumentWithBreakendAllele() {
-            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.oneBased(chr1, 1, "A", "A[1:2]"));
+            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "A[1:2]"));
         }
 
         @Test
         public void shouldNotBeSymbolic() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, "A", "T");
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T");
             assertThat(instance.isSymbolic(), equalTo(false));
         }
 
         @Test
         public void shouldNotBeBreakend() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, "A", "T");
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T");
             assertThat(instance.isBreakend(), equalTo(false));
         }
 
         @Test
         public void snvOneBased() {
-            Variant snv = DefaultVariant.oneBased(chr1, 1, "A", "T");
+            Variant snv = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T");
 
             assertThat(snv.startPosition(), equalTo(snv.endPosition()));
             assertThat(snv.variantType(), equalTo(VariantType.SNV));
@@ -89,16 +89,14 @@ public class DefaultVariantTest {
             assertThat(snv.endPosition(), equalTo(Position.of(1)));
             assertThat(snv.variantType(), equalTo(VariantType.SNV));
             assertThat(snv.length(), equalTo(1));
-            assertThat(snv.refLength(), equalTo(1));
             assertThat(snv.changeLength(), equalTo(0));
             assertThat(snv.isZeroBased(), equalTo(true));
 
-            Variant snvStaticCons = DefaultVariant.zeroBased(chr1, 0, "A", "T");
+            Variant snvStaticCons = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "A", "T");
             assertThat(snvStaticCons.startPosition(), equalTo(Position.of(0)));
             assertThat(snvStaticCons.endPosition(), equalTo(Position.of(1)));
             assertThat(snvStaticCons.variantType(), equalTo(VariantType.SNV));
             assertThat(snvStaticCons.length(), equalTo(1));
-            assertThat(snvStaticCons.refLength(), equalTo(1));
             assertThat(snvStaticCons.changeLength(), equalTo(0));
             assertThat(snvStaticCons.isZeroBased(), equalTo(true));
 
@@ -108,7 +106,7 @@ public class DefaultVariantTest {
 
         @Test
         public void mnv() {
-            Variant mnv = DefaultVariant.oneBased(chr1, 1, "AT", "TG");
+            Variant mnv = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "AT", "TG");
 
             assertThat(mnv.startPosition(), equalTo(Position.of(1)));
             assertThat(mnv.start(), equalTo(1));
@@ -119,7 +117,7 @@ public class DefaultVariantTest {
 
         @Test
         public void mnvZeroBased() {
-            Variant mnv = DefaultVariant.zeroBased(chr1, 0, "AT", "TG");
+            Variant mnv = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "AT", "TG");
 
             assertThat(mnv.startPosition(), equalTo(Position.of(0)));
             assertThat(mnv.start(), equalTo(0));
@@ -130,57 +128,100 @@ public class DefaultVariantTest {
 
         @Test
         public void del() {
-            Variant del = DefaultVariant.oneBased(chr1, 1, "AG", "A");
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "AG", "A");
 
             assertThat(del.startPosition(), equalTo(Position.of(1)));
             assertThat(del.endPosition(), equalTo(Position.of(2)));
             assertThat(del.variantType(), equalTo(VariantType.DEL));
             assertThat(del.length(), equalTo(2));
-        }
+            assertThat(del.changeLength(), equalTo(-1));       }
 
         @Test
         public void delZeroBased() {
-            Variant del = DefaultVariant.zeroBased(chr1, 0, "AG", "A");
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "AG", "A");
 
             assertThat(del.startPosition(), equalTo(Position.of(0)));
             assertThat(del.endPosition(), equalTo(Position.of(2)));
             assertThat(del.variantType(), equalTo(VariantType.DEL));
             assertThat(del.length(), equalTo(2));
+            assertThat(del.changeLength(), equalTo(-1));
+        }
+
+        @Test
+        public void delZeroBasedTrimmedToEmpty() {
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(1), "G", "");
+
+            assertThat(del.startPosition(), equalTo(Position.of(1)));
+            assertThat(del.endPosition(), equalTo(Position.of(2)));
+            assertThat(del.variantType(), equalTo(VariantType.DEL));
+            assertThat(del.length(), equalTo(1));
+            assertThat(del.changeLength(), equalTo(-1));
+        }
+
+        @Test
+        public void delOneBasedTrimmedToEmpty() {
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(2), "G", "");
+
+            assertThat(del.startPosition(), equalTo(Position.of(2)));
+            assertThat(del.endPosition(), equalTo(Position.of(2)));
+            assertThat(del.variantType(), equalTo(VariantType.DEL));
+            assertThat(del.length(), equalTo(1));
+            assertThat(del.changeLength(), equalTo(-1));
         }
 
         @Test
         public void ins() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, "A", "AG");
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "AG");
 
             assertThat(ins.startPosition(), equalTo(Position.of(1)));
             assertThat(ins.endPosition(), equalTo(Position.of(1)));
             assertThat(ins.variantType(), equalTo(VariantType.INS));
             assertThat(ins.length(), equalTo(1));
-            assertThat(ins.refLength(), equalTo(1));
+            assertThat(ins.changeLength(), equalTo(1));
+        }
+
+        @Test
+        public void insZeroBasedTrimmedToEmpty() {
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(1), "", "G");
+
+            assertThat(ins.startPosition(), equalTo(Position.of(1)));
+            assertThat(ins.endPosition(), equalTo(Position.of(1)));
+            assertThat(ins.variantType(), equalTo(VariantType.INS));
+            assertThat(ins.length(), equalTo(0));
+            assertThat(ins.changeLength(), equalTo(1));
+        }
+
+        @Test
+        public void insOneBasedTrimmedToEmpty() {
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(2), "", "G");
+
+            assertThat(ins.startPosition(), equalTo(Position.of(2)));
+            assertThat(ins.endPosition(), equalTo(Position.of(1)));
+            assertThat(ins.variantType(), equalTo(VariantType.INS));
+            assertThat(ins.length(), equalTo(0));
             assertThat(ins.changeLength(), equalTo(1));
         }
 
         @Test
         public void insZeroBased() {
-            Variant ins = DefaultVariant.zeroBased(chr1, 0, "A", "AG");
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "A", "AG");
 
             assertThat(ins.startPosition(), equalTo(Position.of(0)));
             assertThat(ins.endPosition(), equalTo(Position.of(1)));
             assertThat(ins.variantType(), equalTo(VariantType.INS));
             assertThat(ins.length(), equalTo(1));
-            assertThat(ins.refLength(), equalTo(1));
             assertThat(ins.changeLength(), equalTo(1));
         }
 
         @Test
         public void insWithSameStrand() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, "A", "AG");
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "AG");
             assertSame(ins, ins.withStrand(Strand.POSITIVE));
         }
 
         @Test
         public void insWithNegativeStrand() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, "A", "AG");
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "AG");
             Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
             assertThat(negativeIns.contig(), equalTo(chr1));
@@ -196,7 +237,7 @@ public class DefaultVariantTest {
         @Test
         public void delWithNegativeStrand() {
             Contig chr5 = TestContig.of(5, 5);
-            Variant del = DefaultVariant.oneBased(chr5, 1, "AG", "A");
+            Variant del = DefaultVariant.of(chr5, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "AG", "A");
             Variant negativeDel = del.withStrand(Strand.NEGATIVE);
 
             assertThat(negativeDel.contig(), equalTo(chr5));
@@ -207,14 +248,13 @@ public class DefaultVariantTest {
             assertThat(negativeDel.alt(), equalTo("T"));
             assertThat(negativeDel.variantType(), equalTo(VariantType.DEL));
             assertThat(negativeDel.length(), equalTo(2));
-            assertThat(negativeDel.refLength(), equalTo(2));
             assertThat(negativeDel.changeLength(), equalTo(-1));
         }
 
         @Test
         public void delZeroBasedWithNegativeStrand() {
             Contig chr5 = TestContig.of(5, 5);
-            Variant del = DefaultVariant.zeroBased(chr5, 0, "AG", "A");
+            Variant del = DefaultVariant.of(chr5, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "AG", "A");
             Variant negativeDel = del.withStrand(Strand.NEGATIVE);
 
             assertThat(negativeDel.contig(), equalTo(chr5));
@@ -225,23 +265,21 @@ public class DefaultVariantTest {
             assertThat(negativeDel.alt(), equalTo("T"));
             assertThat(negativeDel.variantType(), equalTo(VariantType.DEL));
             assertThat(negativeDel.length(), equalTo(2));
-            assertThat(negativeDel.refLength(), equalTo(2));
             assertThat(negativeDel.changeLength(), equalTo(-1));
         }
 
         @Test
         public void delLenSvLen() {
-            Variant del = DefaultVariant.oneBased(TestContigs.chr1, "rs2376870", 2827694, "CGTGGATGCGGGGAC", "C");
+            Variant del = DefaultVariant.of(TestContigs.chr1, "rs2376870", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(2827694), "CGTGGATGCGGGGAC", "C");
             //.    PASS   SVTYPE=DEL;LEN=15;HOMLEN=1;HOMSEQ=G;SVLEN=-14
             assertThat(del.variantType(), equalTo(VariantType.DEL));
             assertThat(del.length(), equalTo(15));
-            assertThat(del.refLength(), equalTo(15));
             assertThat(del.changeLength(), equalTo(-14));
         }
 
         @Test
         public void snvToOppositeStrand() {
-            Variant snv = DefaultVariant.oneBased(chr1, 1, "A", "T");
+            Variant snv = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T");
             assertThat(snv.strand(), equalTo(Strand.POSITIVE));
             Variant oppositeSnv = snv.toOppositeStrand();
             assertThat(oppositeSnv.contig(), equalTo(chr1));
@@ -252,36 +290,35 @@ public class DefaultVariantTest {
             assertThat(oppositeSnv.alt(), equalTo("A"));
             assertThat(oppositeSnv.variantType(), equalTo(VariantType.SNV));
             assertThat(oppositeSnv.length(), equalTo(1));
-            assertThat(oppositeSnv.refLength(), equalTo(1));
             assertThat(oppositeSnv.changeLength(), equalTo(0));
         }
 
         @Test
         public void DefaultVariantContainsSnv() {
-            Variant largeIns = DefaultVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
-            assertTrue(largeIns.contains(DefaultVariant.oneBased(chr1, 1, "A", "T")));
-            assertTrue(largeIns.contains(DefaultVariant.zeroBased(chr1, 0, "A", "T")));
-            assertFalse(largeIns.contains(DefaultVariant.oneBased(chr1, 200, "C", "A")));
-            assertTrue(largeIns.contains(DefaultBreakend.oneBased(chr1, "bnd_A", Strand.POSITIVE, Position.of(1))));
+            Variant largeIns = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "T", "<INS>", 100);
+            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T")));
+            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "A", "T")));
+            assertFalse(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(200), "C", "A")));
+            assertTrue(largeIns.contains(DefaultBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(0), Position.of(0))));
         }
 
         @Test
         public void DefaultVariantOverlapsOther() {
-            Variant largeIns = DefaultVariant.oneBased(chr1, 1, 100, "T", "<INS>", 100);
-            Variant otherIns = DefaultVariant.oneBased(chr1, 99, 299, "C", "<INS>", 200);
+            Variant largeIns = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "T", "<INS>", 100);
+            Variant otherIns = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(99), Position.of(299), "C", "<INS>", 200);
             assertTrue(largeIns.overlapsWith(otherIns));
             assertTrue(otherIns.overlapsWith(largeIns));
         }
 
         @Test
         public void symbolicThrowsIllegalArgumentWithBreakendAllele() {
-            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.oneBased(chr1, 1, 1, "A", "A[1:2]", 1));
+            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "A[1:2]", 1));
         }
 
         @Test
         public void throwsIllegalArgumentWithNonSymbolicAllele() {
             // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
-            DefaultVariant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "T", 1);
+            DefaultVariant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "T", 1);
             assertThat(instance.contig(), equalTo(chr1));
             assertThat(instance.startPosition(), equalTo(Position.of(1)));
             assertThat(instance.endPosition(), equalTo(Position.of(1)));
@@ -289,14 +326,13 @@ public class DefaultVariantTest {
             assertThat(instance.length(), equalTo(1));
             assertThat(instance.ref(), equalTo("A"));
             assertThat(instance.alt(), equalTo("T"));
-            assertThat(instance.refLength(), equalTo(1));
             assertThat(instance.changeLength(), equalTo(1));
         }
 
         @Test
         public void missingAllele() {
             Contig chr1 = TestContig.of(1, 5);
-            Variant variant = DefaultVariant.oneBased(chr1, 1, "T", "*");
+            Variant variant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "T", "*");
             Variant onNegative = variant.withStrand(Strand.NEGATIVE);
             assertThat(onNegative, equalTo(DefaultVariant.of(chr1, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(5), "A", "*")));
         }
@@ -307,25 +343,25 @@ public class DefaultVariantTest {
     public class SymbolicVariantTests {
         @Test
         public void shouldBeSymbolic() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 100);
             assertThat(instance.isSymbolic(), equalTo(true));
         }
 
         @Test
         public void shouldNotBeBreakend() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 100);
             assertThat(instance.isBreakend(), equalTo(false));
         }
 
         @Test
         public void shouldBeBreakend() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<BND>", 100);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<BND>", 100);
             assertThat(instance.isBreakend(), equalTo(true));
         }
 
         @Test
         public void symbolicDel() {
-            Variant del = DefaultVariant.oneBased(chr1, 1, 100, "A", "<DEL>", -99);
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "A", "<DEL>", -99);
 
             assertThat(del.contig(), equalTo(chr1));
             assertThat(del.startPosition(), equalTo(Position.of(1)));
@@ -334,7 +370,6 @@ public class DefaultVariantTest {
             assertThat(del.length(), equalTo(100));
             assertThat(del.ref(), equalTo("A"));
             assertThat(del.alt(), equalTo("<DEL>"));
-            assertThat(del.refLength(), equalTo(100));
             assertThat(del.changeLength(), equalTo(-99));
 
             // END: End reference position (1-based), indicating the variant spans positions POS-END on reference/contig CHROM.
@@ -348,7 +383,7 @@ public class DefaultVariantTest {
 
         @Test
         public void symbolicDelZeroBased() {
-            Variant del = DefaultVariant.zeroBased(chr1, 0, 100, "A", "<DEL>", -99);
+            Variant del = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(100), "A", "<DEL>", -99);
 
             assertThat(del.contig(), equalTo(chr1));
             assertThat(del.startPosition(), equalTo(Position.of(0)));
@@ -357,7 +392,6 @@ public class DefaultVariantTest {
             assertThat(del.length(), equalTo(100));
             assertThat(del.ref(), equalTo("A"));
             assertThat(del.alt(), equalTo("<DEL>"));
-            assertThat(del.refLength(), equalTo(100));
             assertThat(del.changeLength(), equalTo(-99));
 
             // END: End reference position (1-based), indicating the variant spans positions POS-END on reference/contig CHROM.
@@ -372,15 +406,14 @@ public class DefaultVariantTest {
         @Test
         public void symbolicDelLenSvLen() {
             //1       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
-            Variant del = DefaultVariant.oneBased(TestContigs.chr1, 321682, 321682 + 205, "T", "<DEL>", -205);
+            Variant del = DefaultVariant.of(TestContigs.chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(321682), Position.of(321682 + 205), "T", "<DEL>", -205);
             assertThat(del.length(), equalTo(206));
-            assertThat(del.refLength(), equalTo(206));
             assertThat(del.changeLength(), equalTo(-205));
         }
 
         @Test
         public void symbolicIns() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 100);
 
             assertThat(ins.contig(), equalTo(chr1));
             assertThat(ins.startPosition(), equalTo(Position.of(1)));
@@ -389,19 +422,18 @@ public class DefaultVariantTest {
             assertThat(ins.length(), equalTo(1));
             assertThat(ins.ref(), equalTo("A"));
             assertThat(ins.alt(), equalTo("<INS>"));
-            assertThat(ins.refLength(), equalTo(1));
             assertThat(ins.changeLength(), equalTo(100));
         }
 
         @Test
         public void symbolicInsWithSameStrand() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 100);
             assertSame(ins, ins.withStrand(Strand.POSITIVE));
         }
 
         @Test
         public void symbolicInsWithNegativeStrand() {
-            Variant ins = DefaultVariant.oneBased(chr1, 1, 1, "A", "<INS>", 100);
+            Variant ins = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 100);
             Variant negativeIns = ins.withStrand(Strand.NEGATIVE);
 
             assertThat(negativeIns.contig(), equalTo(chr1));
@@ -417,7 +449,7 @@ public class DefaultVariantTest {
 
         @Test
         public void symbolicDelWithNegativeStrand() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, 100, "A", "<DEL>", -99);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "A", "<DEL>", -99);
             Variant negative = instance.withStrand(Strand.NEGATIVE);
 
             assertThat(negative.contig(), equalTo(chr1));
@@ -433,7 +465,7 @@ public class DefaultVariantTest {
 
         @Test
         public void symbolicDelZeroBasedWithNegativeStrand() {
-            Variant instance = DefaultVariant.zeroBased(chr1, 0, 100, "A", "<DEL>", -99);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(100), "A", "<DEL>", -99);
             Variant negative = instance.withStrand(Strand.NEGATIVE);
 
             assertThat(negative.contig(), equalTo(chr1));
@@ -449,8 +481,8 @@ public class DefaultVariantTest {
 
         @Test
         public void compareWithGenomicRegion() {
-            GenomicRegion region = GenomicRegion.zeroBased(chr1, 0, 10);
-            Variant variant = DefaultVariant.zeroBased(chr1, 1, "A", "TAA");
+            GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(10));
+            Variant variant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(1), "A", "TAA");
             assertThat(variant.isSymbolic(), is(false));
             assertThat(GenomicRegion.compare(region, variant), equalTo(-1));
             assertThat(region.contains(variant), equalTo(true));
@@ -458,7 +490,7 @@ public class DefaultVariantTest {
 
         @Test
         public void canCreateSymbolicBnd() {
-            Variant instance = DefaultVariant.oneBased(chr1, 1, 1, "A", "<BND>", 0);
+            Variant instance = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<BND>", 0);
             assertThat(instance.contig(), equalTo(chr1));
             assertThat(instance.strand(), equalTo(Strand.POSITIVE));
             assertThat(instance.startPosition(), equalTo(Position.of(1)));
@@ -472,9 +504,9 @@ public class DefaultVariantTest {
 
         @Test
         public void isSymbolic() {
-            assertThat(DefaultVariant.oneBased(chr1, 1, "A", "TAA").isSymbolic(), is(false));
-            assertThat(DefaultVariant.oneBased(chr1, 1, 100, "A", "<DEL>", -99).isSymbolic(), is(true));
-            assertThat(DefaultVariant.oneBased(chr1, 1, 1, "A", "<BND>", 0).isSymbolic(), is(true));
+            assertThat(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA").isSymbolic(), is(false));
+            assertThat(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "A", "<DEL>", -99).isSymbolic(), is(true));
+            assertThat(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<BND>", 0).isSymbolic(), is(true));
         }
     }
 }

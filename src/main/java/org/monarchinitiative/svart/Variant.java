@@ -27,14 +27,6 @@ public interface Variant extends GenomicRegion {
      */
     String alt();
 
-    /**
-     *  Length of the variant on the reference sequence.
-     * @return
-     */
-    default int refLength() {
-        return length();
-    }
-
     int changeLength();
 
     @Override
@@ -87,16 +79,12 @@ public interface Variant extends GenomicRegion {
     }
 
     static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-        if (VariantType.isSymbolic(alt)) {
-            throw new IllegalArgumentException("Unable to create non-symbolic variant from symbolic or breakend alleles " + ref + " " + alt);
-        }
+        VariantType.requireNonSymbolic(alt);
         return DefaultVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
     }
 
     static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength) {
-        if (!VariantType.isLargeSymbolic(alt)) {
-            throw new IllegalArgumentException("Unable to create symbolic variant from alleles " + ref + " " + alt);
-        }
+        VariantType.requireSymbolic(alt);
         return DefaultVariant.of(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength);
     }
 

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class resolves a {@link BreakendVariant} from primitive inputs.
+ * This class resolves a {@link BreakendVariant} from primitive VCF inputs.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
@@ -16,9 +16,12 @@ public class VcfBreakendResolver {
 
     private static final String IUPAC_BASES = "ACGTUWSMKRYBDHVNacgtuwsmkrybdhvn";
 
+    private static final CoordinateSystem VCF_COORDINATE_SYSTEM = CoordinateSystem.FULLY_CLOSED;
+    private static final Strand VCF_STRAND = Strand.POSITIVE;
+
     /**
      * Any BND alt record must match this pattern (e.g. `G]1:123]`, `]1:123]G`, `G[1:123[`, `[1:123[G`).
-     *
+     * <p>
      * The pattern defines 6 groups: `head`, `left`, `contig`, `pos`, `right`, and `tail`, which capture the following
      * content for alt record: `G]1:123]`:
      * <ul>
@@ -41,64 +44,81 @@ public class VcfBreakendResolver {
     }
 
     public BreakendVariant resolve(String eventId, String id, String mateId, Contig contig, Position position, ConfidenceInterval ciEnd, String ref, String alt) {
+        if (ref.length() > 1) {
+            throw new IllegalArgumentException("Invalid breakend! Ref allele '" + ref + "' must be single base");
+        }
+        // now fiddle about with the ALT allele
+        Breakend right;
+        Strand leftStrand;
+        String insertedSeq;
         Matcher altMatcher = BND_ALT_PATTERN.matcher(alt);
-        if (!altMatcher.matches()) {
+        if (altMatcher.matches()) {
+            String head = altMatcher.group("head");
+            String tail = altMatcher.group("tail");
+            if (!head.isEmpty() && !tail.isEmpty()) {
+                throw new IllegalArgumentException("Sequence present both at the beginning (`" + head + "`) and the end (`" + tail + "`) of alt field");
+            }
+            Strand rightStrand = determineRightStrand(alt, altMatcher.group("left"), altMatcher.group("right"));
+            Position rightStart = Position.of(Integer.parseInt(altMatcher.group("pos")), ciEnd);
+            // The right breakend position needs to be shifted by -1 because the fully-closed empty region will place the
+            // break to the right of the input position but this needs to be to the left because the VCF always includes the
+            // reference base but indicates the break is to the left of this. Hence 'left' and 'right' breakends.
+            right = parseRightBreakend(mateId, altMatcher.group("contig"), rightStrand, rightStart, rightStart.shift(-1));
+            leftStrand = determineLeftStrand(ref, alt, head, tail);
+            insertedSeq = leftStrand.isPositive() ? head.substring(1) : tail.substring(0, tail.length() - 1);
+        }
+        // maybe this is unresolved? e.g. 'G.' (POS) or '.G' (NEG)
+        else if (alt.startsWith(".") || alt.endsWith(".")) {
+            right = Breakend.unresolved(VCF_COORDINATE_SYSTEM);
+            leftStrand = alt.indexOf('.') == 0 ? Strand.NEGATIVE : Strand.POSITIVE;
+            insertedSeq = leftStrand.isPositive() ? alt.substring(1) : alt.substring(0, alt.length() - 1);
+        } else {
             throw new IllegalArgumentException("Invalid breakend alt record " + alt);
         }
+        // The left breakend position needs to be shifted by +1 because the fully-closed empty region will place the
+        // break to the left of the input position but this needs to be to the right because the VCF always includes the
+        // reference base but indicates the break is to the right of this. Hence 'left' and 'right' breakends.
+        Breakend left = createBreakend(contig, id, leftStrand, position.shift(1), position);
 
-        // parse mate data
-        String mateContigName = altMatcher.group("contig");
+        return BreakendVariant.of(eventId, left, right,
+                leftStrand == VCF_STRAND ? ref : Seq.reverseComplement(ref),
+                leftStrand == VCF_STRAND ? insertedSeq : Seq.reverseComplement(insertedSeq));
+    }
+
+    private Strand determineRightStrand(String alt, String leftBracket, String rightBracket) {
+        if (!leftBracket.equals(rightBracket)) {
+            throw new IllegalArgumentException("Invalid bracket orientation in `" + alt + '`');
+        }
+        return rightBracket.equals("[") ? Strand.POSITIVE : Strand.NEGATIVE;
+    }
+
+    private Breakend parseRightBreakend(String mateId, String mateContigName, Strand rightStrand, Position rightStart, Position rightEnd) {
         Contig mateContig = genomicAssembly.contigByName(mateContigName);
         if (mateContig.equals(Contig.unknown())) {
             throw new IllegalArgumentException("Unknown mate contig `" + mateContigName + '`');
         }
+        return createBreakend(mateContig, mateId, rightStrand, rightStart, rightEnd);
+    }
 
-        int pos = Integer.parseInt(altMatcher.group("pos"));
-        Position matePos = Position.of(pos, ciEnd);
+    private static Breakend createBreakend(Contig contig, String id, Strand strand, Position start, Position end) {
+        // VCF coordinates are always given in 1-based coordinates on the POS strand, so we need to check the position
+        // and *then* create the breakend on the to the strand indicated - do not be tempted to inline the strand part prematurely!
+        Position breakStart = strand == VCF_STRAND ? start : end.invert(VCF_COORDINATE_SYSTEM, contig);
+        Position breakEnd = strand == VCF_STRAND ? end : start.invert(VCF_COORDINATE_SYSTEM, contig);
+        return Breakend.of(contig, id, strand, VCF_COORDINATE_SYSTEM, breakStart, breakEnd);
+    }
 
-        // figure out strands and the inserted sequence
-        String head = altMatcher.group("head");
-        String tail = altMatcher.group("tail");
-        if (!head.isEmpty() && !tail.isEmpty()) {
-            throw new IllegalArgumentException("Sequence present both at the beginning (`" + head + "`) and the end (`" + tail + "`) of alt field");
-        }
-
-        // left breakend strand
-        Strand leftStrand;
+    private Strand determineLeftStrand(String ref, String alt, String head, String tail) {
         char refBase = ref.charAt(0);
         if (!head.isEmpty() && refBase == head.charAt(0)) {
-            leftStrand = Strand.POSITIVE;
-        } else if (!tail.isEmpty() && refBase == tail.charAt(tail.length()-1)) {
-            leftStrand = Strand.NEGATIVE;
-        } else {
-            throw new IllegalArgumentException("Invalid breakend alt `" + alt + "`. No match for ref allele `"
-                    + ref + "` neither at the beginning nor at the end");
+            // e.g C,  CAGT[2:321682[
+            return Strand.POSITIVE;
+        } else if (!tail.isEmpty() && refBase == tail.charAt(tail.length() - 1)) {
+            // e.g C,  [2:321682[TGAC
+            return Strand.NEGATIVE;
         }
-
-        // right breakend strand
-        String leftBracket = altMatcher.group("left");
-        String rightBracket = altMatcher.group("right");
-        if (!leftBracket.equals(rightBracket)) {
-            throw new IllegalArgumentException("Invalid bracket orientation in `" + alt + '`');
-        }
-        Strand rightStrand = (leftBracket.equals("["))
-                ? Strand.POSITIVE
-                : Strand.NEGATIVE;
-
-        // inserted sequence - alt allele
-        String altSeq = leftStrand.isPositive()
-                ? head.substring(1)
-                : tail.substring(0, tail.length() - 1);
-
-
-        // assemble breakends and create the final BreakendVariant
-        Breakend left = Breakend.of(contig, id, Strand.POSITIVE, CoordinateSystem.oneBased(), position).withStrand(leftStrand);
-        Breakend right = Breakend.of(mateContig, mateId, Strand.POSITIVE, CoordinateSystem.oneBased(), matePos).withStrand(rightStrand);
-
-
-        return BreakendVariant.of(eventId, left, right,
-                leftStrand.isPositive() ? ref : Seq.reverseComplement(ref),
-                leftStrand.isPositive() ? altSeq : Seq.reverseComplement(altSeq));
+        throw new IllegalArgumentException("Invalid breakend alt `" + alt + "`. No matching ref allele `"
+                + ref + "` at beginning or end of alt sequence");
     }
 
     @Override

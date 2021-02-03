@@ -25,7 +25,7 @@ public final class TestVariant extends BaseVariant<TestVariant> {
     public static class Builder extends BaseVariant.Builder<Builder> {
 
         @Override
-        protected TestVariant build() {
+        public TestVariant build() {
             return new TestVariant(selfWithEndIfMissing());
         }
 

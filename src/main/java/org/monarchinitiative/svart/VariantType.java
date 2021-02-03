@@ -239,6 +239,37 @@ public enum VariantType {
         return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
+    public static String requireNonSymbolic(String alt) {
+        if (alt == null || isSymbolic(alt)) {
+            throw new IllegalArgumentException("Illegal symbolic alt allele " + alt);
+        }
+        if (alt.contains(",")) {
+            throw new IllegalArgumentException("Illegal multi-allelic alt allele " + alt);
+        }
+        return alt;
+    }
+
+    public static String requireSymbolic(String alt) {
+        if (alt == null || !isLargeSymbolic(alt)) {
+            throw new IllegalArgumentException("Illegal non-symbolic or breakend alt allele " + alt);
+        }
+        return alt;
+    }
+
+    public static String requireBreakend(String alt) {
+        if (alt == null || !isBreakend(alt)) {
+            throw new IllegalArgumentException("Illegal non-breakend alt allele " + alt);
+        }
+        return alt;
+    }
+
+    public static String requireNonBreakend(String alt) {
+        if (alt == null || VariantType.isBreakend(alt)) {
+            throw new IllegalArgumentException("Illegal breakend allele " + alt);
+        }
+        return alt;
+    }
+
     /**
      * Returns true if the provided allele matches the string '*'. This is defined in VCF 4.3 as "allele missing due to
      * overlapping deletion"

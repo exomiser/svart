@@ -53,11 +53,11 @@ public interface Position extends Comparable<Position> {
      * Inverts the current {@link Position} to the opposite end of the given {@link Contig} using the
      * {@link CoordinateSystem} provided.
      *
-     * @param contig  {@link Contig} on which the position is located
      * @param coordinateSystem {@link CoordinateSystem} the Position is being used in
+     * @param contig  {@link Contig} on which the position is located
      * @return a new position at the opposite end of the {@link Contig} on which the current {@link Position} is located
      */
-    Position invert(Contig contig, CoordinateSystem coordinateSystem);
+    Position invert(CoordinateSystem coordinateSystem, Contig contig);
 
     default int distanceTo(Position position) {
         return distanceTo(position.pos());

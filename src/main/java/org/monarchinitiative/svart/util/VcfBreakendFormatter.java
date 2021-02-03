@@ -2,6 +2,7 @@ package org.monarchinitiative.svart.util;
 
 import org.monarchinitiative.svart.Breakend;
 import org.monarchinitiative.svart.BreakendVariant;
+import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
 
 /**
@@ -21,8 +22,13 @@ public class VcfBreakendFormatter {
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
     public static String makeAltVcfField(BreakendVariant variant) {
-        String alt = variant.strand().isPositive() ? variant.alt() : Seq.reverseComplement(variant.alt());
-        return makeAltVcfField(variant.left(), variant.right(), variant.ref(), alt);
+        String alt = toPositiveStrand(variant.strand(), variant.alt());
+        String ref = toPositiveStrand(variant.strand(), variant.ref());
+        return makeAltVcfField(variant.left(), variant.right(), ref, alt);
+    }
+
+    private static String toPositiveStrand(Strand strand, String allele) {
+        return strand.isPositive() ? allele : Seq.reverseComplement(allele);
     }
 
     /**
@@ -35,23 +41,18 @@ public class VcfBreakendFormatter {
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
     public static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
-        String contig = right.contigName();
-        int pos = right.toOneBased().withStrand(Strand.POSITIVE).start();
-        Strand leftStrand = left.strand();
-        Strand rightStrand = right.strand();
-
-        if (left.isUnresolved()) {
-            return '.' + ref;
-        } else if (right.isUnresolved()) {
-            return ref + '.';
+        if (right.isUnresolved()) {
+            return left.strand() == Strand.POSITIVE ? ref + '.' : '.' + ref;
         }
+        return left.strand() == Strand.POSITIVE ? ref + ins + mateString(right) : mateString(right) + ins + ref;
+    }
 
-        String mate = (rightStrand == Strand.POSITIVE)
-                ? '[' + contig + ':' + pos + '['
-                : ']' + contig + ':' + pos + ']';
-
-        return leftStrand == Strand.POSITIVE
-                ? ref + ins + mate
-                : mate + ins + ref;
+    /**
+     * Builds the mate breakend string e.g. '[6:12345[' for the POSITIVE strand or ']6:12345]' for the NEGATIVE strand
+     */
+    private static String mateString(Breakend right) {
+        int pos = right.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        char mateEndStrand = right.strand() == Strand.POSITIVE ? '[' : ']';
+        return mateEndStrand + right.contigName() + ':' + pos + mateEndStrand;
     }
 }

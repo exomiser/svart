@@ -98,7 +98,7 @@ public class Coordinates {
     /**
      * Returns the number of bases present between the intervals <code>a</code> and <code>b</code>. The distance is zero
      * if the <code>a</code> and <code>b</code> are adjacent or if they overlap. The distance is positive if <code>a</code>
-     * is downstream of <code>b</code> and negative if <code>a</code> is located downstream from <code>b</code>.
+     * is upstream (left) of <code>b</code> and negative if <code>a</code> is located downstream (right) of <code>b</code>.
      *
      * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
      * @param aStart  start coordinate of interval a
@@ -108,10 +108,10 @@ public class Coordinates {
      * @param bEnd    end coordinate of interval b
      * @return distance from interval <code>a</code> to interval <code>b</code>
      */
-    public static int distanceTo(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
+    public static int distanceAToB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         if (overlap(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
 
-        int first = openStart(bSystem, bStart) - closedEnd(aSystem, aEnd) ;
+        int first = openStart(bSystem, bStart) - closedEnd(aSystem, aEnd);
         int second = openStart(aSystem, aStart) - closedEnd(bSystem, bEnd);
 
         int result = Math.abs(first) < Math.abs(second) ? first : second;

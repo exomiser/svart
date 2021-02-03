@@ -16,7 +16,7 @@ public interface BreakendVariant extends Variant {
     Breakend left();
 
     default Breakend right() {
-        return Breakend.unresolved();
+        return Breakend.unresolved(coordinateSystem());
     }
 
     @Override
@@ -27,6 +27,14 @@ public interface BreakendVariant extends Variant {
 
     @Override
     BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem);
+
+    default BreakendVariant toZeroBased() {
+        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+    }
+
+    default BreakendVariant toOneBased() {
+        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+    }
 
     static BreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
         return DefaultBreakendVariant.of(eventId, left, right, ref, alt);

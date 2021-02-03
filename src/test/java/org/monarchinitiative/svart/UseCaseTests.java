@@ -36,7 +36,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void insertionLiesinExon() {
+    public void insertionLiesInExon() {
         TestContig contig = TestContig.of(1, 100);
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, FULLY_CLOSED, 50, 70);
 
@@ -51,7 +51,7 @@ public class UseCaseTests {
         assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(1), "A", "T")));
         assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, zeroBased(), Position.of(0), "A", "T")));
         assertFalse(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(2), "C", "A")));
-        assertTrue(largeIns.contains(Breakend.of(chr1, "bnd_A", Strand.POSITIVE, oneBased(), Position.of(1))));
+        assertTrue(largeIns.contains(Breakend.of(chr1, "bnd_A", Strand.POSITIVE, oneBased(), Position.of(1), Position.of(0))));
     }
 
     @Test
@@ -95,8 +95,8 @@ public class UseCaseTests {
     @Test
     public void emptyRegionsWithDifferentCoordinateSystems() {
         // these are empty regions and can be used to represent a 'slice' in-between two bases
-        GenomicRegion oneBasedEmpty = GenomicRegion.oneBased(Contig.unknown(), 1, 0);
-        GenomicRegion zeroBasedEmpty = GenomicRegion.zeroBased(Contig.unknown(), 0, 0);
+        GenomicRegion oneBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, FULLY_CLOSED, Position.of(1), Position.of(0));
+        GenomicRegion zeroBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, LEFT_OPEN, Position.of(0), Position.of(0));
 
         assertThat(oneBasedEmpty.contains(zeroBasedEmpty), equalTo(true));
         // convert coordinate systems using convenience methods
@@ -133,8 +133,8 @@ public class UseCaseTests {
         String[] fields = bedRecord.split("\t");
         Contig contig = genomicAssembly.contigByName(fields[0]);
         Strand strand = Strand.parseStrand(fields[5]);
-        Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, Integer.parseInt(fields[2]), contig));
-        Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, Integer.parseInt(fields[1]), contig));
+        Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[2])));
+        Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[1])));
         return GenomicRegion.of(contig, strand, LEFT_OPEN, start, end);
     }
 
@@ -165,14 +165,14 @@ public class UseCaseTests {
     public void nonCanonicalBreakend_mantaUnresolved() {
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // 1	166448783	gnomAD-SV_v2.1_BND_1_4095	N	<BND>	892	UNRESOLVED	END=166448784;SVTYPE=BND;SVLEN=-1;CHR2=6;POS2=166448783;END2=166448784;ALGORITHMS=manta;EVIDENCE=PE;UNRESOLVED_TYPE=SINGLE_ENDER_+-;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(166448783));
-        Breakend right = Breakend.unresolved();
+        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(166448784), Position.of(166448783));
+        Breakend right = Breakend.unresolved(FULLY_CLOSED);
         Variant bnd = Variant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(166448783));
         assertThat(bnd.end(), equalTo(166448783));
-        assertThat(bnd.length(), equalTo(0));
+        assertThat(bnd.length(), equalTo(1));
         assertThat(bnd.changeLength(), equalTo(0));
     }
 
@@ -181,15 +181,15 @@ public class UseCaseTests {
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // https://github.com/fritzsedlazeck/Sniffles/issues/73  - should run with  "--report_BND true"
         // 1 	797316 	TRA0029399SUR 	N 	<TRA> 	. 	PASS 	SUPP=2;AVGLEN=100000;med_start=797265;med_stop=797265;SVTYPE=TRA;SVMETHOD=SURVIVORv2;CHR2=8;END=245650;STRANDS=++;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(797316));
+        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(797317), Position.of(797316));
         // CHR2=8;END=245650;STRANDS=++;
-        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(245650));
+        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(245651), Position.of(245650));
         Variant bnd = Variant.of("TRA0029399SUR", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(797316));
         assertThat(bnd.end(), equalTo(797316));
-        assertThat(bnd.length(), equalTo(0));
+        assertThat(bnd.length(), equalTo(1));
         assertThat(bnd.changeLength(), equalTo(0));
     }
 }

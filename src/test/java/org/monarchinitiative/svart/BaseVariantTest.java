@@ -12,21 +12,10 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.monarchinitiative.svart.TestContigs.chr1;
+import static org.monarchinitiative.svart.TestContigs.chr2;
 
 public class BaseVariantTest {
-
-    private final Contig chr1 = TestContigs.chr1;
-
-//    @Test
-//    public void name() {
-//        //2       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
-//        Variant instance = DefaultVariant.oneBased(chr1, "", Position.of(321682, -56, 20), Position.of(321887, -10, 62), "T", "<DEL>", -205);
-//        System.out.println(instance);
-//
-//        //1 212471179 esv3588749 T <CN0> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVLEN=200;SVTYPE=DEL;VT=SV GT 0|1
-//        Variant esv3588749 = DefaultVariant.oneBased(chr1, "esv3588749", Position.of(212471179, -471, 0), Position.of(212472619, -0, 444), "T", "<CN0>", -200);
-//        System.out.println(esv3588749);
-//    }
 
     @Test
     public void buildPreciseInsertion() {
@@ -44,7 +33,7 @@ public class BaseVariantTest {
 
     @Test
     public void buildWithVariant() {
-        Variant oneBasedVariant = DefaultVariant.oneBased(chr1, 1, "A", "TAA");
+        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
         Variant instance = TestVariant.builder().with(oneBasedVariant).build();
         assertThat(instance.contig(), equalTo(oneBasedVariant.contig()));
         assertThat(instance.id(), equalTo(oneBasedVariant.id()));
@@ -59,7 +48,7 @@ public class BaseVariantTest {
 
     @Test
     public void buildWithVariantToCoordinateSystemAndStrand() {
-        Variant oneBasedVariant = DefaultVariant.oneBased(chr1, 1, "A", "TAA");
+        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
         TestVariant.Builder instance = TestVariant.builder().with(oneBasedVariant);
         Variant oneBased = instance.build();
         assertThat(instance.asOneBased().build(), equalTo(oneBased));
@@ -135,13 +124,13 @@ public class BaseVariantTest {
 
     @Test
     public void naturalOrdering() {
-        Variant first = DefaultVariant.oneBased(chr1, 1, "A", "TA");
-        Variant firstA = DefaultVariant.oneBased(chr1, 1, "A", "TAA");
-        Variant second = DefaultVariant.oneBased(chr1, 2, "A", "TAA");
-        Variant third = DefaultVariant.oneBased(TestContigs.chr2, 1, "A", "TAA");
-        Variant thirdA = DefaultVariant.oneBased(TestContigs.chr2,  "", 1, 1, "A", "<INS>", 1000);
-        Variant fourth = DefaultVariant.of(TestContigs.chr2, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
-        Variant fifth = DefaultVariant.oneBased(TestContigs.chr2,  "", 1, 1000, "A", "<DEL>", -999);
+        Variant first = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TA");
+        Variant firstA = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
+        Variant second = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(2), "A", "TAA");
+        Variant third = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
+        Variant thirdA = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1), "A", "<INS>", 1000);
+        Variant fourth = DefaultVariant.of(chr2, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "TAA");
+        Variant fifth = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1000), "A", "<DEL>", -999);
 
         List<Variant> variants = Stream.of(second, fourth, firstA, third, fifth, first, thirdA)
                 .parallel().unordered()
