@@ -79,6 +79,22 @@ public class Coordinates {
     }
 
     /**
+     * Determines the length of overlap between two regions. This method is transitive such
+     * that overlapLength(a, b) = overlapLength(b, a). The input {@link CoordinateSystem} are not required to match.
+     *
+     * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
+     * @param aStart  start coordinate of interval a
+     * @param aEnd    end coordinate of interval a
+     * @param bSystem {@link CoordinateSystem} for interval described by positions bStart and bEnd
+     * @param bStart  start coordinate of interval b
+     * @param bEnd    end coordinate of interval b
+     * @return length of overlap between a and b or zero if there is no overlap.
+     */
+    public static int overlapLength(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
+        return Math.max(Math.min(closedEnd(aSystem, aEnd), closedEnd(bSystem, bEnd)) - Math.max(openStart(aSystem, aStart), openStart(bSystem, bStart)), 0);
+    }
+
+    /**
      * Determines whether interval a contains b, returning true if they do and false if they do not. Empty interval b
      * is considered as being contained in a if b lies on either boundary of a. The input {@link CoordinateSystem} are
      * not required to match.

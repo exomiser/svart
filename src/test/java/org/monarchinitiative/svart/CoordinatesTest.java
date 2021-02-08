@@ -347,4 +347,52 @@ public class CoordinatesTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            // no overlap
+            "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,  8, 9,    0",
+            "FULLY_CLOSED, 1, 2,   LEFT_OPEN,     8, 9,    0",
+            "FULLY_CLOSED, 1, 2,   RIGHT_OPEN,    8, 9,    0",
+            "FULLY_CLOSED, 1, 2,   FULLY_OPEN,    8, 9,    0",
+
+            // partial overlap, transitive
+            "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,  2, 3,    1",
+            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  1, 2,    1",
+            "FULLY_CLOSED, 1, 3,   FULLY_CLOSED,  2, 4,    2",
+            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  1, 3,    2",
+
+            // complete overlap
+            "FULLY_CLOSED, 1, 5,   FULLY_CLOSED,  1, 5,    5",
+            "FULLY_CLOSED, 1, 5,   LEFT_OPEN,     0, 5,    5",
+            "FULLY_CLOSED, 1, 5,   RIGHT_OPEN,    1, 6,    5",
+            "FULLY_CLOSED, 1, 5,   FULLY_OPEN,    0, 6,    5",
+
+            // multiple systems
+            "FULLY_CLOSED, 1, 2,   FULLY_CLOSED,  2, 3,    1",
+            "FULLY_CLOSED, 1, 2,   LEFT_OPEN,     1, 3,    1",
+            "FULLY_CLOSED, 1, 2,   RIGHT_OPEN,    2, 4,    1",
+            "FULLY_CLOSED, 1, 2,   FULLY_OPEN,    1, 4,    1",
+
+            "LEFT_OPEN,    0, 2,   FULLY_CLOSED,  2, 3,    1",
+            "LEFT_OPEN,    0, 3,   FULLY_CLOSED,  2, 3,    2",
+            "LEFT_OPEN,    0, 2,   LEFT_OPEN,     1, 3,    1",
+            "LEFT_OPEN,    0, 2,   RIGHT_OPEN,    2, 4,    1",
+            "LEFT_OPEN,    0, 2,   FULLY_OPEN,    1, 4,    1",
+
+            "RIGHT_OPEN,   1, 3,   FULLY_CLOSED,  2, 3,    1",
+            "RIGHT_OPEN,   1, 3,   FULLY_CLOSED,  1, 3,    2",
+            "RIGHT_OPEN,   1, 3,   LEFT_OPEN,     1, 3,    1",
+            "RIGHT_OPEN,   1, 3,   RIGHT_OPEN,    2, 4,    1",
+            "RIGHT_OPEN,   1, 3,   FULLY_OPEN,    1, 4,    1",
+
+            "FULLY_OPEN,   0, 3,   FULLY_CLOSED,  2, 3,    1",
+            "FULLY_OPEN,   0, 3,   FULLY_CLOSED,  1, 3,    2",
+            "FULLY_OPEN,   0, 3,   LEFT_OPEN,     1, 3,    1",
+            "FULLY_OPEN,   0, 3,   RIGHT_OPEN,    2, 4,    1",
+            "FULLY_OPEN,   0, 3,   FULLY_OPEN,    1, 4,    1",
+    })
+    public void overlapLength(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
+        assertThat(Coordinates.overlapLength(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+    }
+
 }

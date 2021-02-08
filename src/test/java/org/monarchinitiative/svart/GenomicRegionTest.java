@@ -458,4 +458,28 @@ public class GenomicRegionTest {
         assertThat(other.end(), equalTo(targetEnd));
         assertThat(other.coordinateSystem().endBound(), equalTo(target.endBound()));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            //    POS -> 0 1 2 3 4 5
+            //    NEG <- 5 4 3 2 1 0
+            // this                       other                        expected
+            "POSITIVE, LEFT_OPEN, 1, 2,   NEGATIVE, LEFT_OPEN, 0, 1,   0",
+            "POSITIVE, LEFT_OPEN, 0, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   5",
+            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   4",
+            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 1, 5,   3",
+            "POSITIVE, LEFT_OPEN, 1, 3,   NEGATIVE, LEFT_OPEN, 2, 4,   2",
+            "POSITIVE, LEFT_OPEN, 2, 5,   NEGATIVE, LEFT_OPEN, 2, 5,   1",
+            "POSITIVE, LEFT_OPEN, 2, 3,   NEGATIVE, LEFT_OPEN, 2, 3,   1",
+            "POSITIVE, LEFT_OPEN, 3, 4,   NEGATIVE, LEFT_OPEN, 3, 4,   0",
+    })
+    public void overlapLength(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
+                              Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
+                              int expected) {
+        GenomicRegion region = GenomicRegion.of(chr1, thisStrand, thisCoordinateSystem, Position.of(thisStart), Position.of(thisEnd));
+        GenomicRegion other = GenomicRegion.of(chr1, otherStrand, otherCoordinateSystem, Position.of(otherStart), Position.of(otherEnd));
+
+        assertThat(region.overlapLength(other), equalTo(expected));
+    }
+
 }

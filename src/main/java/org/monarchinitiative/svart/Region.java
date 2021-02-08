@@ -67,6 +67,10 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
     }
 
+    default int overlapLength(Region<?> other) {
+        return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+    }
+
     /**
      * Returns the distance between <code>this</code> and the <code>other</code> regions. The distance represents
      * the number of bases present between the regions.

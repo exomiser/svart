@@ -47,6 +47,27 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
     }
 
     /**
+     * Returns the length of overlap between this region and another. {@link GenomicRegion}s not overlapping or on
+     * another {@link Contig} will return a length of zero. This method will automatically correct for different
+     * {@link CoordinateSystem} and {@link Strand}. Note that if the {@link GenomicRegion} are on different strands, the
+     * return value will be computed <em>as if they were on the same strand</em>.
+     *
+     * @param other the other {@link GenomicRegion} to measure the overlap with
+     * @return the length of overlap in bases or zero if no overlap.
+     */
+    default int overlapLength(GenomicRegion other) {
+        if (contigId() != other.contigId()) {
+            return 0;
+        }
+        if (this.strand() == other.strand()) {
+            return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        }
+        int otherStart = other.startOnStrand(this.strand());
+        int otherEnd = other.endOnStrand(this.strand());
+        return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+    }
+
+    /**
      * Returns the start position for this region on the given strand. The resulting position will be given in the
      * coordinates indicated by the coordinateSystem of the object instance.
      *
