@@ -19,7 +19,6 @@ The code is completely free of external dependencies.
    :maxdepth: 2
    :caption: Contents:
 
-   getstarted
    explanations
-   usecases
+   cookbook
    motivation
