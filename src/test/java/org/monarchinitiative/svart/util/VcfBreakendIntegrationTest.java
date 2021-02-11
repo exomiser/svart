@@ -28,7 +28,7 @@ public class VcfBreakendIntegrationTest {
             "17, 198983, bndZ, C, .C, '', event5",
     })
     public void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
-        BreakendVariant variant = vcfConverter.convertBreakend(chr, id, Position.of(pos), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+        BreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, Position.of(pos), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
         assertThat(VcfBreakendFormatter.makeAltVcfField(variant), equalTo(alt));
     }
 

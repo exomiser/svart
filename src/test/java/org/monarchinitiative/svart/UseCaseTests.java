@@ -145,11 +145,11 @@ public class UseCaseTests {
         // VCF file, parsed with the HTSJDK to get a VariantContext instance...
         // CHR	POS	ID	REF	ALT
         // chr1	12345	rs123456	C	T	6	PASS	.
-        Variant snv = vcfConverter.convert("chr1", "rs123456", 12345, "CCC", "TCC");
+        Variant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
         // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-        Variant ins = vcfConverter.convertSymbolic("chr1", "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
+        Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
         // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        Variant bnd = vcfConverter.convertBreakend("1", "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
         assertThat(snv.ref(), equalTo(ins.ref()));
         assertThat(snv.ref(), equalTo(bnd.ref()));

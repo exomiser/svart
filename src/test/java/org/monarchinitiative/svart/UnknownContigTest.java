@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 public class UnknownContigTest {
 
@@ -44,4 +45,8 @@ public class UnknownContigTest {
         assertThat(unknown.ucscName(), equalTo("na"));
     }
 
+    @Test
+    public void isUnknown() {
+        assertThat(unknown.isUnknown(), is(true));
+    }
 }

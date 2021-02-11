@@ -85,8 +85,20 @@ public interface Contig extends Comparable<Contig> {
         return DefaultContig.of(id, name, sequenceRole, assignedMolecule, assignedMoleculeType, length, genbankAccession, refSeqAccession, ucscName);
     }
 
+    /**
+     * A null-object Contig of length zero.
+     *
+     * @return The Unknown {@link Contig}
+     */
     static Contig unknown() {
         return UnknownContig.instance();
+    }
+
+    /**
+     * Returns true if the Contig is the Unknown contig
+     */
+    default boolean isUnknown() {
+        return this.equals(unknown());
     }
 
     @Override
