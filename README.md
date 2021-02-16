@@ -122,32 +122,3 @@ provides the `VariantTrimmer` class to enable users to perform this in a strand-
 //TODO examples...
 
 Svart does not however perform full variant normalisation as this should have been performed as part of the VCF creation. 
-
-Thoughts
-==
-Interfaces are nice and all, but implementations of basic types might be more useful, only allowing an interface at the 
-bottom-most class with no other dependencies e.g. `GenomicVariant`. This way all implementations will work out of the box 
-by simply implementing the interface.
-
-e.g. Jannovar has very nice functionality for flipping positions based on the strand, but is zero based where Exomiser 
-has more variation-related functionailty relying in Jannovar for the annotation functionality, but using one-based VCF
-coordinates. Converting between these has the posibility of an off-by one error or worse if the coordinates are reported 
-on the opposite strand than expected. This library should:
- - Reduce off-by-one errors 
- - Enable applications use some of the core genome position functionality of Jannovar 
- - Not require any further external dependencies 
- 
-Plan
-===
-
-Not completely keen on the pure interface implementation - most of these classes only need to satisfy Jannovar to be 
-useful to the other codebases.  
-So how about providing GenomicAssembly, Contig, GenomicPosition, GenomicRegion, ConfidenceInterval, Strand, 
-CordinateSystem as immutable implementations using Record in Java 17. The core of these implementations will use 
-Jannovar-derived code.
-
-Success Metrics
-===
-- Jannovar will be able to function with only minor changes to replace a few core components API with the svart API. For
-  example the Jannovar `VariantDescription` should be replaceable with `Variant` 
-- Exomiser will be able to function by implementing the `Variant` interface or extending the `BaseVariant` class.
