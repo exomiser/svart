@@ -9,11 +9,13 @@
     <version>1.0.0</version>
     <description>a library to ease representation of variants and performing genomic manipulations</description>
 
+    <name>svart</name>
+    <url>https://github.com/exomiser/svart</url>
+    <inceptionYear>2020</inceptionYear>
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/exomiser/svart/issues</url>
     </issueManagement>
-    <inceptionYear>2020</inceptionYear>
 
     <developers>
         <developer>
@@ -131,6 +133,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
