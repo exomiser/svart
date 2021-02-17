@@ -163,12 +163,12 @@ public void convert() {
 
     // symbolic alleles
     // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-    Variant ins = instance.convertSymbolic(instance.parseContig("chr1"),  "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
+    Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"),  "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
     assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), Position.of(12345), "C", "<INS>", 200)));
 
     // breakend variants
     // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-    Variant bnd = instance.convertBreakend(instance.parseContig("chr1"), "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+    Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("chr1"), "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
     Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12346), Position.of(12345));
     Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(321682), Position.of(321681));
