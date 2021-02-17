@@ -119,9 +119,9 @@ In the above example the default implementations provided by the library were us
 can be used compositionally. Alternatively, for users requiring extra functionality on top of the default implementations
 there are several `Base` classes which can be extended - `BaseGenomicRegion`, `BaseVariant` and `BaseBreakendVariant`.
 
-Representing variants
+Representing variants - VCF
 ==
-Svart models variants in a similar manner to VCF, however it attempts to provide a unified and consistent model using
+Svart models variants in a similar manner to [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf), however it attempts to provide a unified and consistent model using
 the `Variant` interface. In VCF precise variants of known sequence (_sequence_ variants) described using CHR, ID, POS,
 REF, ALT and also the _symbolic_ variants where the ALT field denotes the type in angle brackets e.g. `<INS>` for an
 insertion along with a change length and end (the SVLEN and END fields in the INFO column). 
@@ -210,3 +210,45 @@ private Variant trim(VariantTrimmer variantTrimmer, Contig contig, String id, St
 ```
 
 Svart does not however perform full variant normalisation as this should have been performed as part of the VCF creation. 
+
+BED
+==
+
+What about [BED](https://grch37.ensembl.org/info/website/upload/bed.html)? BED provides coordinates of a genomic region in
+_standard genomic coordinates_ i.e. left open intervals (a.k.a. zero-based) on the positive strand, but can optionally
+indicate the strand on which the feature is located in column 6 with a `+` (forward/positive) or `-` (reverse/negative) character. The code
+below shows how these records can be parsed into `GenomicRegion` instances.
+
+```java
+@Test
+public void parseGenomicRegionFromBedFile() {
+    // Load the Human GRCh37.13 assembly
+    GenomicAssembly b37 = GenomicAssembly.GRCh37p13();
+    // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
+    // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
+    GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");
+    GenomicRegion neg1 = parseBedRecord(b37, "chr7\t127475864\t127477031\tNeg1\t0\t-");
+
+    assertThat(pos1.contigName(), equalTo("7"));
+    assertThat(pos1.startOnStrand(Strand.POSITIVE), equalTo(127471196));
+    assertThat(pos1.endOnStrand(Strand.POSITIVE), equalTo(127472363));
+    assertThat(pos1.strand(), equalTo(Strand.POSITIVE));
+
+    assertThat(neg1.contigName(), equalTo("7"));
+    // a new instance on the positive strand can be created using neg1.toPositiveStrand(), however this will create
+    // a new object which may not be wanted in the long term, so to avoid this you can use the start/endOnStrand method
+    // which will efficiently calculate the result of neg1.withStrand(POSITIVE).start()/.end()
+    assertThat(neg1.startOnStrand(Strand.POSITIVE), equalTo(127475864));
+    assertThat(neg1.endOnStrand(Strand.POSITIVE), equalTo(127477031));
+    assertThat(neg1.strand(), equalTo(Strand.NEGATIVE));
+}
+
+private GenomicRegion parseBedRecord(GenomicAssembly genomicAssembly, String bedRecord) {
+    String[] fields = bedRecord.split("\t");
+    Contig contig = genomicAssembly.contigByName(fields[0]);
+    Strand strand = Strand.parseStrand(fields[5]);
+    Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[2])));
+    Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[1])));
+    return GenomicRegion.of(contig, strand, LEFT_OPEN, start, end);
+}
+```
