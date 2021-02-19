@@ -8,6 +8,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +71,16 @@ public class GenomicAssemblies {
         localResourceStream = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
         if (localResourceStream != null) {
             return localResourceStream;
+        }
+        // load from the module path
+        Optional<Module> svartModuleOptional = ModuleLayer.boot().findModule("org.monarchitiative.svart");
+        if (svartModuleOptional.isPresent()) {
+            Module svartModule = svartModuleOptional.get();
+            try {
+                return svartModule.getResourceAsStream(path);
+            } catch (IOException e) {
+                // swallow and fall through
+            }
         }
         throw new IllegalStateException("Unable to load resource " + path);
     }
