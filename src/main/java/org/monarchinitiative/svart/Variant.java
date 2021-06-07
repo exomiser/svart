@@ -35,10 +35,12 @@ public interface Variant extends GenomicRegion {
     @Override
     Variant withCoordinateSystem(CoordinateSystem coordinateSystem);
 
+    @Override
     default Variant toZeroBased() {
         return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
+    @Override
     default Variant toOneBased() {
         return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }

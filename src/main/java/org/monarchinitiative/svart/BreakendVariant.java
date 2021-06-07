@@ -28,10 +28,12 @@ public interface BreakendVariant extends Variant {
     @Override
     BreakendVariant withCoordinateSystem(CoordinateSystem coordinateSystem);
 
+    @Override
     default BreakendVariant toZeroBased() {
         return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
     }
 
+    @Override
     default BreakendVariant toOneBased() {
         return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
     }
