@@ -150,6 +150,13 @@ public enum VariantType {
                 return DUP_INV_BEFORE;
             case "DUP:INV-AFTER":
                 return DUP_INV_AFTER;
+
+            // extended CNV types
+            case "CNV:GAIN":
+                return CNV_GAIN;
+            case "CNV:LOSS":
+                return CNV_LOSS;
+
             default:
                 // fall-through
         }

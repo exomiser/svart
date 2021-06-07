@@ -30,6 +30,24 @@ public class VariantTypeTest {
 
     @ParameterizedTest
     @CsvSource({
+            "A, T,    SNV",
+            "ATG, TCA,    MNV",
+            "TC, A,    DEL",
+            "A, TC,    INS",
+            "N, <DEL>,    DEL",
+            "N, <INS>,    INS",
+            "N, <INS:ME>,    INS_ME",
+            "'', <INS:ME>,    INS_ME",
+            "N, <INS:ME:ALU>,    INS_ME_ALU",
+            "N, <CNV:GAIN>,    CNV_GAIN",
+            "N, C[2:12345[,    BND",
+    })
+    public void parseTypeRefAlt(String ref, String alt, VariantType baseType) {
+        assertThat(VariantType.parseType(ref, alt), equalTo(baseType));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "<DEL>, DEL",
             "<INS:ME:HERV>, INS_ME_HERV",
             "<INS:ME:ALU>, INS_ME_ALU",
@@ -39,9 +57,14 @@ public class VariantTypeTest {
         assertThat(VariantType.parseType(input), equalTo(expected));
     }
 
-    @Test
-    public void testParseStrippedValue() {
-        assertThat(VariantType.parseType("DEL"), equalTo(VariantType.DEL));
+    @ParameterizedTest
+    @CsvSource({
+            "DEL, DEL",
+            "INS:ME:HERV, INS_ME_HERV",
+            "ILLEGAL:VALUE, UNKNOWN"
+    })
+    public void testParseStrippedValue(String input, VariantType expected) {
+        assertThat(VariantType.parseType(input), equalTo(expected));
     }
 
     @Test
@@ -54,6 +77,7 @@ public class VariantTypeTest {
             "DEL_ME_ALU, DEL",
             "INS_ME, INS",
             "INS_ME_ALU, INS",
+            "CNV_GAIN, CNV",
             "BND, BND"
     })
     public void testGetBaseTypeFromSubType(VariantType subType, VariantType baseType) {
@@ -94,36 +118,6 @@ public class VariantTypeTest {
     })
     public void testBaseTypeForCanvasTypes(VariantType variantType) {
         assertThat(variantType.baseType(), equalTo(VariantType.CNV));
-    }
-
-    @Test
-    public void parseTypeSymbolic() {
-        assertThat(VariantType.parseType("A", "<INS>"), equalTo(VariantType.INS));
-    }
-
-    @Test
-    public void parseTypeSnv() {
-        assertThat(VariantType.parseType("A", "T"), equalTo(VariantType.SNV));
-    }
-
-    @Test
-    public void parseTypeMnv() {
-        assertThat(VariantType.parseType("ATG", "TCA"), equalTo(VariantType.MNV));
-    }
-
-    @Test
-    public void parseTypeInsertion() {
-        assertThat(VariantType.parseType("A", "TC"), equalTo(VariantType.INS));
-    }
-
-    @Test
-    public void parseTypeDeletion() {
-        assertThat(VariantType.parseType("AT", "C"), equalTo(VariantType.DEL));
-    }
-
-    @Test
-    public void parseTypeRearrangement() {
-        assertThat(VariantType.parseType("A", "C[2:12345["), equalTo(VariantType.BND));
     }
 
     @ParameterizedTest
