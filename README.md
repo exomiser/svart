@@ -198,7 +198,6 @@ public void trimMultiAllelicSite() {
     Variant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C");
     assertThat(firstAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C")));
 
-    // throws an IllegalArgumentException without being trimmed first
     Variant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "CT");
     assertThat(secondAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CT", "C")));
 }
