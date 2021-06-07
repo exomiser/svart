@@ -67,6 +67,54 @@ public class VariantTrimmerTest {
 
     @ParameterizedTest
     @CsvSource({
+            // Fully-trimmed input
+            "0, T, .,   LEFT,  RETAIN, 0, T, .",
+            "0, T, T,   LEFT,  RETAIN, 0, T, T",
+            "0, '', '', LEFT,  RETAIN, 0, '', ''",
+            "0, T, '',  LEFT,  RETAIN, 0, T, ''",
+            "0, '', T,  LEFT,  RETAIN, 0, '', T",
+            "0, '', '', LEFT,  REMOVE, 0, '', ''",
+            "0, T, '',  LEFT,  REMOVE, 0, T, ''",
+            "0, '', T,  LEFT,  REMOVE, 0, '', T",
+            "0, T, .,   RIGHT, RETAIN, 0, T, .",
+            "0, '', '', RIGHT, RETAIN, 0, '', ''",
+            "0, T, '',  RIGHT, RETAIN, 0, T, ''",
+            "0, '', T,  RIGHT, RETAIN, 0, '', T",
+            "0, '', '', RIGHT, REMOVE, 0, '', ''",
+            "0, T, '',  RIGHT, REMOVE, 0, T, ''",
+            "0, '', T,  RIGHT, REMOVE, 0, '', T",
+
+            // Identity variant - single base
+            "118887583, T, T, LEFT,  RETAIN, 118887583, T, T",
+            "118887583, T, T, LEFT,  REMOVE, 118887583, '', ''",
+            "118887583, T, T, RIGHT,  RETAIN, 118887583, T, T",
+            "118887583, T, T, RIGHT,  REMOVE, 118887583, '', ''",
+            // Identity variant - multiple bases
+            "118887583, TA, TA, LEFT,  RETAIN, 118887583, T, T",
+            "118887583, TA, TA, LEFT,  REMOVE, 118887583, '', ''",
+            "118887583, TA, TA, RIGHT,  RETAIN, 118887584, A, A",
+            "118887583, TA, TA, RIGHT,  REMOVE, 118887584, '', ''",
+            // SNV - trimmed
+            "118887583, T, C, LEFT,  RETAIN, 118887583, T, C",
+            "118887583, T, C, LEFT,  REMOVE, 118887583, T, C",
+            "118887583, T, C, RIGHT,  RETAIN, 118887583, T, C",
+            "118887583, T, C, RIGHT,  REMOVE, 118887583, T, C",
+            // SNV - untrimmed
+            "0, CGAT, CGGT, LEFT,  RETAIN, 2, A, G",
+            "0, CGAT, CGGT, LEFT,  REMOVE, 2, A, G",
+            "0, CGAT, CGGT, RIGHT, RETAIN, 2, A, G",
+            "0, CGAT, CGGT, RIGHT, REMOVE, 2, A, G",
+            // DEL
+            "0, CGAT, CGT,  LEFT,  RETAIN, 1, GA, G",
+            "0, CGAT, CGT,  LEFT,  REMOVE, 2, A, ''",
+            "0, CGAT, CGT,  RIGHT, RETAIN, 2, AT, T",
+            "0, CGAT, CGT,  RIGHT, REMOVE, 2, A, ''",
+            // INS
+            "0, CGAT, CGTAT,  LEFT,  RETAIN, 1, G, GT",
+            "0, CGAT, CGTAT,  LEFT,  REMOVE, 2, '', T",
+            "0, CGAT, CGTAT,  RIGHT, RETAIN, 2, A, TA",
+            "0, CGAT, CGTAT,  RIGHT, REMOVE, 2, '', T",
+
             "118887583, TCAAAA, TCAAAACAAAA, LEFT,  RETAIN, 118887583, T, TCAAAA",
             "118887583, TCAAAA, TCAAAACAAAA, LEFT,  REMOVE, 118887584, '', CAAAA",
             "118887583, TCAAAA, TCAAAACAAAA, RIGHT, RETAIN, 118887588, A, ACAAAA",
@@ -207,7 +255,7 @@ public class VariantTrimmerTest {
         @ParameterizedTest
         @CsvSource({
                 "100, A, C, 100, A, C",
-                "100, A, A, 100, A, A",
+                "100, A, A, 100, '', ''",
                 "100, AT, '', 100, AT, ''",
                 "100, '', CG, 100, '', CG",
                 "100, ATTT, AT, 102, TT, ''",
@@ -222,6 +270,12 @@ public class VariantTrimmerTest {
 
     @Nested
     public class JannovarCorrectTests {
+
+        @Test
+        public void nonVariation() {
+            VariantPosition trimmed = correct(100, "C", "C");
+            assertThat(trimmed, equalTo(VariantPosition.of(100, "C", "C")));
+        }
 
         @Test
         public void singleNucleotide() {

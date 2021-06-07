@@ -172,11 +172,13 @@ public abstract class VariantTrimmer {
     private static boolean canRightTrim(String ref, String alt) {
         int refLength = ref.length();
         int altLength = alt.length();
-        return refLength > 1 && altLength > 1 && ref.charAt(refLength - 1) == alt.charAt(altLength - 1);
+        // alter 0 to 1 in order to change fully trimmed homomorphic sites from '' '' to 'A' 'A'
+        return refLength > 0 && altLength > 0 && ref.charAt(refLength - 1) == alt.charAt(altLength - 1);
     }
 
     private static boolean canLeftTrim(String ref, String alt) {
-        return (ref.length() > 1 || alt.length() > 1) && ref.charAt(0) == alt.charAt(0);
+        // alter 0 to 1 in order to change fully trimmed homomorphic sites from '' '' to 'A' 'A'
+        return (ref.length() > 0 || alt.length() > 0) && ref.charAt(0) == alt.charAt(0);
     }
 
     public static BaseRetentionStrategy retainingCommonBase() {
