@@ -32,6 +32,8 @@ public class VariantTypeTest {
     @CsvSource({
             "A, T,    SNV",
             "ATG, TCA,    MNV",
+            "ATG, TC,    MNV",
+            "AT, TCA,    MNV",
             "TC, A,    DEL",
             "A, TC,    INS",
             "N, <DEL>,    DEL",
