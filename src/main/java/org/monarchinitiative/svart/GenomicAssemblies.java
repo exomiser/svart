@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +19,11 @@ public class GenomicAssemblies {
 
     private static final String ASSEMBLY_RESOURCE_PATH = "org/monarchinitiative/svart/assemblies/";
 
+    private static volatile GenomicAssembly GRCh37p13 = null;
+    private static volatile GenomicAssembly GRCh38p13 = null;
+    private static volatile GenomicAssembly GRCm38p6 = null;
+    private static volatile GenomicAssembly GRCm39 = null;
+
     private GenomicAssemblies() {
     }
 
@@ -29,8 +33,14 @@ public class GenomicAssemblies {
      * @return The human GRCh37.p13 {@link GenomicAssembly} also know as b37, hg19
      */
     public static GenomicAssembly GRCh37p13() {
-        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + "GCF_000001405.25_GRCh37.p13_assembly_report.txt");
-        return GenomicAssembly.readAssembly(inputStream);
+        if (GRCh37p13 == null) {
+            synchronized (GenomicAssemblies.class) {
+                if (GRCh37p13 == null) {
+                    GRCh37p13 = readAssemblyResource("GCF_000001405.25_GRCh37.p13_assembly_report.txt");
+                }
+            }
+        }
+        return GRCh37p13;
     }
 
     /**
@@ -39,8 +49,14 @@ public class GenomicAssemblies {
      * @return The human GRCh38.p13 {@link GenomicAssembly} also know as b38, hg38
      */
     public static GenomicAssembly GRCh38p13() {
-        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + "GCF_000001405.39_GRCh38.p13_assembly_report.txt");
-        return GenomicAssembly.readAssembly(inputStream);
+        if (GRCh38p13 == null) {
+            synchronized (GenomicAssemblies.class) {
+                if (GRCh38p13 == null) {
+                    GRCh38p13 = readAssemblyResource("GCF_000001405.39_GRCh38.p13_assembly_report.txt");
+                }
+            }
+        }
+        return GRCh38p13;
     }
 
     /**
@@ -49,8 +65,14 @@ public class GenomicAssemblies {
      * @return The mouse GRCm38.p6 {@link GenomicAssembly}
      */
     public static GenomicAssembly GRCm38p6() {
-        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + "GCF_000001635.26_GRCm38.p6_assembly_report.txt");
-        return GenomicAssembly.readAssembly(inputStream);
+        if (GRCm38p6 == null) {
+            synchronized (GenomicAssemblies.class) {
+                if (GRCm38p6 == null) {
+                    GRCm38p6 = readAssemblyResource("GCF_000001635.26_GRCm38.p6_assembly_report.txt");
+                }
+            }
+        }
+        return GRCm38p6;
     }
 
     /**
@@ -59,7 +81,18 @@ public class GenomicAssemblies {
      * @return The mouse GRCm38.p6 {@link GenomicAssembly}
      */
     public static GenomicAssembly GRCm39() {
-        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + "GCF_000001635.27_GRCm39_assembly_report.txt");
+        if (GRCm39 == null) {
+            synchronized (GenomicAssemblies.class) {
+                if (GRCm39 == null) {
+                    GRCm39 = readAssemblyResource("GCF_000001635.27_GRCm39_assembly_report.txt");
+                }
+            }
+        }
+        return GRCm39;
+    }
+
+    private static GenomicAssembly readAssemblyResource(String resourceFileName) {
+        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + resourceFileName);
         return GenomicAssembly.readAssembly(inputStream);
     }
 
@@ -146,9 +179,9 @@ public class GenomicAssemblies {
             String file = assemblyReportUrl.getFile();
             String fileName = file.substring(file.lastIndexOf('/') + 1);
             Path tempFile = Files.createTempFile(fileName, null);
-            FileOutputStream outputStream = new FileOutputStream(tempFile.toFile());
-            FileChannel fileChannel = outputStream.getChannel();
-            fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            try (FileOutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
+                outputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }
             return GenomicAssembly.readAssembly(tempFile);
         } catch (IOException e) {
             throw new IllegalStateException(e);
