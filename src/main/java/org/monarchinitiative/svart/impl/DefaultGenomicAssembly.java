@@ -17,7 +17,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
     private final String date;
     private final String genBankAccession;
     private final String refSeqAccession;
-    private final SortedSet<Contig> contigs;
+    private final Set<Contig> contigs;
 
     private final List<Contig> contigsById;
     private final Map<String, Contig> contigsByName;
@@ -30,20 +30,27 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         this.date = builder.date;
         this.genBankAccession = builder.genBankAccession;
         this.refSeqAccession = builder.refSeqAccession;
-        this.contigs = buildContigs(builder.contigs);
-        contigsById = indexContigsById(contigs);
-        contigsByName = mapContigsByNames(contigs);
+        List<Contig> sortedContigs = sortAndCheckContigs(builder.contigs);
+        // Don't use a TreeSet here as TreeSet uses the comparable() method to check for equality, not hashCode() which means
+        // that contigs.contains(x) will return true for any contig with the same id as x, even if they are otherwise
+        // completely different contigs. For example a GRCh38 assembly will return true when asked if it contains chr 1
+        // from GRCh37. This is not true of a HashSet implementation. We're using LinkedHashSet to maintain and predictably
+        // return the contigs in their ordered form.
+        this.contigs = Collections.unmodifiableSet(new LinkedHashSet<>(sortedContigs));
+        this.contigsById = indexContigsById(sortedContigs);
+        this.contigsByName = mapContigsByNames(sortedContigs);
     }
 
-    private SortedSet<Contig> buildContigs(Collection<Contig> contigs) {
+    private List<Contig> sortAndCheckContigs(Collection<Contig> contigs) {
         // remove Contig.unknown() if included as this isn't really a part of the GenomicAssembly
         List<Contig> sortedContigs = contigs.stream()
                 .filter(contig -> !Contig.unknown().equals(contig))
                 .sorted()
+                .distinct()
                 .collect(Collectors.toList());
         requireFirstIdNotZero(sortedContigs);
         requireUniqueSequentialIdentifiers(sortedContigs);
-        return Collections.unmodifiableSortedSet(new TreeSet<>(sortedContigs));
+        return sortedContigs;
     }
 
     /**
@@ -82,7 +89,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         for (Contig contig : contigs) {
             contigsById[contig.id()] = contig;
         }
-        return Arrays.asList(contigsById);
+        return List.of(contigsById);
     }
 
     private Map<String, Contig> mapContigsByNames(Collection<Contig> contigs) {
@@ -136,7 +143,7 @@ public class DefaultGenomicAssembly implements GenomicAssembly {
         return refSeqAccession;
     }
 
-    public SortedSet<Contig> contigs() {
+    public Set<Contig> contigs() {
         return contigs;
     }
 

@@ -26,7 +26,7 @@ import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.SortedSet;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -49,7 +49,7 @@ public interface GenomicAssembly {
 
     public String refSeqAccession();
 
-    public SortedSet<Contig> contigs();
+    public Set<Contig> contigs();
 
     public Contig contigById(int contigId);
 

@@ -8,6 +8,7 @@ import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,6 +21,7 @@ public class DefaultGenomicAssemblyTest {
 
     // 1	assembled-molecule	1	Chromosome	CM000663.1	=	NC_000001.10	Primary Assembly	249250621	chr1
     private static final Contig chr1b37 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 249250621, "CM000663.1" , "NC_000001.10", "chr1");
+    private static final Contig chr1b38 = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 248956422, "CM000663.2" , "NC_000001.11", "chr1");
     // MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM
     private static final Contig chrM = Contig.of(25, "MT", SequenceRole.ASSEMBLED_MOLECULE, "MT", AssignedMoleculeType.MITOCHONDRION, 16569, "J01415.2" , "NC_012920.1", "chrM");
     //HSCHR17_1_CTG5	alt-scaffold	17	Chromosome	GL000258.1	=	NT_167251.1	ALT_REF_LOCI_9	1680828	chr17_ctg5_hap1
@@ -137,6 +139,11 @@ public class DefaultGenomicAssemblyTest {
     }
 
     @Test
+    public void does_not_contain_chr1_wrong_assembly() {
+        assertFalse(grch37p13.containsContig(chr1b38));
+    }
+
+    @Test
     public void contains_chrM() {
         assertTrue(grch37p13.containsContig(chrM));
     }
@@ -144,6 +151,29 @@ public class DefaultGenomicAssemblyTest {
     @Test
     public void contains_chr17_ctg5_hap1() {
         assertTrue(grch37p13.containsContig(chr17_ctg5_hap1));
+    }
+
+    @Test
+    public void shouldNotContainDuplicates() {
+        Contig one = TestContig.of(1, 249250621);
+        Contig two = TestContig.of(2, 398325701);
+        Contig three = TestContig.of(3, 498325701);
+        GenomicAssembly instance = DefaultGenomicAssembly.builder().contigs(List.of(three, one, two, two)).build();
+        assertThat(instance.contigById(1), equalTo(one));
+        assertThat(instance.contigById(2), equalTo(two));
+        assertThat(instance.contigById(3), equalTo(three));
+        assertThat(instance.contigs(), equalTo(Set.of(one, two, three)));
+    }
+
+    @Test
+    public void returnsOrderedContigs() {
+        Contig one = TestContig.of(1, 249250621);
+        Contig two = TestContig.of(2, 398325701);
+        Contig three = TestContig.of(3, 498325701);
+        GenomicAssembly instance = DefaultGenomicAssembly.builder().contigs(List.of(three, one, two, two)).build();
+
+        List<Contig> actual = List.copyOf(instance.contigs());
+        assertThat(actual, equalTo(List.of(one, two, three)));
     }
 
     @Test
