@@ -16,7 +16,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     private final String alt;
 
     protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        super(left.contig(), left.strand(), left.coordinateSystem(), left.startPosition(), left.endPosition());
+        super(left.contig(), left.strand(), left.coordinates());
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
         this.right = Objects.requireNonNull(right, "Right breakend cannot be null");
@@ -38,7 +38,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String alt);
 
     @Override
-    protected T newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+    protected T newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
         // no-op Not required as the newBreakendVariantInstance returns the same type and this is only required for
         // the BaseGenomicRegion.withCoordinateSystem and withStrand methods which are overridden in this class
         return null;
@@ -70,13 +70,13 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     }
 
     @Override
-    public Position startPosition() {
-        return left.startPosition().shift(-ref.length());
+    public int start() {
+        return left.start() - ref.length();
     }
 
     @Override
-    public Position endPosition() {
-        return left.endPosition();
+    public int end() {
+        return left.end();
     }
 
     /**

@@ -5,7 +5,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -29,6 +28,31 @@ public class VcfBreakendIntegrationTest {
     })
     public void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
         BreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, Position.of(pos), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+//// TODO: Want to preserve input CHROM, POS, REF, ALT
+//        assertThat(variant.coordinateSystem(), equalTo(ref));
+//        assertThat(variant.strand(), equalTo(ref));
+//        assertThat(variant.start(), equalTo(ref));
+//        assertThat(variant.end(), equalTo(ref));
+//        assertThat(variant.ref(), equalTo(ref));
+//        assertThat(variant.alt(), equalTo(alt));
+//        assertThat(variant.changeLength(), equalTo(0));
+//        assertThat(variant.isBreakend(), equalTo(true));
+
+//// TODO: BUT when cast to a BreakendVariant it will allow access to breakendRef(), breakendAlt(), left(), right()
+//        BreakendVariant breakendVariant = (BreakendVariant) variant;
+//        assertThat(breakendVariant.coordinateSystem(), equalTo(ref));
+//        assertThat(breakendVariant.strand(), equalTo(ref));
+//        assertThat(breakendVariant.start(), equalTo(ref));
+//        assertThat(breakendVariant.end(), equalTo(ref));
+//        assertThat(breakendVariant.ref(), equalTo(ref));
+//        assertThat(breakendVariant.alt(), equalTo(ref));
+//        assertThat(breakendVariant.breakendRef(), equalTo(ref));
+//        assertThat(breakendVariant.breakendAlt(), equalTo(alt));
+//        assertThat(breakendVariant.isBreakend(), equalTo(true));
+//        assertThat(breakendVariant.changeLength(), equalTo(0));
+//        assertThat(breakendVariant.left(), equalTo(left));
+//        assertThat(breakendVariant.right(), equalTo(right));
+
         assertThat(VcfBreakendFormatter.makeAltVcfField(variant), equalTo(alt));
     }
 

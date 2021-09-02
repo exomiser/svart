@@ -21,8 +21,8 @@ public class DefaultBreakendTest {
         assertThat(breakend.contig(), equalTo(ctg1));
         assertThat(breakend.strand(), equalTo(Strand.POSITIVE));
         assertThat(breakend.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
-        assertThat(breakend.startPosition(), equalTo(position));
-        assertThat(breakend.endPosition(), equalTo(position));
+        assertThat(breakend.start(), equalTo(3));
+        assertThat(breakend.end(), equalTo(3));
         assertThat(breakend.id(), equalTo("a"));
     }
 

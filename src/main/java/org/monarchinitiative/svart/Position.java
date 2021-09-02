@@ -6,6 +6,7 @@ package org.monarchinitiative.svart;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
+@Deprecated
 public interface Position extends Comparable<Position> {
 
     /**

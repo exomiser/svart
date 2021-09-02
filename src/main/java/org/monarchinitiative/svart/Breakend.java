@@ -44,6 +44,12 @@ public interface Breakend extends GenomicRegion {
     }
 
     static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return DefaultBreakend.of(contig, id, strand, coordinateSystem, start, end);
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start.pos(), start.confidenceInterval(), end.pos(), end.confidenceInterval());
+        return DefaultBreakend.of(contig, id, strand, coordinates);
+    }
+
+        // TODO - should we have Breakend.left() and Breakend.right() constructors as this will enable direct input of the VCF coordinates.
+    static Breakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
+        return DefaultBreakend.of(contig, id, strand, coordinates);
     }
 }

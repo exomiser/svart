@@ -104,12 +104,13 @@ public class BaseVariantTest {
         //2    321682 .    T    <DEL>   6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
         Position startPosition = Position.of(321682, -56, 20);
         Position endPosition = Position.of(321887, -10, 62);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, 321682, ConfidenceInterval.of(-56, 20), 321887, ConfidenceInterval.of(-10, 62));
         String ref = "T";
         String alt = "<DEL>";
         int changeLength = -205;
 
         Variant instance = TestVariant.builder()
-                .with(chr1, ".", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, startPosition, endPosition, ref, alt, changeLength)
+                .with(chr1, ".", Strand.POSITIVE, coordinates, ref, alt, changeLength)
                 .build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("."));

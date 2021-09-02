@@ -150,7 +150,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         if (upstream == 0 && downstream == 0) {
             return this;
         }
-        return of(contig(), strand(), coordinateSystem(), startPosition().shift(-upstream), endPosition().shift(downstream));
+        return of(contig(), strand(), coordinates().withPadding(upstream, downstream));
     }
 
     static Comparator<GenomicRegion> naturalOrder() {
@@ -180,7 +180,17 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return a genomic region
      */
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
-        return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end));
+        return of(contig, strand, Coordinates.of(coordinateSystem, start, end));
+    }
+
+    static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, startCi, end, endCi);
+        return DefaultGenomicRegion.of(contig, strand, coordinates);
+    }
+
+    static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+        Coordinates coordinates = Coordinates.of(coordinateSystem, startPosition.pos(), startPosition.confidenceInterval(), endPosition.pos(), endPosition.confidenceInterval());
+        return DefaultGenomicRegion.of(contig, strand, coordinates);
     }
 
     /**
@@ -188,7 +198,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      *
      * @return a genomic position
      */
-    static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return DefaultGenomicRegion.of(contig, strand, coordinateSystem, startPosition, endPosition);
+    static GenomicRegion of(Contig contig, Strand strand, Coordinates coordinates) {
+        return DefaultGenomicRegion.of(contig, strand, coordinates);
     }
 }

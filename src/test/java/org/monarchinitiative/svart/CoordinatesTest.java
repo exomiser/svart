@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -9,6 +10,35 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CoordinatesTest {
+
+    @ParameterizedTest
+    @CsvSource({
+            "FULLY_CLOSED,   100,  A,   100",
+            "FULLY_CLOSED,   100,  AT,  101",
+            "LEFT_OPEN,   100,  A,   101",
+            "LEFT_OPEN,   100,  AT,  102",
+            "RIGHT_OPEN,   100,  A,   101",
+            "RIGHT_OPEN,   100,  AT,  102",
+            "FULLY_OPEN,   100,  A,   102",
+            "FULLY_OPEN,   100,  AT,  103",
+    })
+    void fromAllele(CoordinateSystem coordinateSystem, int start, String ref, int expectEnd) {
+        Coordinates fromAllele = Coordinates.ofAllele(coordinateSystem, start, ref);
+        Coordinates expected = Coordinates.of(coordinateSystem, start, expectEnd);
+        assertEquals(expected, fromAllele);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "FULLY_CLOSED, 1",
+            "LEFT_OPEN,    0",
+            "RIGHT_OPEN,   1",
+            "FULLY_OPEN,   0",
+    })
+    public void breakend(CoordinateSystem coordinateSystem, int start) {
+        Coordinates breakend = Coordinates.ofBreakend(coordinateSystem, start, ConfidenceInterval.precise());
+        assertThat(breakend.length(), equalTo(0));
+    }
 
     @ParameterizedTest
     @CsvSource({

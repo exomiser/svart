@@ -5,8 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -23,6 +22,7 @@ public class GenomicRegionTest {
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
+        assertThat(instance, equalTo(GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(1))));
         assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, Position.of(5), Position.of(5))));
         assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, Position.of(4), Position.of(5))));
     }
@@ -357,7 +357,7 @@ public class GenomicRegionTest {
         assertThat(normalisedStartPosition, equalTo(Position.of(expectedStart)));
 
         if (targetBound.equals(coordinateSystem.startBound())) {
-            assertThat(normalisedStartPosition, sameInstance(region.startPosition()));
+            assertThat(normalisedStartPosition, equalTo(region.startPosition()));
         }
     }
 
@@ -381,7 +381,7 @@ public class GenomicRegionTest {
         assertThat(normalisedEndPosition, equalTo(Position.of(expectedEnd)));
 
         if (targetBound.equals(coordinateSystem.endBound())) {
-            assertThat(normalisedEndPosition, sameInstance(region.endPosition()));
+            assertThat(normalisedEndPosition, equalTo(region.endPosition()));
         }
     }
 

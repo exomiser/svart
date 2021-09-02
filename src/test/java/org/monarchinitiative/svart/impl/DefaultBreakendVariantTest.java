@@ -54,7 +54,7 @@ public class DefaultBreakendVariantTest {
 
     @Test
     public void throwsExceptionWithMixedCoordinatesSystems() {
-        Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(123_457), Position.of(123_456));
+        Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.FULLY_CLOSED, 123_457, 123_456));
         Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(321_681), Position.of(321_681));
         Exception exception = assertThrows(IllegalStateException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Breakend variant left and right breakends must have same coordinate system!"));

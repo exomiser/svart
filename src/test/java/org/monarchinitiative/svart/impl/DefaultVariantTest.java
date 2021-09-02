@@ -481,7 +481,7 @@ public class DefaultVariantTest {
 
         @Test
         public void compareWithGenomicRegion() {
-            GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), Position.of(10));
+            GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 0, 10);
             Variant variant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(1), "A", "TAA");
             assertThat(variant.isSymbolic(), is(false));
             assertThat(GenomicRegion.compare(region, variant), equalTo(-1));

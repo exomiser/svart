@@ -10,17 +10,17 @@ import org.monarchinitiative.svart.*;
  */
 public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomicRegion> {
 
-    private DefaultGenomicRegion(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        super(contig, strand, coordinateSystem, startPosition, endPosition);
+    private DefaultGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) {
+        super(contig, strand, coordinates);
     }
 
-    public static DefaultGenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return new DefaultGenomicRegion(contig, strand, coordinateSystem, startPosition, endPosition);
+    public static DefaultGenomicRegion of(Contig contig, Strand strand, Coordinates coordinates) {
+        return new DefaultGenomicRegion(contig, strand, coordinates);
     }
 
     @Override
-    protected DefaultGenomicRegion newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return new DefaultGenomicRegion(contig, strand, coordinateSystem, startPosition, endPosition);
+    protected DefaultGenomicRegion newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+        return new DefaultGenomicRegion(contig, strand, coordinates);
     }
 
     @Override
@@ -39,8 +39,8 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
                 "contig=" + contig().id() +
                 ", strand=" + strand() +
                 ", coordinateSystem=" + coordinateSystem() +
-                ", startPosition=" + startPosition() +
-                ", endPosition=" + endPosition() +
+                ", startPosition=" + start() +
+                ", endPosition=" + end() +
                 '}';
     }
 }

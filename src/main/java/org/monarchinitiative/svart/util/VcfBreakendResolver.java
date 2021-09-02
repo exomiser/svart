@@ -85,6 +85,14 @@ public class VcfBreakendResolver {
                 leftStrand == VCF_STRAND ? insertedSeq : Seq.reverseComplement(insertedSeq));
     }
 
+    public Contig parseMateContig(String alt) {
+        Matcher altMatcher = BND_ALT_PATTERN.matcher(alt);
+        if (altMatcher.matches()) {
+            return genomicAssembly.contigByName(altMatcher.group("contig"));
+        }
+        return Contig.unknown();
+    }
+
     private Strand determineRightStrand(String alt, String leftBracket, String rightBracket) {
         if (!leftBracket.equals(rightBracket)) {
             throw new IllegalArgumentException("Invalid bracket orientation in `" + alt + '`');

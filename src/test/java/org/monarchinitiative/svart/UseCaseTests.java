@@ -20,16 +20,18 @@ public class UseCaseTests {
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, LEFT_OPEN, 50, 70);
 
         // DONOR
-        Position donorStart = exon.endPosition().shift(-3);
-        Position donorEnd = exon.endPosition().shift(+6);
-        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), donorStart, donorEnd);
+//        Position donorStart = exon.endPosition().shift(-3);
+//        Position donorEnd = exon.endPosition().shift(+6);
+        //        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), donorStart, donorEnd);
+        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.end() - 3, exon.end() + 6);
         assertThat(donor.overlapsWith(exon), equalTo(true));
         assertThat(donor.length(), equalTo(9));
 
         // ACCEPTOR
-        Position acceptorStart = exon.startPosition().shift(-8);
-        Position acceptorEnd = exon.startPosition().shift(+3); // (region of length 11)
-        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), acceptorStart, acceptorEnd);
+//        Position acceptorStart = exon.startPosition().shift(-8);
+//        Position acceptorEnd = exon.startPosition().shift(+3);
+        // (region of length 11)
+        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.start() - 8 , exon.start() + 3);
         assertThat(acceptor.overlapsWith(exon), equalTo(true));
         assertThat(acceptor.length(), equalTo(11));
     }
@@ -179,9 +181,9 @@ public class UseCaseTests {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // https://github.com/fritzsedlazeck/Sniffles/issues/73  - should run with  "--report_BND true"
         // 1 	797316 	TRA0029399SUR 	N 	<TRA> 	. 	PASS 	SUPP=2;AVGLEN=100000;med_start=797265;med_stop=797265;SVTYPE=TRA;SVMETHOD=SURVIVORv2;CHR2=8;END=245650;STRANDS=++;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(797317), Position.of(797316));
+        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, Coordinates.of(FULLY_CLOSED, 797317, 797316));
         // CHR2=8;END=245650;STRANDS=++;
-        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(245651), Position.of(245650));
+        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, Coordinates.of(FULLY_CLOSED, 245651, 245650));
         Variant bnd = Variant.of("TRA0029399SUR", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));

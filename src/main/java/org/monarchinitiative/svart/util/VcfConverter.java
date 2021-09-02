@@ -62,7 +62,8 @@ public class VcfConverter {
 
     public <T extends BaseVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(trimmed.start()), trimmed.ref(), trimmed.alt());
+        Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.FULLY_CLOSED, trimmed.start(), trimmed.ref());
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt());
     }
 
     private VariantPosition checkAndTrimNonSymbolic(int pos, String ref, String alt) {
@@ -79,7 +80,8 @@ public class VcfConverter {
     public <T extends BaseVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, Position pos, Position end, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos.pos(), ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, pos.withPos(trimmed.start()), end, trimmed.ref(), trimmed.alt(), svlen);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, trimmed.start(), pos.confidenceInterval(), end.pos(), end.confidenceInterval());
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
     public BreakendVariant convertBreakend(Contig contig, String id, Position position, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
