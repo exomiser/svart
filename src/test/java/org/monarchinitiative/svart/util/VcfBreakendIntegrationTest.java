@@ -27,7 +27,7 @@ public class VcfBreakendIntegrationTest {
             "17, 198983, bndZ, C, .C, '', event5",
     })
     public void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
-        BreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, Position.of(pos), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+        BreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
 //// TODO: Want to preserve input CHROM, POS, REF, ALT
 //        assertThat(variant.coordinateSystem(), equalTo(ref));
 //        assertThat(variant.strand(), equalTo(ref));

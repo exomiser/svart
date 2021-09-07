@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated
 public class PositionTest {
 
     @Test

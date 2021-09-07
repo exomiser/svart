@@ -15,21 +15,23 @@ public class DefaultBreakendTest {
 
     @Test
     public void properties() {
-        Position position = Position.of(3, -2, 1);
-        Breakend breakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.zeroBased(), position, position);
+        int position = 3;
+        ConfidenceInterval ciPos = ConfidenceInterval.of(-2, 1);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.zeroBased(), position, ciPos, position, ciPos);
+        Breakend breakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
 
         assertThat(breakend.contig(), equalTo(ctg1));
         assertThat(breakend.strand(), equalTo(Strand.POSITIVE));
-        assertThat(breakend.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
-        assertThat(breakend.start(), equalTo(3));
-        assertThat(breakend.end(), equalTo(3));
+        assertThat(breakend.coordinates(), equalTo(coordinates));
         assertThat(breakend.id(), equalTo("a"));
     }
 
     @Test
     public void withStrand() {
-        Position position = Position.of(3, -2, 1);
-        Breakend posBreakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, CoordinateSystem.zeroBased(), position, position);
+        int position = 3;
+        ConfidenceInterval ciPos = ConfidenceInterval.of(-2, 1);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.zeroBased(), position, ciPos, position, ciPos);
+        Breakend posBreakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
 
         assertThat(posBreakend.withStrand(Strand.POSITIVE), is(sameInstance(posBreakend)));
 

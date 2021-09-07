@@ -41,7 +41,7 @@ public class VcfBreakendFormatterTest {
         if (assembly.contigByName(chr) == Contig.unknown()) {
             return Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
         }
-        return Breakend.of(assembly.contigByName(chr), "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(start), Position.of(end)).withStrand(strand);
+        return Breakend.of(assembly.contigByName(chr), "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, start, end).withStrand(strand);
     }
 
     private GenomicAssembly testAssembly(Contig... contigs) {

@@ -41,6 +41,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().startWithCoordinateSystem(target);
     }
 
+    @Deprecated
     default Position startPositionWithCoordinateSystem(CoordinateSystem target) {
         return Position.of(coordinates().startWithCoordinateSystem(target), coordinates().startConfidenceInterval());
     }
@@ -56,6 +57,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().endWithCoordinateSystem(target);
     }
 
+    @Deprecated
     default Position endPositionWithCoordinateSystem(CoordinateSystem target) {
         return Position.of(coordinates().endWithCoordinateSystem(target), coordinates().endConfidenceInterval());
     }
@@ -68,6 +70,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return start() <= other.startWithCoordinateSystem(coordinateSystem()) && other.endWithCoordinateSystem(coordinateSystem()) <= end();
     }
 
+    @Deprecated
     default boolean contains(Position position) {
         return contains(position.pos());
     }

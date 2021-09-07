@@ -157,6 +157,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return PreciseCoordinates.of(coordinateSystem, start, end);
     }
 
+    @Deprecated
     static Coordinates of(CoordinateSystem coordinateSystem, Position start, Position end) {
         return Coordinates.of(coordinateSystem, start.pos(), start.confidenceInterval(), end.pos(), end.confidenceInterval());
     }
@@ -181,10 +182,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
     /**
      * Returns a zero-length break at the given coordinate.
-     *
-     * @param coordinateSystem
-     * @param pos
-     * @return
      */
     static Coordinates ofBreakend(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
         Objects.requireNonNull(coordinateSystem);

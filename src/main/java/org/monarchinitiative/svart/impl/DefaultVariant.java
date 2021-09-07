@@ -12,16 +12,35 @@ public final class DefaultVariant extends BaseVariant<DefaultVariant> {
         super(builder);
     }
 
+    @Deprecated // use the method that uses Coordinates
     public static DefaultVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
         VariantType.requireNonBreakend(alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, startPosition.pos(), startPosition.confidenceInterval(), endPosition.pos(), endPosition.confidenceInterval());
+        return of(contig, id, strand, coordinates, ref, alt, changeLength);
+    }
+
+    // symbolic variants
+    public static DefaultVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
+        VariantType.requireNonBreakend(alt);
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
         return new DefaultVariant(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
-    public static DefaultVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-        Position end = calculateEnd(start, coordinateSystem, ref, alt);
+    public static DefaultVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+        VariantType.requireNonBreakend(alt);
+        return new DefaultVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+    }
+
+    // sequence variants
+    public static DefaultVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        int end = calculateEnd(start, coordinateSystem, ref, alt);
         int changeLength = calculateChangeLength(ref, alt);
-        Coordinates coordinates = Coordinates.of(coordinateSystem, start.pos(), start.confidenceInterval(), end.pos(), end.confidenceInterval());
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+        return new DefaultVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+    }
+
+    public static DefaultVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
+        int changeLength = calculateChangeLength(ref, alt);
         return new DefaultVariant(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 

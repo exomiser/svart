@@ -59,7 +59,7 @@ public class RegionTest {
     })
     public void contains_position(CoordinateSystem coordinateSystem, int start, int end, int pos, boolean expected) {
         TestRegion region = TestRegion.of(coordinateSystem, start, end);
-        assertThat(region.contains(Position.of(pos)), equalTo(expected));
+        assertThat(region.contains(pos), equalTo(expected));
     }
 
     @ParameterizedTest

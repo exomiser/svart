@@ -31,8 +31,8 @@ public class DefaultBreakendVariantTest {
     @Test
     public void variantProperties() {
         // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        Breakend bnd_U = Breakend.of(chr13, "bnd_U", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(123_457), Position.of(123_456));
-        Breakend bnd_V = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(321_682), Position.of(321_681));
+        Breakend bnd_U = Breakend.of(chr13, "bnd_U", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_457, 123_456);
+        Breakend bnd_V = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.oneBased(), 321_682, 321_681);
         BreakendVariant variant = BreakendVariant.of("tra2", bnd_U, bnd_V, "C", "");
         assertThat(variant.contig(), equalTo(chr13));
         assertThat(variant.start(), equalTo(123_456));
@@ -55,7 +55,7 @@ public class DefaultBreakendVariantTest {
     @Test
     public void throwsExceptionWithMixedCoordinatesSystems() {
         Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.FULLY_CLOSED, 123_457, 123_456));
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(321_681), Position.of(321_681));
+        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 321_681, 321_681);
         Exception exception = assertThrows(IllegalStateException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Breakend variant left and right breakends must have same coordinate system!"));
     }
@@ -63,7 +63,7 @@ public class DefaultBreakendVariantTest {
     @Test
     public void throwsExceptionWithLeftUnplacedBreakend() {
         Breakend left = Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(321_681), Position.of(321_681));
+        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 321_681, 321_681);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Left breakend cannot be unresolved."));
     }

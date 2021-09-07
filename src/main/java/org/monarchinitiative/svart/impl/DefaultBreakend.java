@@ -20,8 +20,14 @@ public final class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> im
         }
     }
 
+    @Deprecated
     public static DefaultBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
         Coordinates coordinates = Coordinates.of(coordinateSystem, start.pos(), start.confidenceInterval(), end.pos(), end.confidenceInterval());
+        return new DefaultBreakend(contig, id, strand, coordinates);
+    }
+
+    public static DefaultBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
         return new DefaultBreakend(contig, id, strand, coordinates);
     }
 

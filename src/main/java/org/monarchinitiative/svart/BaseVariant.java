@@ -53,14 +53,8 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
 
     /**
      * Calculates the end position of the reference allele in the coordinate system provided.
-     *
-     * @param start
-     * @param coordinateSystem
-     * @param ref
-     * @param alt
-     * @return
      */
-    protected static Position calculateEnd(Position start, CoordinateSystem coordinateSystem, String ref, String alt) {
+    protected static int calculateEnd(int start, CoordinateSystem coordinateSystem, String ref, String alt) {
         VariantType.requireNonSymbolic(alt);
         // Given the coordinate system (C) and a reference allele starting at start position (S) with Length (L) the end
         // position (E) is calculated as:
@@ -69,7 +63,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         //  LO  0  1  1  (S + L)      ('zero-based')
         //  RO  1  1  2  (S + L)
         //  FO  0  1  2  (S + L + 1)
-        return start.shift(ref.length() + Coordinates.endDelta(coordinateSystem));
+        return start + ref.length() + Coordinates.endDelta(coordinateSystem);
     }
 
     protected abstract T newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength);
@@ -175,9 +169,9 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             return with(variant.contig(), variant.id(), variant.strand(), variant.coordinates(), variant.ref(), variant.alt(), variant.changeLength());
         }
 
-        public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-            Position end = calculateEnd(start, coordinateSystem, ref, alt);
-            Coordinates coordinates = Coordinates.of(coordinateSystem, start.pos(), end.pos());
+        public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+            int end = calculateEnd(start, coordinateSystem, ref, alt);
+            Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
             return with(contig, id, strand, coordinates, ref, alt);
         }
 
