@@ -22,7 +22,7 @@ public class CoordinatesTest {
             "FULLY_OPEN,   100,  A,   102",
             "FULLY_OPEN,   100,  AT,  103",
     })
-    void fromAllele(CoordinateSystem coordinateSystem, int start, String ref, int expectEnd) {
+    public void fromAllele(CoordinateSystem coordinateSystem, int start, String ref, int expectEnd) {
         Coordinates fromAllele = Coordinates.ofAllele(coordinateSystem, start, ref);
         Coordinates expected = Coordinates.of(coordinateSystem, start, expectEnd);
         assertEquals(expected, fromAllele);
