@@ -41,6 +41,10 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().startWithCoordinateSystem(target);
     }
 
+    default ConfidenceInterval startConfidenceInterval() {
+        return coordinates().startConfidenceInterval();
+    }
+
     @Deprecated
     default Position startPositionWithCoordinateSystem(CoordinateSystem target) {
         return Position.of(coordinates().startWithCoordinateSystem(target), coordinates().startConfidenceInterval());
@@ -55,6 +59,10 @@ public interface Region<T> extends CoordinateSystemed<T> {
 
     default int endWithCoordinateSystem(CoordinateSystem target) {
         return coordinates().endWithCoordinateSystem(target);
+    }
+
+    default ConfidenceInterval endConfidenceInterval() {
+        return coordinates().endConfidenceInterval();
     }
 
     @Deprecated

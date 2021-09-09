@@ -115,7 +115,9 @@ public class BaseVariantTest {
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
         assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
         assertThat(instance.start(), equalTo(321_682));
+        assertThat(instance.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-56, 20)));
         assertThat(instance.end(), equalTo(321_887));
+        assertThat(instance.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-10, 62)));
         assertThat(instance.changeLength(), equalTo(changeLength));
         assertThat(instance.ref(), equalTo(ref));
         assertThat(instance.alt(), equalTo(alt));
