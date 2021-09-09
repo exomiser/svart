@@ -6,22 +6,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
 
     Coordinates coordinates();
 
-    /**
-     * @return start coordinate of the region
-     */
-    @Deprecated
-    default Position startPosition() {
-        return Position.of(coordinates().start(), coordinates().startConfidenceInterval());
-    }
-
-    /**
-     * @return end coordinate of the region
-     */
-    @Deprecated
-    default Position endPosition() {
-        return Position.of(coordinates().end(), coordinates().endConfidenceInterval());
-    }
-
     @Override
     default CoordinateSystem coordinateSystem() {
         return coordinates().coordinateSystem();
@@ -45,11 +29,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().startConfidenceInterval();
     }
 
-    @Deprecated
-    default Position startPositionWithCoordinateSystem(CoordinateSystem target) {
-        return Position.of(coordinates().startWithCoordinateSystem(target), coordinates().startConfidenceInterval());
-    }
-
     /**
      * @return end coordinate of the region
      */
@@ -65,22 +44,12 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().endConfidenceInterval();
     }
 
-    @Deprecated
-    default Position endPositionWithCoordinateSystem(CoordinateSystem target) {
-        return Position.of(coordinates().endWithCoordinateSystem(target), coordinates().endConfidenceInterval());
-    }
-
     /**
      * @param other chromosomal region
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(Region<?> other) {
         return start() <= other.startWithCoordinateSystem(coordinateSystem()) && other.endWithCoordinateSystem(coordinateSystem()) <= end();
-    }
-
-    @Deprecated
-    default boolean contains(Position position) {
-        return contains(position.pos());
     }
 
     default boolean contains(int position) {

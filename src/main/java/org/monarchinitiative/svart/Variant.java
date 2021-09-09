@@ -90,27 +90,12 @@ public interface Variant extends GenomicRegion {
         return DefaultVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
     }
 
-    @Deprecated
-    static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-        VariantType.requireNonSymbolic(alt);
-        int end = BaseVariant.calculateEnd(start.pos(), coordinateSystem, ref, alt);
-        Coordinates coordinates = Coordinates.of(coordinateSystem, start, Position.of(end));
-        return DefaultVariant.of(contig, id, strand, coordinates, ref, alt);
-    }
-
     static Variant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         VariantType.requireSymbolic(alt);
         return DefaultVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
     static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
-        VariantType.requireSymbolic(alt);
-        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return DefaultVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
-    }
-
-    @Deprecated
-    static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength) {
         VariantType.requireSymbolic(alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
         return DefaultVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);

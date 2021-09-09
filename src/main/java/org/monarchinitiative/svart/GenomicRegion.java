@@ -188,12 +188,6 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         return DefaultGenomicRegion.of(contig, strand, coordinates);
     }
 
-    @Deprecated
-    static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        Coordinates coordinates = Coordinates.of(coordinateSystem, startPosition.pos(), startPosition.confidenceInterval(), endPosition.pos(), endPosition.confidenceInterval());
-        return DefaultGenomicRegion.of(contig, strand, coordinates);
-    }
-
     /**
      * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
      *

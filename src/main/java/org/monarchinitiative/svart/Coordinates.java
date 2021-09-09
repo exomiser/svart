@@ -157,11 +157,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return PreciseCoordinates.of(coordinateSystem, start, end);
     }
 
-    @Deprecated
-    static Coordinates of(CoordinateSystem coordinateSystem, Position start, Position end) {
-        return Coordinates.of(coordinateSystem, start.pos(), start.confidenceInterval(), end.pos(), end.confidenceInterval());
-    }
-
     static Coordinates of(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
         if (startCi.isPrecise() && endCi.isPrecise()) {
             return PreciseCoordinates.of(coordinateSystem, start, end);
