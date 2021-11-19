@@ -17,6 +17,12 @@ public class DefaultVariantTest {
     public class NonSymbolicTests {
 
         @Test
+        public void throwsIllegalArgumentWithIncorrectLength() {
+            Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, 1, 100);
+            assertThrows(IllegalArgumentException.class, () -> DefaultVariant.of(chr1, "", Strand.POSITIVE, coordinates, "A", "T"));
+        }
+
+        @Test
         public void throwsIllegalArgumentWithSymbolicAllele() {
             assertThrows(IllegalArgumentException.class, () -> DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "<INS>"));
         }
@@ -295,11 +301,11 @@ public class DefaultVariantTest {
 
         @Test
         public void DefaultVariantContainsSnv() {
-            Variant largeIns = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(100), "T", "<INS>", 100);
-            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), "A", "T")));
-            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(0), "A", "T")));
-            assertFalse(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(200), "C", "A")));
-            assertTrue(largeIns.contains(DefaultBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(0), Position.of(0))));
+            Variant largeIns = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1,100, "T", "<INS>", 100);
+            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "T")));
+            assertTrue(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 0, "A", "T")));
+            assertFalse(largeIns.contains(DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 200, "C", "A")));
+            assertTrue(largeIns.contains(DefaultBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 0)));
         }
 
         @Test

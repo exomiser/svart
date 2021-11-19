@@ -22,23 +22,29 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         this.ref = VariantType.requireNonSymbolic(ref);
         this.alt = VariantType.requireNonBreakend(alt);
         this.variantType = VariantType.parseType(ref, alt);
-        this.changeLength = checkChangeLength(changeLength, variantType);
+        this.changeLength = checkChangeLength(coordinates, changeLength, variantType);
     }
 
     protected BaseVariant(Builder<?> builder) {
         this(builder.contig, builder.id, builder.strand, builder.coordinates, builder.ref, builder.alt, builder.changeLength);
     }
 
-    private int checkChangeLength(int changeLength, VariantType variantType) {
-        if (variantType.baseType() == VariantType.DEL && (changeLength >= 0)) {
+    private int checkChangeLength(Coordinates coordinates, int changeLength, VariantType variantType) {
+        if (variantType.baseType() == VariantType.DEL && changeLength >= 0) {
             throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Should be < 0 given coordinates  " + changeCoordinates());
-        } else if (variantType.baseType() == VariantType.INS && (changeLength <= 0)) {
+        }
+        if (variantType.baseType() == VariantType.INS && changeLength <= 0) {
             throw new IllegalArgumentException("Illegal INS changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
-        } else if (variantType.baseType() == VariantType.DUP && (changeLength <= 0)) {
+        }
+        if (variantType.baseType() == VariantType.DUP && changeLength <= 0) {
             throw new IllegalArgumentException("Illegal DUP!changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
-        } else if (variantType.baseType() == VariantType.INV && (changeLength != 0) && !isSymbolic()) {
+        }
+        if (variantType.baseType() == VariantType.INV && changeLength != 0 && !isSymbolic()) {
             // symbolic alleles may not be precise, so this can cause failures
             throw new IllegalArgumentException("Illegal INV! changeLength:" + changeLength + ". Should be 0 given coordinates " + changeCoordinates());
+        }
+        if (ref.length() != coordinates.length() && !isSymbolic()) {
+            throw new IllegalArgumentException(coordinates + " (length " + coordinates.length() + ") ref=" + ref + ", alt=" + alt + " inconsistent with allele change length of " + changeLength);
         }
         return changeLength;
     }
@@ -164,6 +170,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
         // to maintain the correct state when finally built.
 
+        @Override
         public T with(Variant variant) {
             Objects.requireNonNull(variant, "variant cannot be null");
             return with(variant.contig(), variant.id(), variant.strand(), variant.coordinates(), variant.ref(), variant.alt(), variant.changeLength());
@@ -203,6 +210,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             return self();
         }
 
+        @Override
         public T withStrand(Strand strand) {
             if (this.strand == strand) {
                 return self();
