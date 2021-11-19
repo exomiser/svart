@@ -226,8 +226,7 @@ public enum VariantType {
     }
 
     public static boolean isSymbolic(String allele) {
-        // shamelessly copied from HTSJDK Allele via Jannovar
-        return isLargeSymbolic(allele) || isSingleBreakend(allele) || isMatedBreakend(allele);
+        return isLargeSymbolic(allele) || isBreakend(allele);
     }
 
     public static boolean isBreakend(String allele) {
