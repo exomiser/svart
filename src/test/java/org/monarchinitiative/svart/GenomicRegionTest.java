@@ -482,4 +482,23 @@ public class GenomicRegionTest {
         assertThat(region.overlapLength(other), equalTo(expected));
     }
 
+    @Test
+    public void testPreciseRegionMinMax() {
+        GenomicRegion imprecise = GenomicRegion.of(TestContig.of(2, 10000), Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 1000, 2000));
+        assertThat(imprecise.startMin(), equalTo(1000));
+        assertThat(imprecise.startMax(), equalTo(1000));
+
+        assertThat(imprecise.endMin(), equalTo(2000));
+        assertThat(imprecise.endMax(), equalTo(2000));
+    }
+
+    @Test
+    public void testImpreciseRegionMinMax() {
+        GenomicRegion imprecise = GenomicRegion.of(TestContig.of(2, 10000), Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 1000, ConfidenceInterval.of(-10, 20), 2000, ConfidenceInterval.of(-100, 200)));
+        assertThat(imprecise.startMin(), equalTo(990));
+        assertThat(imprecise.startMax(), equalTo(1020));
+
+        assertThat(imprecise.endMin(), equalTo(1900));
+        assertThat(imprecise.endMax(), equalTo(2200));
+    }
 }

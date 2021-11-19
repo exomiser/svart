@@ -29,6 +29,14 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return coordinates().startConfidenceInterval();
     }
 
+    default int startMin() {
+        return startConfidenceInterval().minPos(start());
+    }
+
+    default int startMax() {
+        return startConfidenceInterval().maxPos(start());
+    }
+
     /**
      * @return end coordinate of the region
      */
@@ -42,6 +50,14 @@ public interface Region<T> extends CoordinateSystemed<T> {
 
     default ConfidenceInterval endConfidenceInterval() {
         return coordinates().endConfidenceInterval();
+    }
+
+    default int endMin() {
+        return endConfidenceInterval().minPos(end());
+    }
+
+    default int endMax() {
+        return endConfidenceInterval().maxPos(end());
     }
 
     /**
