@@ -6,7 +6,7 @@
 
     <groupId>org.monarchinitiative.svart</groupId>
     <artifactId>svart</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <description>a library to ease representation of variants and performing genomic manipulations</description>
 
     <name>svart</name>
