@@ -37,7 +37,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             throw new IllegalArgumentException("Illegal INS changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
         }
         if (variantType.baseType() == VariantType.DUP && changeLength <= 0) {
-            throw new IllegalArgumentException("Illegal DUP!changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
+            throw new IllegalArgumentException("Illegal DUP changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
         }
         if (variantType.baseType() == VariantType.INV && changeLength != 0 && !isSymbolic()) {
             // symbolic alleles may not be precise, so this can cause failures
@@ -147,8 +147,8 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
                 "contig=" + contig().id() +
                 ", strand=" + strand() +
                 ", coordinateSystem=" + coordinateSystem() +
-                ", startPosition=" + start() +
-                ", endPosition=" + end() +
+                ", start=" + start() +
+                ", end=" + end() +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", variantType=" + variantType +
