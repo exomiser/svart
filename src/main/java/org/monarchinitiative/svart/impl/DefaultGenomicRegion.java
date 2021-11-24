@@ -39,8 +39,8 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
                 "contig=" + contig().id() +
                 ", strand=" + strand() +
                 ", coordinateSystem=" + coordinateSystem() +
-                ", startPosition=" + start() +
-                ", endPosition=" + end() +
+                ", start=" + start() +
+                ", end=" + end() +
                 '}';
     }
 }
