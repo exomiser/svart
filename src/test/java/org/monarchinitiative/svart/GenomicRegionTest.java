@@ -387,22 +387,17 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ZERO_BASED, 1, 3,     ZERO_BASED, 1, 3",
-            "ZERO_BASED, 1, 3,     ONE_BASED, 2, 3",
+            "ZERO_BASED, 1, 3, ZERO_BASED, 1, 3",
+            "ZERO_BASED, 1, 3,  ONE_BASED, 2, 3",
 
             "ONE_BASED, 2, 3,  ZERO_BASED, 1, 3",
-            "ONE_BASED, 2, 3,  ONE_BASED, 2, 3",
+            "ONE_BASED, 2, 3,   ONE_BASED, 2, 3",
     })
     public void testWithCoordinateSystem(CoordinateSystem source, int start, int end,
                                      CoordinateSystem target, int targetStart, int targetEnd) {
-
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, source, start, end);
-
-        GenomicRegion other = region.withCoordinateSystem(target);
-        assertThat(other.start(), equalTo(targetStart));
-        assertThat(other.coordinateSystem().startBound(), equalTo(target.startBound()));
-        assertThat(other.end(), equalTo(targetEnd));
-        assertThat(other.coordinateSystem().endBound(), equalTo(target.endBound()));
+        GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, target, targetStart, targetEnd);
+        assertThat(region.withCoordinateSystem(target), equalTo(expected));
     }
 
     @ParameterizedTest

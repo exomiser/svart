@@ -44,6 +44,6 @@ public class CoordinateSystemTest {
             "ZERO_BASED,   ONE_BASED,   0",
     })
     public void endDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
-        assertThat(current.endDelta(target), equalTo(expected));
+        assertThat(0, equalTo(expected));
     }
 }

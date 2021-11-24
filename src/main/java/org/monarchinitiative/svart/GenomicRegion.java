@@ -100,7 +100,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
         if (this.strand() == strand && this.coordinateSystem() == coordinateSystem) {
             return end();
         }
-        return endOnStrand(strand) + coordinateSystem().endDelta(coordinateSystem);
+        return endOnStrand(strand);
     }
 
     /**

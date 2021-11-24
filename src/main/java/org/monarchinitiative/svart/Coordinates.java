@@ -22,9 +22,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return EMPTY;
     }
 
-// TODO: add Region.coordinates() and/or change region to extend Coordinates,
-//  Add Coordinates as Constructor arg to replace coordinateSystem, start, end
-
     CoordinateSystem coordinateSystem();
 
     int start();
@@ -46,7 +43,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     default int endWithCoordinateSystem(CoordinateSystem target) {
-        return end() + coordinateSystem().endDelta(target);
+        return end();
     }
 
     default boolean isPrecise() {
@@ -70,24 +67,29 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private int lengthDelta() {
-        return coordinateSystem() == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem()) + ZERO_BASED.endDelta(coordinateSystem());
+        return coordinateSystem() == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem());
     }
 
     default int length() {
         // the easiest way to calculate length is to use half-open interval coordinates
         // Why? - See https://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html
-        return closedEnd() - openStart();
+        // in one and zero-based systems the end is equivalent
+        return end() - openStart();
     }
 
     default int overlapLength(Coordinates other) {
-        return Math.max(Math.min(this.closedEnd(), other.closedEnd()) - Math.max(this.openStart(), other.openStart()), 0);
+        // in one and zero-based systems the end is equivalent
+        // in one and zero-based systems the end is equivalent
+        return Math.max(Math.min(end(), other.end()) - Math.max(this.openStart(), other.openStart()), 0);
     }
 
     default int distanceTo(Coordinates other) {
         if (this.overlaps(other)) return 0;
 
-        int first = other.openStart() - this.closedEnd();
-        int second = this.openStart() - other.closedEnd();
+        // in one and zero-based systems the end is equivalent
+        int first = other.openStart() - end();
+        // in one and zero-based systems the end is equivalent
+        int second = this.openStart() - other.end();
 
         int result = Math.abs(first) < Math.abs(second) ? first : second;
         return first > second ? result : -result;
@@ -101,7 +103,9 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         if (other.isEmpty()) {
             return this.contains(other);
         }
-        return this.openStart() < other.closedEnd() && other.openStart() < this.closedEnd();
+        // in one and zero-based systems the end is equivalent
+        // in one and zero-based systems the end is equivalent
+        return this.openStart() < other.end() && other.openStart() < end();
     }
 
     default boolean overlaps(CoordinateSystem bSystem, int bStart, int bEnd) {
@@ -112,7 +116,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         if (isEmpty(bSystem, bStart, bEnd)) {
             return aContainsB(this.coordinateSystem(), this.start(), this.end(), bSystem, bStart, bEnd);
         }
-        return this.openStart() < closedEnd(bSystem, bEnd) && openStart(bSystem, bStart) < this.closedEnd();
+        return this.openStart() < bEnd && openStart(bSystem, bStart) < end();
     }
 
     private boolean isEmpty() {
@@ -120,7 +124,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     default boolean contains(Coordinates other) {
-        return this.openStart() <= other.openStart() && other.closedEnd() <= this.closedEnd();
+        return this.openStart() <= other.openStart() && other.end() <= end();
     }
 
     default boolean contains(int position) {
@@ -129,10 +133,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
     private int openStart() {
         return coordinateSystem().startBound() == Bound.OPEN ? start() : start() - 1;
-    }
-
-    private int closedEnd() {
-        return coordinateSystem().endBound() == Bound.CLOSED ? end() : end() - 1;
     }
 
     Coordinates withPadding(int upstream, int downstream);
@@ -166,10 +166,8 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         // Given the coordinate system (C) and a reference allele starting at start position (S) with Length (L) the end
         // position (E) is calculated as:
         //  C   S  L  E
-        //  FC  1  1  1  (S + L - 1)  ('one-based')
-        //  LO  0  1  1  (S + L)      ('zero-based')
-        //  RO  1  1  2  (S + L)
-        //  FO  0  1  2  (S + L + 1)
+        //  []  1  1  1  (S + L - 1)  ('one-based')
+        //  [)  0  1  1  (S + L)      ('zero-based')
         return PreciseCoordinates.of(coordinateSystem, pos, pos + ref.length() + endDelta(coordinateSystem));
     }
 
@@ -204,7 +202,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     public static int length(CoordinateSystem coordinateSystem, int start, int end) {
         // the easiest way to calculate length is to use half-open interval coordinates
         // Why? - See https://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html
-        return closedEnd(coordinateSystem, end) - openStart(coordinateSystem, start);
+        return end - openStart(coordinateSystem, start);
     }
 
     /**
@@ -224,7 +222,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private static int lengthDelta(CoordinateSystem coordinateSystem) {
-        return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem) + ZERO_BASED.endDelta(coordinateSystem);
+        return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
     }
 
     /**
@@ -248,7 +246,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         if (isEmpty(bSystem, bStart, bEnd)) {
             return aContainsB(aSystem, aStart, aEnd, bSystem, bStart, bEnd);
         }
-        return openStart(aSystem, aStart) < closedEnd(bSystem, bEnd) && openStart(bSystem, bStart) < closedEnd(aSystem, aEnd);
+        return openStart(aSystem, aStart) < bEnd && openStart(bSystem, bStart) < aEnd;
     }
 
     /**
@@ -264,7 +262,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return length of overlap between a and b or zero if there is no overlap.
      */
     public static int overlapLength(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        return Math.max(Math.min(closedEnd(aSystem, aEnd), closedEnd(bSystem, bEnd)) - Math.max(openStart(aSystem, aStart), openStart(bSystem, bStart)), 0);
+        return Math.max(Math.min(aEnd, bEnd) - Math.max(openStart(aSystem, aStart), openStart(bSystem, bStart)), 0);
     }
 
     /**
@@ -281,7 +279,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return true indicating interval a fully contains b or false if it does not.
      */
     public static boolean aContainsB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        return openStart(aSystem, aStart) <= openStart(bSystem, bStart) && closedEnd(bSystem, bEnd) <= closedEnd(aSystem, aEnd);
+        return openStart(aSystem, aStart) <= openStart(bSystem, bStart) && bEnd <= aEnd;
     }
 
     /**
@@ -300,8 +298,8 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     public static int distanceAToB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         if (overlap(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
 
-        int first = openStart(bSystem, bStart) - closedEnd(aSystem, aEnd);
-        int second = openStart(aSystem, aStart) - closedEnd(bSystem, bEnd);
+        int first = openStart(bSystem, bStart) - aEnd;
+        int second = openStart(aSystem, aStart) - bEnd;
 
         int result = Math.abs(first) < Math.abs(second) ? first : second;
         return first > second ? result : -result;
@@ -315,10 +313,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return coordinateSystem.startBound() == Bound.OPEN ? start : start - 1;
     }
 
-    private static int closedEnd(CoordinateSystem coordinateSystem, int end) {
-        return coordinateSystem.endBound() == Bound.CLOSED ? end : end - 1;
-    }
-
     /**
      * Returns the required delta to be added to a start position in order to produce an end position in the given
      * {@link CoordinateSystem}. The start position <em>must</em> be in the same coordinate system as provided to this
@@ -329,9 +323,8 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * calculated by adding the delta (D). i.e. E = S + L + D
      * <pre>
      *   C   S  L  E   D
-     *   FC  1  1  1  -1  (S + L - 1)  ('one-based')
-     *   LO  0  1  1   0  (S + L)      ('zero-based')
-     *   RO  1  1  2   0  (S + L)
+     *   []  1  1  1  -1  (S + L - 1)  ('one-based')
+     *   [)  0  1  1   0  (S + L)      ('zero-based')
      * </pre>
      *
      * @param coordinateSystem The coordinateSystem of the required delta
@@ -353,21 +346,15 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             case ONE_BASED:
                 if (start > end + 1) {
                     // region [2,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Fully-closed coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
+                    throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
                 }
                 break;
             case ZERO_BASED:
                 if (start > end) {
                     // region (1,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Left-open coordinates " + start + '-' + end + " must have a start position before the end position");
+                    throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " must have a start position before the end position");
                 }
                 break;
-//            case RIGHT_OPEN:
-//                if (start > end) {
-//                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
-//                    throw new InvalidCoordinatesException("Right-open coordinates " + start + '-' + end + " must have a start position before the end position");
-//                }
-//                break;
         }
     }
 
@@ -394,19 +381,14 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         switch (coordinates.coordinateSystem()) {
             case ONE_BASED:
                 if (start < 1 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+                    throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
                 }
                 break;
             case ZERO_BASED:
                 if (start < 0 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
+                    throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
                 }
                 break;
-//            case RIGHT_OPEN:
-//                if (start < 1 || end > contig.length() + 1) {
-//                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
-//                }
-//                break;
         }
     }
 
@@ -433,31 +415,22 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         switch (coordinateSystem) {
             case ONE_BASED:
                 if (start < 1 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+                    throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
                 }
                 if (start > end + 1) {
                     // region [2,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at most one place past the end position");
+                    throw new InvalidCoordinatesException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at most one place past the end position");
                 }
                 break;
             case ZERO_BASED:
                 if (start < 0 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
+                    throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
                 }
                 if (start > end) {
                     // region (1,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
+                    throw new InvalidCoordinatesException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
                 }
                 break;
-//            case RIGHT_OPEN:
-//                if (start < 1 || end > contig.length() + 1) {
-//                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
-//                }
-//                if (start > end) {
-//                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
-//                    throw new InvalidCoordinatesException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
-//                }
-//                break;
         }
     }
 }
