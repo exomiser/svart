@@ -20,22 +20,18 @@ public class UseCaseTests {
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, LEFT_OPEN, 50, 70);
 
         // DONOR
-        // TODO - consolidate
-//        Position donorStart = exon.endPosition().shift(-3);
-//        Position donorEnd = exon.endPosition().shift(+6);
-        //        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), donorStart, donorEnd);
+        // SQUIRLS computational model defines the splice donor site as the region that includes
+        // the last 3 exonic positions and the first 6 intronic positions.
         GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.end() - 3, exon.end() + 6);
         assertThat(donor.overlapsWith(exon), equalTo(true));
         assertThat(donor.length(), equalTo(9));
 
         // ACCEPTOR
-        // TODO - consolidate
-//        Position acceptorStart = exon.startPosition().shift(-8);
-//        Position acceptorEnd = exon.startPosition().shift(+3);
-        // (region of length 11)
-        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.start() - 8 , exon.start() + 3);
+        // SQUIRLS computational model defines the splice acceptor site as the region that includes
+        // the last 25 intronic positions and the first 2 exonic positions.
+        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.start() - 25 , exon.start() + 2);
         assertThat(acceptor.overlapsWith(exon), equalTo(true));
-        assertThat(acceptor.length(), equalTo(11));
+        assertThat(acceptor.length(), equalTo(27));
     }
 
     @Test
