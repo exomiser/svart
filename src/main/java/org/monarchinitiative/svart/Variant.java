@@ -37,12 +37,12 @@ public interface Variant extends GenomicRegion {
 
     @Override
     default Variant toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     @Override
     default Variant toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     @Override

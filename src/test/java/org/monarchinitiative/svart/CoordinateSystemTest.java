@@ -14,23 +14,23 @@ public class CoordinateSystemTest {
 
 
     @ParameterizedTest
-    @CsvSource({"FULLY_CLOSED, true", "LEFT_OPEN, false"})
+    @CsvSource({"ONE_BASED, true", "ZERO_BASED, false"})
     public void isOneBased(CoordinateSystem coordinateSystem, boolean expected) {
         assertThat(coordinateSystem.isOneBased(), is(expected));
     }
 
     @ParameterizedTest
-    @CsvSource({"FULLY_CLOSED, false", "LEFT_OPEN, true"})
+    @CsvSource({"ONE_BASED, false", "ZERO_BASED, true"})
     public void isZeroBased(CoordinateSystem coordinateSystem, boolean expected) {
         assertThat(coordinateSystem.isZeroBased(), is(expected));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED, FULLY_CLOSED,   0",
-            "FULLY_CLOSED, LEFT_OPEN,     -1",
-            "LEFT_OPEN,    LEFT_OPEN,      0",
-            "LEFT_OPEN,    FULLY_CLOSED,   1"
+            "ONE_BASED,     ONE_BASED,   0",
+            "ONE_BASED,    ZERO_BASED,  -1",
+            "ZERO_BASED,   ZERO_BASED,   0",
+            "ZERO_BASED,    ONE_BASED,   1"
     })
     public void startDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
         assertThat(current.startDelta(target), equalTo(expected));
@@ -38,10 +38,10 @@ public class CoordinateSystemTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED, FULLY_CLOSED,   0",
-            "FULLY_CLOSED, LEFT_OPEN,      0",
-            "LEFT_OPEN,    LEFT_OPEN,      0",
-            "LEFT_OPEN,    FULLY_CLOSED,   0",
+            "ONE_BASED,    ONE_BASED,   0",
+            "ONE_BASED,   ZERO_BASED,   0",
+            "ZERO_BASED,  ZERO_BASED,   0",
+            "ZERO_BASED,   ONE_BASED,   0",
     })
     public void endDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
         assertThat(current.endDelta(target), equalTo(expected));

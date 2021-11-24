@@ -16,7 +16,7 @@ public class VcfBreakendResolver {
 
     private static final String IUPAC_BASES = "ACGTUWSMKRYBDHVNacgtuwsmkrybdhvn";
 
-    private static final CoordinateSystem VCF_COORDINATE_SYSTEM = CoordinateSystem.FULLY_CLOSED;
+    private static final CoordinateSystem VCF_COORDINATE_SYSTEM = CoordinateSystem.ONE_BASED;
     private static final Strand VCF_STRAND = Strand.POSITIVE;
 
     /**

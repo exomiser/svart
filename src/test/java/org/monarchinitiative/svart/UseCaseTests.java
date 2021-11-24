@@ -86,10 +86,10 @@ public class UseCaseTests {
         Variant snv = Variant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
         // Because svart knows about coordinate systems and strands it is possible to...
         // keep the gene on the positive strand:
-        // GenomicRegion{contig=10, strand=+, coordinateSystem=FULLY_CLOSED, startPosition=123237848, endPosition=123357972}
+        // GenomicRegion{contig=10, strand=+, coordinateSystem=ONE_BASED, startPosition=123237848, endPosition=123357972}
         assertThat(fgfr2Gene.contains(snv), equalTo(true));
         // or use it on the negative strand:
-        // GenomicRegion{contig=10, strand=-, coordinateSystem=FULLY_CLOSED, startPosition=12176776, endPosition=12296900}
+        // GenomicRegion{contig=10, strand=-, coordinateSystem=ONE_BASED, startPosition=12176776, endPosition=12296900}
         assertThat(fgfr2Gene.toNegativeStrand().contains(snv), equalTo(true));
     }
 

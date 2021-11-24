@@ -16,8 +16,8 @@ package org.monarchinitiative.svart;
  */
 public enum CoordinateSystem {
 
-    FULLY_CLOSED(Bound.CLOSED, Bound.CLOSED),
-    LEFT_OPEN(Bound.OPEN, Bound.CLOSED);
+    ONE_BASED(Bound.CLOSED, Bound.CLOSED),
+    ZERO_BASED(Bound.OPEN, Bound.CLOSED);
 
     private final Bound startBound;
     private final Bound endBound;
@@ -34,7 +34,7 @@ public enum CoordinateSystem {
      * system.
      */
     public static CoordinateSystem oneBased() {
-        return FULLY_CLOSED;
+        return ONE_BASED;
     }
 
     /**
@@ -45,15 +45,15 @@ public enum CoordinateSystem {
      * BCFv2, BED, and PSL formats use the 0-based coordinate system.
      */
     public static CoordinateSystem zeroBased() {
-        return LEFT_OPEN;
+        return ZERO_BASED;
     }
 
     public boolean isOneBased() {
-        return this == FULLY_CLOSED;
+        return this == ONE_BASED;
     }
 
     public boolean isZeroBased() {
-        return this == LEFT_OPEN;
+        return this == ZERO_BASED;
     }
 
     public Bound startBound() {

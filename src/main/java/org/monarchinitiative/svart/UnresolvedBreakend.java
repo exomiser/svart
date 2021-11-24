@@ -6,8 +6,8 @@ package org.monarchinitiative.svart;
  */
 final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> implements Breakend {
 
-    private static final UnresolvedBreakend FULLY_CLOSED = new UnresolvedBreakend(CoordinateSystem.FULLY_CLOSED, 1);
-    private static final UnresolvedBreakend LEFT_OPEN = new UnresolvedBreakend(CoordinateSystem.LEFT_OPEN, 0);
+    private static final UnresolvedBreakend ONE_BASED_UNRESOLVED_BREAKEND = new UnresolvedBreakend(CoordinateSystem.ONE_BASED, 1);
+    private static final UnresolvedBreakend ZERO_BASED_UNRESOLVED_BREAKEND = new UnresolvedBreakend(CoordinateSystem.ZERO_BASED, 0);
 
     private static final String ID = "";
 
@@ -16,13 +16,14 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
     }
 
     static UnresolvedBreakend instance(CoordinateSystem coordinateSystem) {
-        switch (coordinateSystem){
-            case FULLY_CLOSED:
-                return FULLY_CLOSED;
-            case LEFT_OPEN:
-                return LEFT_OPEN;
+        switch (coordinateSystem) {
+            case ONE_BASED:
+                return ONE_BASED_UNRESOLVED_BREAKEND;
+            case ZERO_BASED:
+                return ZERO_BASED_UNRESOLVED_BREAKEND;
+            default:
+                throw new IllegalStateException("Unexpected coordinate system: " + coordinateSystem);
         }
-        throw new IllegalArgumentException("Unknown coordinateSystem!");
     }
 
     @Override

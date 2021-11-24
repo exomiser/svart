@@ -49,12 +49,12 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
     @Override
     public T toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     @Override
     public T toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     @Override
@@ -120,7 +120,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
     protected abstract static class Builder<T extends Builder<T>> {
 
-        private static final Coordinates DEFAULT_COORDINATES = Coordinates.of(CoordinateSystem.FULLY_CLOSED, 1, 1);
+        private static final Coordinates DEFAULT_COORDINATES = Coordinates.of(CoordinateSystem.ONE_BASED, 1, 1);
 
         protected Contig contig;
         // we're primarily interested in VCF coordinates so we're defaulting to 1-based coordinates on the + strand
@@ -150,11 +150,11 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         }
 
         public T asZeroBased() {
-            return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
         }
 
         public T asOneBased() {
-            return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
         }
 
         public T withCoordinateSystem(CoordinateSystem coordinateSystem) {

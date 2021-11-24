@@ -66,7 +66,7 @@ public class VcfBreakendResolverTest {
             assertThat(variant.id(), equalTo(id));
             assertThat(variant.contig(), equalTo(assembly.contigByName(leftContig)));
             assertThat(variant.strand(), equalTo(leftStrand));
-            assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(variant.start(), equalTo(leftStart));
             assertThat(variant.end(), equalTo(leftEnd));
             assertThat(variant.ref(), equalTo(exptRef));
@@ -113,7 +113,7 @@ public class VcfBreakendResolverTest {
             Breakend left = variant.left();
             assertThat(left.id(), equalTo(id));
             assertThat(left.contig(), equalTo(assembly.contigByName(leftContig)));
-            assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(left.start(), equalTo(leftStart));
             assertThat(left.end(), equalTo(leftEnd));
             assertThat(left.strand(), equalTo(leftStrand));
@@ -157,7 +157,7 @@ public class VcfBreakendResolverTest {
             Breakend right = variant.right();
             assertThat(right.id(), equalTo(mateId));
             assertThat(right.contig(), equalTo(assembly.contigByName(rightContig)));
-            assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(right.start(), equalTo(rightStart));
             assertThat(right.end(), equalTo(rightEnd));
             assertThat(right.strand(), equalTo(rightStrand));

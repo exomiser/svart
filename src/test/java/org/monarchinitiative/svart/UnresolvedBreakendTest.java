@@ -10,8 +10,8 @@ public class UnresolvedBreakendTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED",
-            "LEFT_OPEN",
+            "ONE_BASED",
+            "ZERO_BASED",
     })
     public void instance(CoordinateSystem coordinateSystem) {
         assertThat(UnresolvedBreakend.instance(coordinateSystem).coordinateSystem(), equalTo(coordinateSystem));

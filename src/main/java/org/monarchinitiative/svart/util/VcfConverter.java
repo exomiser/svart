@@ -57,12 +57,12 @@ public class VcfConverter {
 
     public Variant convert(Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, trimmed.start(), trimmed.ref(), trimmed.alt());
+        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
     public <T extends BaseVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.FULLY_CLOSED, trimmed.start(), trimmed.ref());
+        Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref());
         return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt());
     }
 
@@ -74,20 +74,20 @@ public class VcfConverter {
     public Variant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
+        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
     }
 
     public Variant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
-        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, trimmed.start(), startCi, end, endCi);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
         return Variant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
     public <T extends BaseVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi,  String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
-        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, trimmed.start(), startCi, end, endCi);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
         return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 

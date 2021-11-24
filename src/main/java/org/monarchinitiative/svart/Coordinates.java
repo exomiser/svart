@@ -3,7 +3,7 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
-import static org.monarchinitiative.svart.CoordinateSystem.LEFT_OPEN;
+import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
 
 /**
  * Class providing methods for calculations involving genomic coordinates, where a coordinate is a position in a
@@ -16,7 +16,7 @@ import static org.monarchinitiative.svart.CoordinateSystem.LEFT_OPEN;
  */
 public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
-    Coordinates EMPTY = PreciseCoordinates.of(LEFT_OPEN, 0, 0);
+    Coordinates EMPTY = PreciseCoordinates.of(ZERO_BASED, 0, 0);
 
     default Coordinates empty() {
         return EMPTY;
@@ -70,7 +70,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private int lengthDelta() {
-        return coordinateSystem() == LEFT_OPEN ? 0 : LEFT_OPEN.startDelta(coordinateSystem()) + LEFT_OPEN.endDelta(coordinateSystem());
+        return coordinateSystem() == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem()) + ZERO_BASED.endDelta(coordinateSystem());
     }
 
     default int length() {
@@ -124,7 +124,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     default boolean contains(int position) {
-        return startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     private int openStart() {
@@ -224,7 +224,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private static int lengthDelta(CoordinateSystem coordinateSystem) {
-        return coordinateSystem == LEFT_OPEN ? 0 : LEFT_OPEN.startDelta(coordinateSystem) + LEFT_OPEN.endDelta(coordinateSystem);
+        return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem) + ZERO_BASED.endDelta(coordinateSystem);
     }
 
     /**
@@ -338,7 +338,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return a delta of -1, 0 or +1 to be added to the start position.
      */
     public static int endDelta(CoordinateSystem coordinateSystem) {
-        return coordinateSystem == CoordinateSystem.FULLY_CLOSED ? -1 : 0;
+        return coordinateSystem == CoordinateSystem.ONE_BASED ? -1 : 0;
     }
 
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
@@ -350,13 +350,13 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             throw new InvalidCoordinatesException("Cannot create end coordinate `" + end + "` with negative value");
         }
         switch (coordinateSystem) {
-            case FULLY_CLOSED:
+            case ONE_BASED:
                 if (start > end + 1) {
                     // region [2,1] is an empty region, equivalent to (1,2)
                     throw new InvalidCoordinatesException("Fully-closed coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
                 }
                 break;
-            case LEFT_OPEN:
+            case ZERO_BASED:
                 if (start > end) {
                     // region (1,1] is an empty region, equivalent to (1,2)
                     throw new InvalidCoordinatesException("Left-open coordinates " + start + '-' + end + " must have a start position before the end position");
@@ -392,12 +392,12 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         int start = coordinates.start();
         int end = coordinates.end();
         switch (coordinates.coordinateSystem()) {
-            case FULLY_CLOSED:
+            case ONE_BASED:
                 if (start < 1 || end > contig.length()) {
                     throw new CoordinatesOutOfBoundsException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
                 }
                 break;
-            case LEFT_OPEN:
+            case ZERO_BASED:
                 if (start < 0 || end > contig.length()) {
                     throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
                 }
@@ -431,7 +431,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         Objects.requireNonNull(coordinateSystem);
         Objects.requireNonNull(contig);
         switch (coordinateSystem) {
-            case FULLY_CLOSED:
+            case ONE_BASED:
                 if (start < 1 || end > contig.length()) {
                     throw new CoordinatesOutOfBoundsException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
                 }
@@ -440,7 +440,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
                     throw new InvalidCoordinatesException("Fully-closed coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at most one place past the end position");
                 }
                 break;
-            case LEFT_OPEN:
+            case ZERO_BASED:
                 if (start < 0 || end > contig.length()) {
                     throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
                 }

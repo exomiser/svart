@@ -51,7 +51,7 @@ public class VcfBreakendFormatter {
      * Builds the mate breakend string e.g. '[6:12345[' for the POSITIVE strand or ']6:12345]' for the NEGATIVE strand
      */
     private static String mateString(Breakend right) {
-        int pos = right.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        int pos = right.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ONE_BASED);
         char mateEndStrand = right.strand() == Strand.POSITIVE ? '[' : ']';
         return mateEndStrand + right.contigName() + ':' + pos + mateEndStrand;
     }

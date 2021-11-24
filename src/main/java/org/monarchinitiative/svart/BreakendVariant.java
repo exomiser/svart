@@ -30,12 +30,12 @@ public interface BreakendVariant extends Variant {
 
     @Override
     default BreakendVariant toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     @Override
     default BreakendVariant toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     static BreakendVariant of(String eventId, Breakend left, Breakend right, String ref, String alt) {

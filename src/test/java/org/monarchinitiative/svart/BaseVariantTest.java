@@ -19,11 +19,11 @@ public class BaseVariantTest {
 
     @Test
     public void buildPreciseInsertion() {
-        Variant instance = TestVariant.builder().with(chr1, "rs1234567", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA").build();
+        Variant instance = TestVariant.builder().with(chr1, "rs1234567", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("rs1234567"));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
-        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.changeLength(), equalTo(2));
@@ -33,7 +33,7 @@ public class BaseVariantTest {
 
     @Test
     public void buildWithVariant() {
-        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA");
+        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
         Variant instance = TestVariant.builder().with(oneBasedVariant).build();
         assertThat(instance.contig(), equalTo(oneBasedVariant.contig()));
         assertThat(instance.id(), equalTo(oneBasedVariant.id()));
@@ -48,7 +48,7 @@ public class BaseVariantTest {
 
     @Test
     public void buildWithVariantToCoordinateSystemAndStrand() {
-        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA");
+        Variant oneBasedVariant = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
         TestVariant.Builder instance = TestVariant.builder().with(oneBasedVariant);
         Variant oneBased = instance.build();
         assertThat(instance.asOneBased().build(), equalTo(oneBased));
@@ -60,14 +60,14 @@ public class BaseVariantTest {
     @ParameterizedTest
     @CsvSource({
             // SNV/INV/MNV
-            "FULLY_CLOSED, 5, G, T,    5",
-            "LEFT_OPEN,    5, G, T,    6",
+            "ONE_BASED, 5, G, T,    5",
+            "ZERO_BASED,    5, G, T,    6",
             // INS
-            "FULLY_CLOSED, 5, GA, T,    6",
-            "LEFT_OPEN,    5, GA, T,    7",
+            "ONE_BASED, 5, GA, T,    6",
+            "ZERO_BASED,    5, GA, T,    7",
             // DEL
-            "FULLY_CLOSED, 5, G, AT,    5",
-            "LEFT_OPEN,    5, G, AT,    6",
+            "ONE_BASED, 5, G, AT,    5",
+            "ZERO_BASED,    5, G, AT,    6",
     })
     public void builderAddsMissingEndAndLength(CoordinateSystem coordinateSystem, int start, String ref, String alt, int expectEnd) {
         Variant instance = TestVariant.builder().with(chr1, "", Strand.POSITIVE, coordinateSystem, start, ref, alt).build();
@@ -85,18 +85,18 @@ public class BaseVariantTest {
 
     @Test
     public void buildIllegalSymbolicInsertion() {
-        assertThrows(IllegalArgumentException.class, () -> TestVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "<INS>").build());
+        assertThrows(IllegalArgumentException.class, () -> TestVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "<INS>").build());
     }
 
     @Test
     public void buildThrowsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> TestVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "A[1:2]").build());
+        assertThrows(IllegalArgumentException.class, () -> TestVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "A[1:2]").build());
     }
 
     @Test
     public void buildSymbolicDeletion() {
         //2    321682 .    T    <DEL>   6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
-        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, 321_682, ConfidenceInterval.of(-56, 20), 321_887, ConfidenceInterval.of(-10, 62));
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, 321_682, ConfidenceInterval.of(-56, 20), 321_887, ConfidenceInterval.of(-10, 62));
         String ref = "T";
         String alt = "<DEL>";
         int changeLength = -205;
@@ -107,7 +107,7 @@ public class BaseVariantTest {
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("."));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
-        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+        assertThat(instance.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
         assertThat(instance.start(), equalTo(321_682));
         assertThat(instance.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-56, 20)));
         assertThat(instance.end(), equalTo(321_887));
@@ -119,13 +119,13 @@ public class BaseVariantTest {
 
     @Test
     public void naturalOrdering() {
-        Variant first = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TA");
-        Variant firstA = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA");
-        Variant second = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 2, "A", "TAA");
-        Variant third = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA");
-        Variant thirdA = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 1, "A", "<INS>", 1000);
-        Variant fourth = DefaultVariant.of(chr2, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, 1, "A", "TAA");
-        Variant fifth = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 1000, "A", "<DEL>", -999);
+        Variant first = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TA");
+        Variant firstA = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
+        Variant second = DefaultVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 2, "A", "TAA");
+        Variant third = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
+        Variant thirdA = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<INS>", 1000);
+        Variant fourth = DefaultVariant.of(chr2, "", Strand.NEGATIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
+        Variant fifth = DefaultVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1000, "A", "<DEL>", -999);
 
         List<Variant> variants = Stream.of(second, fourth, firstA, third, fifth, first, thirdA)
                 .parallel().unordered()

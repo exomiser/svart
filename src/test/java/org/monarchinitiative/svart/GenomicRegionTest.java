@@ -18,60 +18,60 @@ public class GenomicRegionTest {
 
     @Test
     public void oneBasedSingleBase() {
-        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 1);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1);
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance, equalTo(GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 1)));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, 5, 5)));
-        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, 4, 5)));
+        assertThat(instance, equalTo(GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ONE_BASED, 5, 5)));
+        assertThat(instance.toOppositeStrand().toZeroBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ZERO_BASED, 4, 5)));
     }
 
     @Test
     public void zeroBasedSingleBase() {
-        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 0, 1);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 0, 1);
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(1));
         assertThat(instance.length(), equalTo(1));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, 4, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ZERO_BASED, 4, 5)));
     }
 
     @Test
     public void oneBasedMultiBase() {
-        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 2);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2);
         assertThat(instance.start(), equalTo(1));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, 4, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ONE_BASED, 4, 5)));
     }
 
     @Test
     public void zeroBasedMultiBase() {
-        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 0, 2);
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 0, 2);
         assertThat(instance.start(), equalTo(0));
         assertThat(instance.end(), equalTo(2));
         assertThat(instance.length(), equalTo(2));
-        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, 3, 5)));
+        assertThat(instance.toOppositeStrand(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ZERO_BASED, 3, 5)));
     }
 
     @Test
     public void flipStrandAndChangeCoordinateSystem() {
-        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 0, 2);
-        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, 4, 5)));
+        GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 0, 2);
+        assertThat(instance.toOppositeStrand().toOneBased(), equalTo(GenomicRegion.of(chr1, Strand.NEGATIVE, CoordinateSystem.ONE_BASED, 4, 5)));
     }
 
     @ParameterizedTest
     @CsvSource({
             // region            pos
             // region before pos 2
-            "LEFT_OPEN,    0, 1,   2,   false",
-            "FULLY_CLOSED, 1, 1,   2,   false",
+            "ZERO_BASED,    0, 1,   2,   false",
+            "ONE_BASED, 1, 1,   2,   false",
             // region containing pos 2
-            "LEFT_OPEN,    1, 2,   2,   true",
-            "FULLY_CLOSED, 2, 2,   2,   true",
+            "ZERO_BASED,    1, 2,   2,   true",
+            "ONE_BASED, 2, 2,   2,   true",
             // region after pos 2
-            "LEFT_OPEN,    2, 3,   2,   false",
-            "FULLY_CLOSED, 3, 3,   2,   false",
+            "ZERO_BASED,    2, 3,   2,   false",
+            "ONE_BASED, 3, 3,   2,   false",
     })
     public void containsPosition(CoordinateSystem coordinateSystem, int start, int end,
                                  int position,
@@ -83,39 +83,39 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 1, 2,   true",
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 2, 3,   false",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 1, 2,   true",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 2, 3,   false",
 
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 1, 2,   true",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 3, 4,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 1, 2,   true",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 2, 3,   true",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 3, 4,   false",
 
             // --------------------------------------------
 
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  3, 3,   true",
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  3, 4,   true",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  2, 3,   true",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  3, 3,   true",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  3, 4,   true",
 
-            //  LEFT_OPEN, POS:     0 1 2 3 4
-            //  FULLY_CLOSED, POS:  1 2 3 4 5
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  3, 4,   true",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  4, 4,   true",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  4, 5,   true",
+            //  ZERO_BASED, POS:     0 1 2 3 4
+            //  ONE_BASED, POS:  1 2 3 4 5
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  2, 3,   true",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  3, 4,   true",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  4, 4,   true",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  4, 5,   true",
 
             // -----------------------------------------------
             //    POS -> 0 1 2 3 4 5
             //    NEG <- 5 4 3 2 1 0
-            "POSITIVE, LEFT_OPEN, 1, 2,   NEGATIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 0, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   true",
-            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 1, 5,   true",
-            "POSITIVE, LEFT_OPEN, 2, 5,   NEGATIVE, LEFT_OPEN, 2, 5,   true",
-            "POSITIVE, LEFT_OPEN, 3, 5,   NEGATIVE, LEFT_OPEN, 3, 5,   false",
-            "POSITIVE, LEFT_OPEN, 2, 3,   NEGATIVE, LEFT_OPEN, 2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 3, 4,   NEGATIVE, LEFT_OPEN, 3, 4,   false",
-            "POSITIVE, LEFT_OPEN, 1, 3,   NEGATIVE, LEFT_OPEN, 2, 4,   true",
+            "POSITIVE, ZERO_BASED, 1, 2,   NEGATIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 0, 5,   NEGATIVE, ZERO_BASED, 0, 5,   true",
+            "POSITIVE, ZERO_BASED, 1, 5,   NEGATIVE, ZERO_BASED, 1, 5,   true",
+            "POSITIVE, ZERO_BASED, 2, 5,   NEGATIVE, ZERO_BASED, 2, 5,   true",
+            "POSITIVE, ZERO_BASED, 3, 5,   NEGATIVE, ZERO_BASED, 3, 5,   false",
+            "POSITIVE, ZERO_BASED, 2, 3,   NEGATIVE, ZERO_BASED, 2, 3,   true",
+            "POSITIVE, ZERO_BASED, 3, 4,   NEGATIVE, ZERO_BASED, 3, 4,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   NEGATIVE, ZERO_BASED, 2, 4,   true",
     })
     public void GenomigRegionOverlapsOther(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                               Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
@@ -129,36 +129,36 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 1, 2,   true",
-            "POSITIVE, LEFT_OPEN, 1, 2,   POSITIVE, LEFT_OPEN, 2, 3,   false",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 1, 2,   true",
+            "POSITIVE, ZERO_BASED, 1, 2,   POSITIVE, ZERO_BASED, 2, 3,   false",
 
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 1, 2,   true",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 1, 3,   POSITIVE, LEFT_OPEN, 3, 4,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 1, 2,   true",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 2, 3,   true",
+            "POSITIVE, ZERO_BASED, 1, 3,   POSITIVE, ZERO_BASED, 3, 4,   false",
 
             // --------------------------------------------
 
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  2, 3,   false",
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  3, 3,   true",
-            "POSITIVE, LEFT_OPEN, 2, 3,   POSITIVE, FULLY_CLOSED,  3, 4,   false",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  2, 3,   false",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  3, 3,   true",
+            "POSITIVE, ZERO_BASED, 2, 3,   POSITIVE, ONE_BASED,  3, 4,   false",
 
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  2, 3,   false",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  3, 4,   true",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  4, 4,   true",
-            "POSITIVE, LEFT_OPEN, 2, 4,   POSITIVE, FULLY_CLOSED,  4, 5,   false",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  2, 3,   false",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  3, 4,   true",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  4, 4,   true",
+            "POSITIVE, ZERO_BASED, 2, 4,   POSITIVE, ONE_BASED,  4, 5,   false",
 
             // -----------------------------------------------
             //    POS -> 0 1 2 3 4 5
             //    NEG <- 5 4 3 2 1 0
-            "POSITIVE, LEFT_OPEN, 1, 2,   NEGATIVE, LEFT_OPEN, 0, 1,   false",
-            "POSITIVE, LEFT_OPEN, 0, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   true",
-            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 1, 5,   false",
-            "POSITIVE, LEFT_OPEN, 2, 5,   NEGATIVE, LEFT_OPEN, 2, 5,   false",
-            "POSITIVE, LEFT_OPEN, 2, 3,   NEGATIVE, LEFT_OPEN, 2, 3,   true",
-            "POSITIVE, LEFT_OPEN, 3, 4,   NEGATIVE, LEFT_OPEN, 3, 4,   false",
-            "POSITIVE, LEFT_OPEN, 1, 3,   NEGATIVE, LEFT_OPEN, 2, 4,   true",
+            "POSITIVE, ZERO_BASED, 1, 2,   NEGATIVE, ZERO_BASED, 0, 1,   false",
+            "POSITIVE, ZERO_BASED, 0, 5,   NEGATIVE, ZERO_BASED, 0, 5,   true",
+            "POSITIVE, ZERO_BASED, 1, 5,   NEGATIVE, ZERO_BASED, 1, 5,   false",
+            "POSITIVE, ZERO_BASED, 2, 5,   NEGATIVE, ZERO_BASED, 2, 5,   false",
+            "POSITIVE, ZERO_BASED, 2, 3,   NEGATIVE, ZERO_BASED, 2, 3,   true",
+            "POSITIVE, ZERO_BASED, 3, 4,   NEGATIVE, ZERO_BASED, 3, 4,   false",
+            "POSITIVE, ZERO_BASED, 1, 3,   NEGATIVE, ZERO_BASED, 2, 4,   true",
     })
     public void zeroBasedRegionContainsRegion(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                               Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
@@ -172,35 +172,35 @@ public class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // this              other               expected
-            "FULLY_CLOSED, 1, 1,   LEFT_OPEN, 0, 1,   true",
-            "FULLY_CLOSED, 1, 1,   LEFT_OPEN, 1, 2,   false",
+            "ONE_BASED, 1, 1,   ZERO_BASED, 0, 1,   true",
+            "ONE_BASED, 1, 1,   ZERO_BASED, 1, 2,   false",
 
-            "FULLY_CLOSED, 2, 3,   LEFT_OPEN, 0, 1,   false",
-            "FULLY_CLOSED, 2, 3,   LEFT_OPEN, 1, 2,   true",
-            "FULLY_CLOSED, 2, 3,   LEFT_OPEN, 2, 3,   true",
-            "FULLY_CLOSED, 2, 3,   LEFT_OPEN, 3, 4,   false",
+            "ONE_BASED, 2, 3,   ZERO_BASED, 0, 1,   false",
+            "ONE_BASED, 2, 3,   ZERO_BASED, 1, 2,   true",
+            "ONE_BASED, 2, 3,   ZERO_BASED, 2, 3,   true",
+            "ONE_BASED, 2, 3,   ZERO_BASED, 3, 4,   false",
 
-            "FULLY_CLOSED, 2, 4,   LEFT_OPEN, 0, 1,   false",
-            "FULLY_CLOSED, 2, 4,   LEFT_OPEN, 1, 2,   true",
-            "FULLY_CLOSED, 2, 4,   LEFT_OPEN, 2, 3,   true",
-            "FULLY_CLOSED, 2, 4,   LEFT_OPEN, 3, 4,   true",
-            "FULLY_CLOSED, 2, 4,   LEFT_OPEN, 4, 5,   false",
+            "ONE_BASED, 2, 4,   ZERO_BASED, 0, 1,   false",
+            "ONE_BASED, 2, 4,   ZERO_BASED, 1, 2,   true",
+            "ONE_BASED, 2, 4,   ZERO_BASED, 2, 3,   true",
+            "ONE_BASED, 2, 4,   ZERO_BASED, 3, 4,   true",
+            "ONE_BASED, 2, 4,   ZERO_BASED, 4, 5,   false",
             // --------------------------------------------
-            "FULLY_CLOSED, 2, 2,   FULLY_CLOSED,  1, 1,   false",
-            "FULLY_CLOSED, 2, 2,   FULLY_CLOSED,  2, 2,   true",
-            "FULLY_CLOSED, 2, 2,   FULLY_CLOSED,  3, 3,   false",
+            "ONE_BASED, 2, 2,   ONE_BASED,  1, 1,   false",
+            "ONE_BASED, 2, 2,   ONE_BASED,  2, 2,   true",
+            "ONE_BASED, 2, 2,   ONE_BASED,  3, 3,   false",
 
-            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  1, 2,   false",
-            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  2, 2,   true",
-            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  2, 3,   true",
-            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  3, 3,   true",
-            "FULLY_CLOSED, 2, 3,   FULLY_CLOSED,  3, 4,   false",
+            "ONE_BASED, 2, 3,   ONE_BASED,  1, 2,   false",
+            "ONE_BASED, 2, 3,   ONE_BASED,  2, 2,   true",
+            "ONE_BASED, 2, 3,   ONE_BASED,  2, 3,   true",
+            "ONE_BASED, 2, 3,   ONE_BASED,  3, 3,   true",
+            "ONE_BASED, 2, 3,   ONE_BASED,  3, 4,   false",
 
-            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  1, 3,   false",
-            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  2, 3,   true",
-            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  2, 4,   true",
-            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  3, 4,   true",
-            "FULLY_CLOSED, 2, 4,   FULLY_CLOSED,  3, 5,   false",
+            "ONE_BASED, 2, 4,   ONE_BASED,  1, 3,   false",
+            "ONE_BASED, 2, 4,   ONE_BASED,  2, 3,   true",
+            "ONE_BASED, 2, 4,   ONE_BASED,  2, 4,   true",
+            "ONE_BASED, 2, 4,   ONE_BASED,  3, 4,   true",
+            "ONE_BASED, 2, 4,   ONE_BASED,  3, 5,   false",
     })
     public void oneBasedRegionContainsRegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                                CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
@@ -213,9 +213,9 @@ public class GenomicRegionTest {
 
     @Test
     public void containsRegion_otherContig() {
-        GenomicRegion oneToThree = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 1, 3);
+        GenomicRegion oneToThree = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 3);
         Contig ctg2 = TestContig.of(2, 200);
-        GenomicRegion other = GenomicRegion.of(ctg2, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 2, 3);
+        GenomicRegion other = GenomicRegion.of(ctg2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 2, 3);
         assertThat(oneToThree.contains(other), equalTo(false));
     }
 
@@ -254,10 +254,10 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, LEFT_OPEN, 0, 0, 5, 5",
-            "NEGATIVE, LEFT_OPEN, 5, 5, 0, 0",
-            "POSITIVE, FULLY_CLOSED, 1, 0, 6, 5",
-            "POSITIVE, FULLY_CLOSED, 6, 5, 1, 0",
+            "POSITIVE, ZERO_BASED, 0, 0, 5, 5",
+            "NEGATIVE, ZERO_BASED, 5, 5, 0, 0",
+            "POSITIVE, ONE_BASED, 1, 0, 6, 5",
+            "POSITIVE, ONE_BASED, 6, 5, 1, 0",
     })
     public void withStrand_emptyRegion(Strand strand, CoordinateSystem coordinateSystem, int start, int end, int expectedStart, int expectedEnd) {
         GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, start, end);
@@ -270,16 +270,16 @@ public class GenomicRegionTest {
     @CsvSource({
             // we test 2-bp-long region that spans the bases 3-4 of the imaginary contig with length 5
             // source     start      end       target   start  end
-            "POSITIVE,    LEFT_OPEN, 2,  4,   NEGATIVE,    1, 3",
-            "POSITIVE,    FULLY_CLOSED,  3,  4,   NEGATIVE,    2, 3",
-            "NEGATIVE,    LEFT_OPEN, 1,  3,   POSITIVE,    2, 4",
-            "NEGATIVE,    FULLY_CLOSED,  2,  3,   POSITIVE,    3, 4",
+            "POSITIVE,    ZERO_BASED, 2,  4,   NEGATIVE,    1, 3",
+            "POSITIVE,    ONE_BASED,  3,  4,   NEGATIVE,    2, 3",
+            "NEGATIVE,    ZERO_BASED, 1,  3,   POSITIVE,    2, 4",
+            "NEGATIVE,    ONE_BASED,  2,  3,   POSITIVE,    3, 4",
 
             // converting to the same strand preserves the coordinates
-            "POSITIVE,    LEFT_OPEN, 2,  4,   POSITIVE,    2, 4",
-            "POSITIVE,    FULLY_CLOSED,  3,  4,   POSITIVE,    3, 4",
-            "NEGATIVE,    LEFT_OPEN, 1,  3,   NEGATIVE,    1, 3",
-            "NEGATIVE,    FULLY_CLOSED,  2,  3,   NEGATIVE,    2, 3",
+            "POSITIVE,    ZERO_BASED, 2,  4,   POSITIVE,    2, 4",
+            "POSITIVE,    ONE_BASED,  3,  4,   POSITIVE,    3, 4",
+            "NEGATIVE,    ZERO_BASED, 1,  3,   NEGATIVE,    1, 3",
+            "NEGATIVE,    ONE_BASED,  2,  3,   NEGATIVE,    2, 3",
     })
     public void withStrand_strandConversions(Strand source, CoordinateSystem coordinateSystem, int start, int end,
                                              Strand target,
@@ -295,11 +295,11 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "LEFT_OPEN, 2, 3,   0,   2, 3",
-            "FULLY_CLOSED,  2, 3,   0,   2, 3",
-            "LEFT_OPEN, 2, 3,   1,   1, 4",
-            "FULLY_CLOSED,  2, 3,   1,   1, 4",
-            "LEFT_OPEN, 2, 3,   2,   0, 5",
+            "ZERO_BASED, 2, 3,   0,   2, 3",
+            "ONE_BASED,  2, 3,   0,   2, 3",
+            "ZERO_BASED, 2, 3,   1,   1, 4",
+            "ONE_BASED,  2, 3,   1,   1, 4",
+            "ZERO_BASED, 2, 3,   2,   0, 5",
     })
     public void withPadding_singlePadding(CoordinateSystem coordinateSystem,
                                           int start, int end,
@@ -312,12 +312,12 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "LEFT_OPEN, 2, 3,   0, 0,   2, 3",
-            "FULLY_CLOSED,  2, 3,   0, 0,   2, 3",
-            "LEFT_OPEN, 2, 3,   1, 2,   1, 5",
-            "FULLY_CLOSED,  2, 3,   1, 2,   1, 5",
-            "LEFT_OPEN, 2, 3,   2, 0,   0, 3",
-            "FULLY_CLOSED,  2, 3,   1, 0,   1, 3",
+            "ZERO_BASED, 2, 3,   0, 0,   2, 3",
+            "ONE_BASED,  2, 3,   0, 0,   2, 3",
+            "ZERO_BASED, 2, 3,   1, 2,   1, 5",
+            "ONE_BASED,  2, 3,   1, 2,   1, 5",
+            "ZERO_BASED, 2, 3,   2, 0,   0, 3",
+            "ONE_BASED,  2, 3,   1, 0,   1, 3",
     })
     public void testWithPadding_upDownPadding(CoordinateSystem coordinateSystem,
                                           int start, int end,
@@ -330,10 +330,10 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED,   2, 3,  FULLY_CLOSED,   2",
-            "FULLY_CLOSED,   2, 3,     LEFT_OPEN,   1",
-            "LEFT_OPEN,      2, 3,  FULLY_CLOSED,   3",
-            "LEFT_OPEN,      2, 3,     LEFT_OPEN,   2",
+            "ONE_BASED,   2, 3,  ONE_BASED,   2",
+            "ONE_BASED,   2, 3,     ZERO_BASED,   1",
+            "ZERO_BASED,      2, 3,  ONE_BASED,   3",
+            "ZERO_BASED,      2, 3,     ZERO_BASED,   2",
     })
     public void testStartPositionWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos, CoordinateSystem targetCoordinateSystem, int expectedStart) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, startPos, endPos);
@@ -342,10 +342,10 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED,   2, 3,  FULLY_CLOSED,   3",
-            "FULLY_CLOSED,   2, 3,     LEFT_OPEN,   3",
-            "LEFT_OPEN,      2, 3,  FULLY_CLOSED,   3",
-            "LEFT_OPEN,      2, 3,     LEFT_OPEN,   3",
+            "ONE_BASED,   2, 3,  ONE_BASED,   3",
+            "ONE_BASED,   2, 3,     ZERO_BASED,   3",
+            "ZERO_BASED,      2, 3,  ONE_BASED,   3",
+            "ZERO_BASED,      2, 3,     ZERO_BASED,   3",
     })
     public void testEndWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos,
                                             CoordinateSystem targetCoordinateSystem, int expectedEnd) {
@@ -355,13 +355,13 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, FULLY_CLOSED,   2, 3,    POSITIVE, FULLY_CLOSED, 2",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_CLOSED, 3",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE,    LEFT_OPEN, 2",
+            "POSITIVE, ONE_BASED,   2, 3,    POSITIVE, ONE_BASED, 2",
+            "POSITIVE, ONE_BASED,   2, 3,    NEGATIVE, ONE_BASED, 3",
+            "POSITIVE, ONE_BASED,   2, 3,    NEGATIVE,    ZERO_BASED, 2",
 
-            "POSITIVE,  LEFT_OPEN,     1, 3,    POSITIVE,    LEFT_OPEN, 1",
-            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE,    LEFT_OPEN, 2",
-            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE, FULLY_CLOSED, 3",
+            "POSITIVE,  ZERO_BASED,     1, 3,    POSITIVE,    ZERO_BASED, 1",
+            "POSITIVE,  ZERO_BASED,     1, 3,    NEGATIVE,    ZERO_BASED, 2",
+            "POSITIVE,  ZERO_BASED,     1, 3,    NEGATIVE, ONE_BASED, 3",
     })
     public void testStartOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedStart) {
         GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, startPos, endPos);
@@ -371,13 +371,13 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, FULLY_CLOSED,   2, 3,    POSITIVE, FULLY_CLOSED, 3",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_CLOSED, 4",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, LEFT_OPEN,    4",
+            "POSITIVE, ONE_BASED,   2, 3,    POSITIVE, ONE_BASED, 3",
+            "POSITIVE, ONE_BASED,   2, 3,    NEGATIVE, ONE_BASED, 4",
+            "POSITIVE, ONE_BASED,   2, 3,    NEGATIVE, ZERO_BASED,    4",
 
-            "POSITIVE,  LEFT_OPEN,     1, 3,    POSITIVE,    LEFT_OPEN, 3",
-            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE,    LEFT_OPEN, 4",
-            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE, FULLY_CLOSED, 4",
+            "POSITIVE,  ZERO_BASED,     1, 3,    POSITIVE,    ZERO_BASED, 3",
+            "POSITIVE,  ZERO_BASED,     1, 3,    NEGATIVE,    ZERO_BASED, 4",
+            "POSITIVE,  ZERO_BASED,     1, 3,    NEGATIVE, ONE_BASED, 4",
     })
     public void testEndOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedEnd) {
         GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, startPos, endPos);
@@ -387,11 +387,11 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "LEFT_OPEN, 1, 3,     LEFT_OPEN, 1, 3",
-            "LEFT_OPEN, 1, 3,     FULLY_CLOSED, 2, 3",
+            "ZERO_BASED, 1, 3,     ZERO_BASED, 1, 3",
+            "ZERO_BASED, 1, 3,     ONE_BASED, 2, 3",
 
-            "FULLY_CLOSED, 2, 3,  LEFT_OPEN, 1, 3",
-            "FULLY_CLOSED, 2, 3,  FULLY_CLOSED, 2, 3",
+            "ONE_BASED, 2, 3,  ZERO_BASED, 1, 3",
+            "ONE_BASED, 2, 3,  ONE_BASED, 2, 3",
     })
     public void testWithCoordinateSystem(CoordinateSystem source, int start, int end,
                                      CoordinateSystem target, int targetStart, int targetEnd) {
@@ -410,14 +410,14 @@ public class GenomicRegionTest {
             //    POS -> 0 1 2 3 4 5
             //    NEG <- 5 4 3 2 1 0
             // this                       other                        expected
-            "POSITIVE, LEFT_OPEN, 1, 2,   NEGATIVE, LEFT_OPEN, 0, 1,   0",
-            "POSITIVE, LEFT_OPEN, 0, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   5",
-            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 0, 5,   4",
-            "POSITIVE, LEFT_OPEN, 1, 5,   NEGATIVE, LEFT_OPEN, 1, 5,   3",
-            "POSITIVE, LEFT_OPEN, 1, 3,   NEGATIVE, LEFT_OPEN, 2, 4,   2",
-            "POSITIVE, LEFT_OPEN, 2, 5,   NEGATIVE, LEFT_OPEN, 2, 5,   1",
-            "POSITIVE, LEFT_OPEN, 2, 3,   NEGATIVE, LEFT_OPEN, 2, 3,   1",
-            "POSITIVE, LEFT_OPEN, 3, 4,   NEGATIVE, LEFT_OPEN, 3, 4,   0",
+            "POSITIVE, ZERO_BASED, 1, 2,   NEGATIVE, ZERO_BASED, 0, 1,   0",
+            "POSITIVE, ZERO_BASED, 0, 5,   NEGATIVE, ZERO_BASED, 0, 5,   5",
+            "POSITIVE, ZERO_BASED, 1, 5,   NEGATIVE, ZERO_BASED, 0, 5,   4",
+            "POSITIVE, ZERO_BASED, 1, 5,   NEGATIVE, ZERO_BASED, 1, 5,   3",
+            "POSITIVE, ZERO_BASED, 1, 3,   NEGATIVE, ZERO_BASED, 2, 4,   2",
+            "POSITIVE, ZERO_BASED, 2, 5,   NEGATIVE, ZERO_BASED, 2, 5,   1",
+            "POSITIVE, ZERO_BASED, 2, 3,   NEGATIVE, ZERO_BASED, 2, 3,   1",
+            "POSITIVE, ZERO_BASED, 3, 4,   NEGATIVE, ZERO_BASED, 3, 4,   0",
     })
     public void testOverlapLength(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                               Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,

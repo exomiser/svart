@@ -69,7 +69,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     default boolean contains(int position) {
-        return startWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     default boolean overlapsWith(Region<?> other) {

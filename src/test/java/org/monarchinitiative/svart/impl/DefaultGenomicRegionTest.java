@@ -13,10 +13,10 @@ public class DefaultGenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED,  1, 1,  LEFT_OPEN, 0, 1",
-            "LEFT_OPEN, 0, 1,  FULLY_CLOSED,  1, 1,",
-            "FULLY_CLOSED,  1, 2,  LEFT_OPEN, 0, 2",
-            "LEFT_OPEN, 0, 2,  FULLY_CLOSED,  1, 2",
+            "ONE_BASED,  1, 1,  ZERO_BASED, 0, 1",
+            "ZERO_BASED, 0, 1,  ONE_BASED,  1, 1,",
+            "ONE_BASED,  1, 2,  ZERO_BASED, 0, 2",
+            "ZERO_BASED, 0, 2,  ONE_BASED,  1, 2",
 
     })
     public void singleOrEmptyBase(CoordinateSystem inputCoords, int inputStart, int inputEnd,
@@ -28,9 +28,9 @@ public class DefaultGenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, FULLY_CLOSED,  1, 1,  NEGATIVE, FULLY_CLOSED,   10, 10",
-            "POSITIVE, LEFT_OPEN, 0, 1,  NEGATIVE, LEFT_OPEN,   9, 10",
-            "POSITIVE, FULLY_CLOSED , 1, 2,  NEGATIVE, FULLY_CLOSED,    9, 10"
+            "POSITIVE, ONE_BASED,  1, 1,  NEGATIVE, ONE_BASED,   10, 10",
+            "POSITIVE, ZERO_BASED, 0, 1,  NEGATIVE, ZERO_BASED,   9, 10",
+            "POSITIVE, ONE_BASED , 1, 2,  NEGATIVE, ONE_BASED,    9, 10"
     })
     public void toOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
                                  Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
@@ -41,8 +41,8 @@ public class DefaultGenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, FULLY_CLOSED,  1, 0,  NEGATIVE, FULLY_CLOSED,   1, 0",
-            "POSITIVE, LEFT_OPEN, 0, 0,  NEGATIVE, LEFT_OPEN,  0, 0",
+            "POSITIVE, ONE_BASED,  1, 0,  NEGATIVE, ONE_BASED,   1, 0",
+            "POSITIVE, ZERO_BASED, 0, 0,  NEGATIVE, ZERO_BASED,  0, 0",
     })
     public void emptyRegionUnknownChromosomeToOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
                                                              Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {

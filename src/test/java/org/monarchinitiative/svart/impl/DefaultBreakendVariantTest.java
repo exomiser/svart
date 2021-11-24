@@ -1,8 +1,6 @@
 package org.monarchinitiative.svart.impl;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,16 +52,16 @@ public class DefaultBreakendVariantTest {
 
     @Test
     public void throwsExceptionWithMixedCoordinatesSystems() {
-        Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.FULLY_CLOSED, 123_457, 123_456));
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 321_681, 321_681);
+        Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.ONE_BASED, 123_457, 123_456));
+        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
         Exception exception = assertThrows(IllegalStateException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Breakend variant left and right breakends must have same coordinate system!"));
     }
 
     @Test
     public void throwsExceptionWithLeftUnplacedBreakend() {
-        Breakend left = Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, 321_681, 321_681);
+        Breakend left = Breakend.unresolved(CoordinateSystem.ZERO_BASED);
+        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Left breakend cannot be unresolved."));
     }

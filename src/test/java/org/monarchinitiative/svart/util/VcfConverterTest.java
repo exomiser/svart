@@ -28,14 +28,14 @@ public class VcfConverterTest {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
             Variant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
-            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12345, "C", "T")));
+            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
         public void convertWithBuilder() {
             DefaultVariant.Builder builder = instance.convert(DefaultVariant.builder(), instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
             Variant variant = builder.build();
-            assertThat(variant, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12345, "C", "T")));
+            assertThat(variant, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
@@ -43,7 +43,7 @@ public class VcfConverterTest {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
             Variant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
-            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12345, "C", "T")));
+            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
@@ -75,7 +75,7 @@ public class VcfConverterTest {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
             Variant ins = instance.convertSymbolic(instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
-            assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12345, 12345, "C", "<INS>", 200)));
+            assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
         }
 
         @Test
@@ -131,8 +131,8 @@ public class VcfConverterTest {
             // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
             Variant bnd = instance.convertBreakend(instance.parseContig("chr1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
-            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12346, 12345);
-            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 321682, 321681);
+            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
             assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
         }
 
@@ -142,8 +142,8 @@ public class VcfConverterTest {
             // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
             DefaultBreakendVariant.Builder builder = instance.convertBreakend(DefaultBreakendVariant.builder(), instance.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
             Variant bnd = builder.build();
-            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 12346, 12345);
-            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 321682, 321681);
+            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
             assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
         }
 

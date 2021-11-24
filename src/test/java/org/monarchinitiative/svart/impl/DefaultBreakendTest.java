@@ -38,7 +38,7 @@ public class DefaultBreakendTest {
         Breakend negBreakend = posBreakend.withStrand(Strand.NEGATIVE);
         assertThat(negBreakend.contig(), equalTo(ctg1));
         assertThat(negBreakend.strand(), equalTo(Strand.NEGATIVE));
-        assertThat(negBreakend.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(negBreakend.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
         assertThat(negBreakend.start(), equalTo(7));
         assertThat(negBreakend.end(), equalTo(7));
         assertThat(negBreakend.id(), is("a"));
@@ -46,11 +46,11 @@ public class DefaultBreakendTest {
 
     @Test
     public void unresolved() {
-        Breakend unresolved = Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
+        Breakend unresolved = Breakend.unresolved(CoordinateSystem.ZERO_BASED);
         assertThat(unresolved.isUnresolved(), equalTo(true));
         assertThat(unresolved.contig(), equalTo(Contig.unknown()));
         assertThat(unresolved.strand(), equalTo(Strand.POSITIVE));
-        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.LEFT_OPEN));
+        assertThat(unresolved.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
         assertThat(unresolved.start(), equalTo(0));
         assertThat(unresolved.end(), equalTo(0));
         assertThat(unresolved.id(), equalTo(""));

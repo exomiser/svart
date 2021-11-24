@@ -33,10 +33,10 @@ public class VariantTrimmerTest {
         TestContig contig = TestContig.of(1, 2000);
 
         VariantPosition plus = variantTrimmer.trim(Strand.POSITIVE, 1000, "AGTTC", "AGCC");
-        Variant pos = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, plus.start(), plus.ref(), plus.alt());
+        Variant pos = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, plus.start(), plus.ref(), plus.alt());
 
         VariantPosition minus = variantTrimmer.trim(Strand.NEGATIVE, 997, Seq.reverseComplement("AGTTC"), Seq.reverseComplement("AGCC"));
-        Variant neg = Variant.of(contig, "", Strand.NEGATIVE, CoordinateSystem.FULLY_CLOSED, minus.start(), minus.ref(), minus.alt());
+        Variant neg = Variant.of(contig, "", Strand.NEGATIVE, CoordinateSystem.ONE_BASED, minus.start(), minus.ref(), minus.alt());
         assertThat(pos.withStrand(Strand.NEGATIVE), equalTo(neg));
         assertThat(neg.withStrand(Strand.POSITIVE), equalTo(pos));
 
@@ -52,10 +52,10 @@ public class VariantTrimmerTest {
         TestContig contig = TestContig.of(1, 2000);
 
         VariantPosition plus = variantTrimmer.trim(Strand.POSITIVE, 999, "AGTTC", "AGCC");
-        Variant pos = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, plus.start(), plus.ref(), plus.alt());
+        Variant pos = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, plus.start(), plus.ref(), plus.alt());
 
         VariantPosition minus = variantTrimmer.trim(Strand.NEGATIVE, 996, Seq.reverseComplement("AGTTC"), Seq.reverseComplement("AGCC"));
-        Variant neg = Variant.of(contig, "", Strand.NEGATIVE, CoordinateSystem.LEFT_OPEN, minus.start(), minus.ref(), minus.alt());
+        Variant neg = Variant.of(contig, "", Strand.NEGATIVE, CoordinateSystem.ZERO_BASED, minus.start(), minus.ref(), minus.alt());
 
         assertThat(pos.withStrand(Strand.NEGATIVE), equalTo(neg));
         assertThat(neg.withStrand(Strand.POSITIVE), equalTo(pos));
