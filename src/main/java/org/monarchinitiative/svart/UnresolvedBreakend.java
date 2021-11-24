@@ -8,8 +8,6 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
 
     private static final UnresolvedBreakend FULLY_CLOSED = new UnresolvedBreakend(CoordinateSystem.FULLY_CLOSED, 1);
     private static final UnresolvedBreakend LEFT_OPEN = new UnresolvedBreakend(CoordinateSystem.LEFT_OPEN, 0);
-    private static final UnresolvedBreakend RIGHT_OPEN = new UnresolvedBreakend(CoordinateSystem.RIGHT_OPEN, 1);
-    private static final UnresolvedBreakend FULLY_OPEN = new UnresolvedBreakend(CoordinateSystem.FULLY_OPEN, 0);
 
     private static final String ID = "";
 
@@ -23,10 +21,6 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
                 return FULLY_CLOSED;
             case LEFT_OPEN:
                 return LEFT_OPEN;
-            case RIGHT_OPEN:
-                return RIGHT_OPEN;
-            case FULLY_OPEN:
-                return FULLY_OPEN;
         }
         throw new IllegalArgumentException("Unknown coordinateSystem!");
     }

@@ -24,9 +24,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
 // TODO: add Region.coordinates() and/or change region to extend Coordinates,
 //  Add Coordinates as Constructor arg to replace coordinateSystem, start, end
-//  Remove or keep Position? If keeping, should be used here, as in Region then Region can just extend Coordinates.
-//  if remove, could save a bunch of RAM + GC pressure. ARE POSITIONS ACTUALLY USED? Only needed because of ConfidenceInterval.
-//
+
     CoordinateSystem coordinateSystem();
 
     int start();
@@ -334,14 +332,13 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      *   FC  1  1  1  -1  (S + L - 1)  ('one-based')
      *   LO  0  1  1   0  (S + L)      ('zero-based')
      *   RO  1  1  2   0  (S + L)
-     *   FO  0  1  2  +1  (S + L + 1)
      * </pre>
      *
      * @param coordinateSystem The coordinateSystem of the required delta
      * @return a delta of -1, 0 or +1 to be added to the start position.
      */
     public static int endDelta(CoordinateSystem coordinateSystem) {
-        return coordinateSystem == CoordinateSystem.FULLY_CLOSED ? -1 : coordinateSystem == CoordinateSystem.FULLY_OPEN ? 1 : 0;
+        return coordinateSystem == CoordinateSystem.FULLY_CLOSED ? -1 : 0;
     }
 
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
@@ -365,18 +362,12 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
                     throw new InvalidCoordinatesException("Left-open coordinates " + start + '-' + end + " must have a start position before the end position");
                 }
                 break;
-            case RIGHT_OPEN:
-                if (start > end) {
-                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Right-open coordinates " + start + '-' + end + " must have a start position before the end position");
-                }
-                break;
-            case FULLY_OPEN:
-                if (start >= end) {
-                    // region in FULLY_OPEN coordinates - empty (1, 2), (1, 3) == [2, 2] == (1, 2] == [2, 3)
-                    throw new InvalidCoordinatesException("Fully-open coordinates " + start + '-' + end + " must have a start position at least one place before end position");
-                }
-                break;
+//            case RIGHT_OPEN:
+//                if (start > end) {
+//                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
+//                    throw new InvalidCoordinatesException("Right-open coordinates " + start + '-' + end + " must have a start position before the end position");
+//                }
+//                break;
         }
     }
 
@@ -389,8 +380,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * fully-closed,  end = start - 1;
      * <p>
      * half-open,     end = start;
-     * <p>
-     * fully-open,    end = start + 1.
      * <p>
      * Invalid coordinates will result in an unrecoverable exception being thrown.
      *
@@ -413,16 +402,11 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
                     throw new CoordinatesOutOfBoundsException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + contig.length() + ']');
                 }
                 break;
-            case RIGHT_OPEN:
-                if (start < 1 || end > contig.length() + 1) {
-                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
-                }
-                break;
-            case FULLY_OPEN:
-                if (start < 0 || end > contig.length() + 1) {
-                    throw new CoordinatesOutOfBoundsException("Fully-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + (contig.length() + 1) + ')');
-                }
-                break;
+//            case RIGHT_OPEN:
+//                if (start < 1 || end > contig.length() + 1) {
+//                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
+//                }
+//                break;
         }
     }
 
@@ -435,8 +419,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * fully-closed,  end = start - 1;
      * <p>
      * half-open,     end = start;
-     * <p>
-     * fully-open,    end = start + 1.
      * <p>
      * Invalid coordinates will result in an unrecoverable exception being thrown.
      *
@@ -467,24 +449,15 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
                     throw new InvalidCoordinatesException("Left-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
                 }
                 break;
-            case RIGHT_OPEN:
-                if (start < 1 || end > contig.length() + 1) {
-                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
-                }
-                if (start > end) {
-                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
-                }
-                break;
-            case FULLY_OPEN:
-                if (start < 0 || end > contig.length() + 1) {
-                    throw new CoordinatesOutOfBoundsException("Fully-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds (" + 0 + ',' + (contig.length() + 1) + ')');
-                }
-                if (start >= end) {
-                    // region in FULLY_OPEN coordinates - empty (1, 2), (1, 3) == [2, 2] == (1, 2] == [2, 3)
-                    throw new InvalidCoordinatesException("Fully-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at least one place before end position");
-                }
-                break;
+//            case RIGHT_OPEN:
+//                if (start < 1 || end > contig.length() + 1) {
+//                    throw new CoordinatesOutOfBoundsException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + (contig.length() + 1) + ']');
+//                }
+//                if (start > end) {
+//                    // same check as in ZERO_BASED, [2,2) is an empty region, equivalent to (1,2)
+//                    throw new InvalidCoordinatesException("Right-open coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
+//                }
+//                break;
         }
     }
 }

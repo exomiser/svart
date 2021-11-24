@@ -29,7 +29,6 @@ public class CoordinateSystemTest {
     @CsvSource({
             "FULLY_CLOSED, FULLY_CLOSED,   0",
             "FULLY_CLOSED, LEFT_OPEN,     -1",
-            "FULLY_CLOSED, FULLY_OPEN,    -1",
             "LEFT_OPEN,    LEFT_OPEN,      0",
             "LEFT_OPEN,    FULLY_CLOSED,   1"
     })
@@ -41,11 +40,8 @@ public class CoordinateSystemTest {
     @CsvSource({
             "FULLY_CLOSED, FULLY_CLOSED,   0",
             "FULLY_CLOSED, LEFT_OPEN,      0",
-            "FULLY_CLOSED, FULLY_OPEN,     1",
-            "FULLY_CLOSED, RIGHT_OPEN,     1",
             "LEFT_OPEN,    LEFT_OPEN,      0",
             "LEFT_OPEN,    FULLY_CLOSED,   0",
-            "FULLY_OPEN,   FULLY_CLOSED,  -1",
     })
     public void endDelta(CoordinateSystem current, CoordinateSystem target, int expected) {
         assertThat(current.endDelta(target), equalTo(expected));

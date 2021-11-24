@@ -17,12 +17,7 @@ package org.monarchinitiative.svart;
 public enum CoordinateSystem {
 
     FULLY_CLOSED(Bound.CLOSED, Bound.CLOSED),
-
-    LEFT_OPEN(Bound.OPEN, Bound.CLOSED),
-
-    RIGHT_OPEN(Bound.CLOSED, Bound.OPEN),
-
-    FULLY_OPEN(Bound.OPEN, Bound.OPEN);
+    LEFT_OPEN(Bound.OPEN, Bound.CLOSED);
 
     private final Bound startBound;
     private final Bound endBound;

@@ -62,18 +62,12 @@ public class BaseVariantTest {
             // SNV/INV/MNV
             "FULLY_CLOSED, 5, G, T,    5",
             "LEFT_OPEN,    5, G, T,    6",
-            "RIGHT_OPEN,   5, G, T,    6",
-            "FULLY_OPEN,   5, G, T,    7",
             // INS
             "FULLY_CLOSED, 5, GA, T,    6",
             "LEFT_OPEN,    5, GA, T,    7",
-            "RIGHT_OPEN,   5, GA, T,    7",
-            "FULLY_OPEN,   5, GA, T,    8",
             // DEL
             "FULLY_CLOSED, 5, G, AT,    5",
             "LEFT_OPEN,    5, G, AT,    6",
-            "RIGHT_OPEN,   5, G, AT,    6",
-            "FULLY_OPEN,   5, G, AT,    7",
     })
     public void builderAddsMissingEndAndLength(CoordinateSystem coordinateSystem, int start, String ref, String alt, int expectEnd) {
         Variant instance = TestVariant.builder().with(chr1, "", Strand.POSITIVE, coordinateSystem, start, ref, alt).build();

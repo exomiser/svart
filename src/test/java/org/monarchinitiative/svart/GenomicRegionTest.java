@@ -64,19 +64,13 @@ public class GenomicRegionTest {
     @CsvSource({
             // region            pos
             // region before pos 2
-            "FULLY_OPEN,   0, 2,   2,   false",
             "LEFT_OPEN,    0, 1,   2,   false",
-            "RIGHT_OPEN,   1, 2,   2,   false",
             "FULLY_CLOSED, 1, 1,   2,   false",
             // region containing pos 2
-            "FULLY_OPEN,   1, 3,   2,   true",
             "LEFT_OPEN,    1, 2,   2,   true",
-            "RIGHT_OPEN,   2, 3,   2,   true",
             "FULLY_CLOSED, 2, 2,   2,   true",
             // region after pos 2
-            "FULLY_OPEN,   2, 4,   2,   false",
             "LEFT_OPEN,    2, 3,   2,   false",
-            "RIGHT_OPEN,   3, 4,   2,   false",
             "FULLY_CLOSED, 3, 3,   2,   false",
     })
     public void containsPosition(CoordinateSystem coordinateSystem, int start, int end,
@@ -258,37 +252,33 @@ public class GenomicRegionTest {
         assertThat(f.getMessage(), equalTo("Cannot calculate distance between regions on different contigs: 2 <-> 1"));
     }
 
-    @Test
-    public void withStrand_emptyRegion() {
-        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_OPEN, 0, 1);
-
-        GenomicRegion negative = region.withStrand(Strand.NEGATIVE);
-        assertThat(negative.start(), equalTo(5));
-        assertThat(negative.end(), equalTo(6));
-        assertThat(negative.coordinateSystem(), equalTo(CoordinateSystem.FULLY_OPEN));
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, LEFT_OPEN, 0, 0, 5, 5",
+            "NEGATIVE, LEFT_OPEN, 5, 5, 0, 0",
+            "POSITIVE, FULLY_CLOSED, 1, 0, 6, 5",
+            "POSITIVE, FULLY_CLOSED, 6, 5, 1, 0",
+    })
+    public void withStrand_emptyRegion(Strand strand, CoordinateSystem coordinateSystem, int start, int end, int expectedStart, int expectedEnd) {
+        GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, start, end);
+        assertThat(region.length(), equalTo(0));
+        GenomicRegion opposite = GenomicRegion.of(chr1, strand.opposite(), coordinateSystem, expectedStart, expectedEnd);
+        assertThat(region.toOppositeStrand(), equalTo(opposite));
     }
 
     @ParameterizedTest
     @CsvSource({
             // we test 2-bp-long region that spans the bases 3-4 of the imaginary contig with length 5
             // source     start      end       target   start  end
-            "POSITIVE,    FULLY_OPEN, 2,  5,   NEGATIVE,    1, 4",
             "POSITIVE,    LEFT_OPEN, 2,  4,   NEGATIVE,    1, 3",
-            "POSITIVE,    RIGHT_OPEN, 3,  5,   NEGATIVE,    2, 4",
             "POSITIVE,    FULLY_CLOSED,  3,  4,   NEGATIVE,    2, 3",
-            "NEGATIVE,    FULLY_OPEN, 1,  4,   POSITIVE,    2, 5",
             "NEGATIVE,    LEFT_OPEN, 1,  3,   POSITIVE,    2, 4",
-            "NEGATIVE,    RIGHT_OPEN, 2,  4,   POSITIVE,    3, 5",
             "NEGATIVE,    FULLY_CLOSED,  2,  3,   POSITIVE,    3, 4",
 
             // converting to the same strand preserves the coordinates
-            "POSITIVE,    FULLY_OPEN, 2,  5,   POSITIVE,    2, 5",
             "POSITIVE,    LEFT_OPEN, 2,  4,   POSITIVE,    2, 4",
-            "POSITIVE,    RIGHT_OPEN, 3,  5,   POSITIVE,    3, 5",
             "POSITIVE,    FULLY_CLOSED,  3,  4,   POSITIVE,    3, 4",
-            "NEGATIVE,    FULLY_OPEN, 1,  4,   NEGATIVE,    1, 4",
             "NEGATIVE,    LEFT_OPEN, 1,  3,   NEGATIVE,    1, 3",
-            "NEGATIVE,    RIGHT_OPEN, 2,  4,   NEGATIVE,    2, 4",
             "NEGATIVE,    FULLY_CLOSED,  2,  3,   NEGATIVE,    2, 3",
     })
     public void withStrand_strandConversions(Strand source, CoordinateSystem coordinateSystem, int start, int end,
@@ -329,7 +319,7 @@ public class GenomicRegionTest {
             "LEFT_OPEN, 2, 3,   2, 0,   0, 3",
             "FULLY_CLOSED,  2, 3,   1, 0,   1, 3",
     })
-    public void withPadding_upDownPadding(CoordinateSystem coordinateSystem,
+    public void testWithPadding_upDownPadding(CoordinateSystem coordinateSystem,
                                           int start, int end,
                                           int upPadding, int downPadding,
                                           int expectedStart, int expectedEnd) {
@@ -340,66 +330,40 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED,   2, 3,    CLOSED,   2",
-            "FULLY_CLOSED,   2, 3,      OPEN,   1",
-            "LEFT_OPEN,  2, 3,    CLOSED,   3",
-            "LEFT_OPEN,  2, 3,      OPEN,   2",
-            "RIGHT_OPEN,  2, 3,    CLOSED,   2",
-            "RIGHT_OPEN,  2, 3,      OPEN,   1",
-            "FULLY_OPEN,  2, 3,    CLOSED,   3",
-            "FULLY_OPEN,  2, 3,      OPEN,   2",
+            "FULLY_CLOSED,   2, 3,  FULLY_CLOSED,   2",
+            "FULLY_CLOSED,   2, 3,     LEFT_OPEN,   1",
+            "LEFT_OPEN,      2, 3,  FULLY_CLOSED,   3",
+            "LEFT_OPEN,      2, 3,     LEFT_OPEN,   2",
     })
-    public void startPositionWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos, Bound targetBound, int expectedStart) {
+    public void testStartPositionWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos, CoordinateSystem targetCoordinateSystem, int expectedStart) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, startPos, endPos);
-
-        CoordinateSystem targetCoordinateSystem = targetBound == Bound.OPEN ? CoordinateSystem.FULLY_OPEN : CoordinateSystem.FULLY_CLOSED;
-        int normalisedStartPosition = region.startWithCoordinateSystem(targetCoordinateSystem);
-        assertThat(normalisedStartPosition, equalTo(expectedStart));
-
-        if (targetBound.equals(coordinateSystem.startBound())) {
-            assertThat(normalisedStartPosition, equalTo(region.start()));
-        }
+        assertThat(region.startWithCoordinateSystem(targetCoordinateSystem), equalTo(expectedStart));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED,   2, 3,   CLOSED,   3",
-            "FULLY_CLOSED,   2, 3,     OPEN,   4",
-            "LEFT_OPEN,  2, 3,   CLOSED,   3",
-            "LEFT_OPEN,  2, 3,     OPEN,   4",
-            "RIGHT_OPEN,  2, 3,   CLOSED,   2",
-            "RIGHT_OPEN,  2, 3,     OPEN,   3",
-            "FULLY_OPEN,  2, 3,   CLOSED,   2",
-            "FULLY_OPEN,  2, 3,     OPEN,   3",
+            "FULLY_CLOSED,   2, 3,  FULLY_CLOSED,   3",
+            "FULLY_CLOSED,   2, 3,     LEFT_OPEN,   3",
+            "LEFT_OPEN,      2, 3,  FULLY_CLOSED,   3",
+            "LEFT_OPEN,      2, 3,     LEFT_OPEN,   3",
     })
-    public void endPositionWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos,
-                                     Bound targetBound, int expectedEnd) {
+    public void testEndWithCoordinateSystem(CoordinateSystem coordinateSystem, int startPos, int endPos,
+                                            CoordinateSystem targetCoordinateSystem, int expectedEnd) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, startPos, endPos);
-
-        CoordinateSystem targetCoordinateSystem = targetBound == Bound.OPEN ? CoordinateSystem.FULLY_OPEN : CoordinateSystem.FULLY_CLOSED;
-        int normalisedEndPosition = region.endWithCoordinateSystem(targetCoordinateSystem);
-        assertThat(normalisedEndPosition, equalTo(expectedEnd));
-
-        if (targetBound.equals(coordinateSystem.endBound())) {
-            assertThat(normalisedEndPosition, equalTo(region.end()));
-        }
+        assertThat(region.endWithCoordinateSystem(targetCoordinateSystem), equalTo(expectedEnd));
     }
 
     @ParameterizedTest
     @CsvSource({
             "POSITIVE, FULLY_CLOSED,   2, 3,    POSITIVE, FULLY_CLOSED, 2",
             "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_CLOSED, 3",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, LEFT_OPEN,    2",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, RIGHT_OPEN,   3",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_OPEN,   2",
+            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE,    LEFT_OPEN, 2",
 
-            "POSITIVE, FULLY_OPEN,     1, 4,    POSITIVE, FULLY_OPEN,   1",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, FULLY_CLOSED, 3",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, LEFT_OPEN,    2",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, RIGHT_OPEN,   3",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, FULLY_OPEN,   2",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    POSITIVE,    LEFT_OPEN, 1",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE,    LEFT_OPEN, 2",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE, FULLY_CLOSED, 3",
     })
-    public void startOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedStart) {
+    public void testStartOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedStart) {
         GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, startPos, endPos);
         assertThat(region.startOnStrandWithCoordinateSystem(targetStrand, targetCoordinateSystem), equalTo(expectedStart));
         assertThat(region.withStrand(targetStrand).withCoordinateSystem(targetCoordinateSystem).start(), equalTo(expectedStart));
@@ -410,16 +374,12 @@ public class GenomicRegionTest {
             "POSITIVE, FULLY_CLOSED,   2, 3,    POSITIVE, FULLY_CLOSED, 3",
             "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_CLOSED, 4",
             "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, LEFT_OPEN,    4",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, RIGHT_OPEN,   5",
-            "POSITIVE, FULLY_CLOSED,   2, 3,    NEGATIVE, FULLY_OPEN,   5",
 
-            "POSITIVE, FULLY_OPEN,     1, 4,    POSITIVE, FULLY_OPEN,   4",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, FULLY_CLOSED, 4",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, LEFT_OPEN,    4",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, RIGHT_OPEN,   5",
-            "POSITIVE, FULLY_OPEN,     1, 4,    NEGATIVE, FULLY_OPEN,   5",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    POSITIVE,    LEFT_OPEN, 3",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE,    LEFT_OPEN, 4",
+            "POSITIVE,  LEFT_OPEN,     1, 3,    NEGATIVE, FULLY_CLOSED, 4",
     })
-    public void endOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedEnd) {
+    public void testEndOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem, int startPos, int endPos, Strand targetStrand, CoordinateSystem targetCoordinateSystem, int expectedEnd) {
         GenomicRegion region = GenomicRegion.of(chr1, strand, coordinateSystem, startPos, endPos);
         assertThat(region.endOnStrandWithCoordinateSystem(targetStrand, targetCoordinateSystem), equalTo(expectedEnd));
         assertThat(region.withStrand(targetStrand).withCoordinateSystem(targetCoordinateSystem).end(), equalTo(expectedEnd));
@@ -427,27 +387,13 @@ public class GenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_OPEN, 1, 4,    LEFT_OPEN, 1, 3",
-            "FULLY_OPEN, 1, 4,     FULLY_CLOSED, 2, 3",
-            "FULLY_OPEN, 1, 4,    FULLY_OPEN, 1, 4",
-            "FULLY_OPEN, 1, 4,    RIGHT_OPEN, 2, 4",
-
-            "RIGHT_OPEN, 2, 4,    LEFT_OPEN, 1, 3",
-            "RIGHT_OPEN, 2, 4,     FULLY_CLOSED, 2, 3",
-            "RIGHT_OPEN, 2, 4,    FULLY_OPEN, 1, 4",
-            "RIGHT_OPEN, 2, 4,    RIGHT_OPEN, 2, 4",
-
-            "LEFT_OPEN, 1, 3,    LEFT_OPEN, 1, 3",
+            "LEFT_OPEN, 1, 3,     LEFT_OPEN, 1, 3",
             "LEFT_OPEN, 1, 3,     FULLY_CLOSED, 2, 3",
-            "LEFT_OPEN, 1, 3,    FULLY_OPEN, 1, 4",
-            "LEFT_OPEN, 1, 3,    RIGHT_OPEN, 2, 4",
 
-            " FULLY_CLOSED, 2, 3,    LEFT_OPEN, 1, 3",
-            " FULLY_CLOSED, 2, 3,     FULLY_CLOSED, 2, 3",
-            " FULLY_CLOSED, 2, 3,    FULLY_OPEN, 1, 4",
-            " FULLY_CLOSED, 2, 3,    RIGHT_OPEN, 2, 4",
+            "FULLY_CLOSED, 2, 3,  LEFT_OPEN, 1, 3",
+            "FULLY_CLOSED, 2, 3,  FULLY_CLOSED, 2, 3",
     })
-    public void withCoordinateSystem(CoordinateSystem source, int start, int end,
+    public void testWithCoordinateSystem(CoordinateSystem source, int start, int end,
                                      CoordinateSystem target, int targetStart, int targetEnd) {
 
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, source, start, end);
@@ -473,7 +419,7 @@ public class GenomicRegionTest {
             "POSITIVE, LEFT_OPEN, 2, 3,   NEGATIVE, LEFT_OPEN, 2, 3,   1",
             "POSITIVE, LEFT_OPEN, 3, 4,   NEGATIVE, LEFT_OPEN, 3, 4,   0",
     })
-    public void overlapLength(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
+    public void testOverlapLength(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                               Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
                               int expected) {
         GenomicRegion region = GenomicRegion.of(chr1, thisStrand, thisCoordinateSystem, thisStart, thisEnd);

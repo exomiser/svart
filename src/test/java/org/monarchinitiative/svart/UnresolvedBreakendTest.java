@@ -12,8 +12,6 @@ public class UnresolvedBreakendTest {
     @CsvSource({
             "FULLY_CLOSED",
             "LEFT_OPEN",
-            "RIGHT_OPEN",
-            "FULLY_OPEN",
     })
     public void instance(CoordinateSystem coordinateSystem) {
         assertThat(UnresolvedBreakend.instance(coordinateSystem).coordinateSystem(), equalTo(coordinateSystem));

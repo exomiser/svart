@@ -10,19 +10,13 @@ public class RegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_CLOSED, 3, 3,   FULLY_OPEN, 1, 3,  false",
-            "FULLY_CLOSED, 3, 3,   LEFT_OPEN, 1, 2,  false",
-            "FULLY_CLOSED, 3, 3,   RIGHT_OPEN, 2, 3,  false",
+            "FULLY_CLOSED, 3, 3,    LEFT_OPEN, 1, 2,  false",
             "FULLY_CLOSED, 3, 3,    FULLY_CLOSED, 2, 2,  false",
 
-            "FULLY_CLOSED, 3, 3,   FULLY_OPEN, 2, 4,  true",
-            "FULLY_CLOSED, 3, 3,   LEFT_OPEN, 2, 3,  true",
-            "FULLY_CLOSED, 3, 3,   RIGHT_OPEN, 3, 4,  true",
+            "FULLY_CLOSED, 3, 3,    LEFT_OPEN, 2, 3,  true",
             "FULLY_CLOSED, 3, 3,    FULLY_CLOSED, 3, 3,  true",
 
-            "FULLY_CLOSED, 3, 3,   FULLY_OPEN, 3, 5,  false",
-            "FULLY_CLOSED, 3, 3,   LEFT_OPEN, 3, 4,  false",
-            "FULLY_CLOSED, 3, 3,   RIGHT_OPEN, 4, 5,  false",
+            "FULLY_CLOSED, 3, 3,    LEFT_OPEN, 3, 4,  false",
             "FULLY_CLOSED, 3, 3,    FULLY_CLOSED, 4, 4,  false",
 
             "FULLY_CLOSED, 3, 4,    FULLY_CLOSED, 2, 3,  false",
@@ -41,17 +35,9 @@ public class RegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_OPEN, 2, 4,   2, false",
-            "FULLY_OPEN, 2, 4,   3, true",
-            "FULLY_OPEN, 2, 4,   4, false",
-
             "LEFT_OPEN,  2, 3,   2, false",
             "LEFT_OPEN,  2, 3,   3, true",
             "LEFT_OPEN,  2, 3,   4, false",
-
-            "RIGHT_OPEN, 3, 4,   2, false",
-            "RIGHT_OPEN, 3, 4,   3, true",
-            "RIGHT_OPEN, 3, 4,   4, false",
 
             "FULLY_CLOSED, 3, 3,   2, false",
             "FULLY_CLOSED, 3, 3,   3, true",
@@ -101,14 +87,10 @@ public class RegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "FULLY_OPEN,   1, 2,   0",
             "LEFT_OPEN,    2, 2,   0",
-            "RIGHT_OPEN,   2, 2,   0",
             "FULLY_CLOSED, 2, 1,   0",
 
-            "FULLY_OPEN,   1, 3,   1",
             "LEFT_OPEN,    1, 2,   1",
-            "RIGHT_OPEN,   2, 3,   1",
             "FULLY_CLOSED, 2, 2,   1",
 
             "FULLY_CLOSED, 2, 3,   2",
