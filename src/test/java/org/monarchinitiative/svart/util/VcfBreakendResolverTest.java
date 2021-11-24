@@ -111,7 +111,7 @@ public class VcfBreakendResolverTest {
             // ctg1	3	bndA	C	C[ctg2:5[	.	PASS	SVTYPE=BND;MATEID=bndB;EVENT=tra2
             BreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), leftPos, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
             Breakend left = variant.left();
-            assertThat(left.id(), equalTo("bndA"));
+            assertThat(left.id(), equalTo(id));
             assertThat(left.contig(), equalTo(assembly.contigByName(leftContig)));
             assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
             assertThat(left.start(), equalTo(leftStart));
