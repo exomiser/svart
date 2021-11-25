@@ -40,20 +40,12 @@ public enum CoordinateSystem {
     // n.b.
     // ONE_BASED is a 1-start, fully-closed system e.g. [1, 2]
     // ZERO_BASED is a 0-start right-open system e.g. [0, 2)
-    // *but* 0-start RIGHT-open is numerically equivalent to a 1-start, LEFT-open system which is how this is implemented.
+    // *but* 0-start RIGHT-open is numerically equivalent to a 1-start, LEFT-open system, which is how this is implemented.
     // e.g. 1-start [1, 2] == 1-start (0, 2] == 0-start [0, 2)
     // ONE_BASED start = ZERO_BASED start + 1
     // ZERO_BASED start = ONE_BASED start - 1
-    ONE_BASED(Bound.CLOSED, Bound.CLOSED),
-    ZERO_BASED(Bound.OPEN, Bound.CLOSED);
-
-    private final Bound startBound;
-    private final Bound endBound;
-
-    CoordinateSystem(Bound startBound, Bound endBound) {
-        this.startBound = startBound;
-        this.endBound = endBound;
-    }
+    ONE_BASED,
+    ZERO_BASED;
 
     /**
      * A coordinate system where the first base of a sequence is one.
@@ -84,10 +76,6 @@ public enum CoordinateSystem {
         return this == ZERO_BASED;
     }
 
-    public Bound startBound() {
-        return startBound;
-    }
-
     /**
      * Returns the required number of bases to be added to a start position in order to shift the position from
      * <code>this</code> system to the <code>target</code> system.
@@ -96,9 +84,9 @@ public enum CoordinateSystem {
      * @return an integer in the range [-1, 0, 1]
      */
     public int startDelta(CoordinateSystem target) {
-        if (this.startBound == target.startBound) {
+        if (this == target) {
             return 0;
         }
-        return this.startBound == Bound.OPEN ? 1 : -1;
+        return this == ZERO_BASED ? 1 : -1;
     }
 }

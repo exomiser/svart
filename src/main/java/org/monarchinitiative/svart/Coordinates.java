@@ -104,7 +104,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             return this.contains(other);
         }
         // in one and zero-based systems the end is equivalent
-        // in one and zero-based systems the end is equivalent
         return this.openStart() < other.end() && other.openStart() < end();
     }
 
@@ -132,7 +131,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private int openStart() {
-        return coordinateSystem().startBound() == Bound.OPEN ? start() : start() - 1;
+        return coordinateSystem() == ZERO_BASED ? start() : start() - 1;
     }
 
     Coordinates withPadding(int upstream, int downstream);
@@ -310,7 +309,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private static int openStart(CoordinateSystem coordinateSystem, int start) {
-        return coordinateSystem.startBound() == Bound.OPEN ? start : start - 1;
+        return coordinateSystem == ZERO_BASED ? start : start - 1;
     }
 
     /**
