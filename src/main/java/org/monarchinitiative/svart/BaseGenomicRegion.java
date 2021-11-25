@@ -16,7 +16,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.contig = Objects.requireNonNull(contig, "contig must not be null");
         this.strand = Objects.requireNonNull(strand, "strand must not be null");
         this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
-        coordinates.validateOnContig(contig);
+        Coordinates.validateOnContig(this.coordinates, this.contig);
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {
@@ -75,11 +75,6 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
      * Hook for classes extending this base class to provide a way for the {@link BaseGenomicRegion} to provide the results
      * of a withStrand() or withCoordinateSystem() without the extending classes having to implement {@link CoordinateSystemed}
      * or {@link Stranded} themselves and for the specialised type to be returned.
-     *
-     * @param contig
-     * @param strand
-     * @param coordinates
-     * @return
      */
     protected abstract T newRegionInstance(Contig contig, Strand strand, Coordinates coordinates);
 

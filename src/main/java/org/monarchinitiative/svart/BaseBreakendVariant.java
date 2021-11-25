@@ -98,6 +98,11 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, alt);
     }
 
+    @Override
+    public int length() {
+        return Coordinates.length(coordinateSystem(), start(), end());
+    }
+
     /**
      * @return length of the sequence inserted between breakends
      */
@@ -229,9 +234,10 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         /**
          * A no-op override. Breakend variants, with breakends possibly being on different strands are not able to
          * change their strand.
-         * @param strand
+         * @param strand the target strand on which to place this variant
          * @return the same instance
          */
+        @Override
         public T withStrand(Strand strand) {
             return self();
         }

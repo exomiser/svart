@@ -1,7 +1,6 @@
 package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.BaseBreakendVariant;
-import org.monarchinitiative.svart.BaseVariant;
 import org.monarchinitiative.svart.Breakend;
 
 /**

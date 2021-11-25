@@ -65,7 +65,7 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(Region<?> other) {
-        return start() <= other.startWithCoordinateSystem(coordinateSystem()) && other.endWithCoordinateSystem(coordinateSystem()) <= end();
+        return coordinates().contains(other.coordinates());
     }
 
     default boolean contains(int position) {
@@ -73,11 +73,11 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     default boolean overlapsWith(Region<?> other) {
-        return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        return coordinates().overlaps(other.coordinates());
     }
 
     default int overlapLength(Region<?> other) {
-        return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        return coordinates().overlapLength(other.coordinates());
     }
 
     /**
@@ -92,11 +92,11 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @return distance from <code>this</code> region to the <code>other</code> region
      */
     default int distanceTo(Region<?> other) {
-        return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+        return coordinates().distanceTo(other.coordinates());
     }
 
     default int length() {
-        return Coordinates.length(coordinateSystem(), start(), end());
+        return coordinates().length();
     }
 
     static Comparator<Region<?>> naturalOrder() {
