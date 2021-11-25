@@ -146,8 +146,7 @@ public class CoordinatesTest {
                 "ZERO_BASED,    0,  5",
         })
         public void validCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
-            Contig contig = TestContig.of(1, 5);
-            assertDoesNotThrow(() -> Coordinates.validateCoordinates(coordinateSystem, contig, start, end));
+            assertDoesNotThrow(() -> Coordinates.validateCoordinates(coordinateSystem, start, end));
         }
 
         @ParameterizedTest
@@ -161,7 +160,8 @@ public class CoordinatesTest {
         })
         public void coordinateOutOfBounds(CoordinateSystem coordinateSystem, int start, int end) {
             Contig contig = TestContig.of(1, 5);
-            Exception exception = assertThrows(CoordinatesOutOfBoundsException.class, () -> Coordinates.validateCoordinates(coordinateSystem, contig, start, end));
+            Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+            Exception exception = assertThrows(CoordinatesOutOfBoundsException.class, () -> Coordinates.validateOnContig(coordinates, contig));
             assertThat(exception.getMessage(), containsString("coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds"));
         }
 
@@ -169,15 +169,16 @@ public class CoordinatesTest {
         @CsvSource({
                 // given a coordinate on a contig of length 5
                 "ONE_BASED, 1,  -1",
-                "ONE_BASED, 2,  0",
+                "ONE_BASED, 0,  1",
+                "ONE_BASED, 0,  0",
+                "ONE_BASED, 5,  3",
 
+                "ZERO_BASED,    5,  4",
                 "ZERO_BASED,    0,  -1",
-                "ZERO_BASED,    2,  1",
+                "ZERO_BASED,    -1,  0",
         })
         public void invalidCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
-            Contig contig = TestContig.of(1, 5);
-            Exception exception = assertThrows(InvalidCoordinatesException.class, () -> Coordinates.validateCoordinates(coordinateSystem, contig, start, end));
-            assertThat(exception.getMessage(), containsString("coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position"));
+            assertThrows(InvalidCoordinatesException.class, () -> Coordinates.validateCoordinates(coordinateSystem, start, end));
         }
     }
 
@@ -240,7 +241,7 @@ public class CoordinatesTest {
     @CsvSource({
             // no overlap
             "ONE_BASED, 1, 2,   ONE_BASED,  8, 9,    0",
-            "ONE_BASED, 1, 2,   ZERO_BASED,     8, 9,    0",
+            "ONE_BASED, 1, 2,   ZERO_BASED, 8, 9,    0",
 
             // partial overlap, transitive
             "ONE_BASED, 1, 2,   ONE_BASED,  2, 3,    1",
@@ -250,18 +251,45 @@ public class CoordinatesTest {
 
             // complete overlap
             "ONE_BASED, 1, 5,   ONE_BASED,  1, 5,    5",
-            "ONE_BASED, 1, 5,   ZERO_BASED,     0, 5,    5",
+            "ONE_BASED, 1, 5,   ZERO_BASED, 0, 5,    5",
 
             // multiple systems
             "ONE_BASED, 1, 2,   ONE_BASED,  2, 3,    1",
-            "ONE_BASED, 1, 2,   ZERO_BASED,     1, 3,    1",
+            "ONE_BASED, 1, 2,   ZERO_BASED, 1, 3,    1",
 
-            "ZERO_BASED,    0, 2,   ONE_BASED,  2, 3,    1",
-            "ZERO_BASED,    0, 3,   ONE_BASED,  2, 3,    2",
-            "ZERO_BASED,    0, 2,   ZERO_BASED,     1, 3,    1",
+            "ZERO_BASED, 0, 2,   ONE_BASED,  2, 3,    1",
+            "ZERO_BASED, 0, 3,   ONE_BASED,  2, 3,    2",
+            "ZERO_BASED, 0, 2,   ZERO_BASED, 1, 3,    1",
     })
     public void overlapLength(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
-        assertThat(Coordinates.overlapLength(x, xStart, xEnd, y, yStart, yEnd), is(expected));
+        assertThat(Coordinates.overlapLength(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            // no overlap
+            "ONE_BASED, 1, 2,   ONE_BASED,  8, 9,    0",
+            "ONE_BASED, 1, 2,   ZERO_BASED, 8, 9,    0",
+
+            // partial overlap, transitive
+            "ONE_BASED, 1, 2,   ONE_BASED,  2, 3,    1",
+            "ONE_BASED, 2, 3,   ONE_BASED,  1, 2,    1",
+            "ONE_BASED, 1, 3,   ONE_BASED,  2, 4,    2",
+            "ONE_BASED, 2, 4,   ONE_BASED,  1, 3,    2",
+
+            // complete overlap
+            "ONE_BASED, 1, 5,   ONE_BASED,  1, 5,    5",
+            "ONE_BASED, 1, 5,   ZERO_BASED, 0, 5,    5",
+
+            // multiple systems
+            "ONE_BASED, 1, 2,   ONE_BASED,  2, 3,    1",
+            "ONE_BASED, 1, 2,   ZERO_BASED, 1, 3,    1",
+
+            "ZERO_BASED, 0, 2,   ONE_BASED,  2, 3,    1",
+            "ZERO_BASED, 0, 3,   ONE_BASED,  2, 3,    2",
+            "ZERO_BASED, 0, 2,   ZERO_BASED, 1, 3,    1",
+    })
+    public void overlapLengthCoordinates(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
+        assertThat(Coordinates.of(x, xStart, xEnd).overlapLength(Coordinates.of(y, yStart, yEnd)), equalTo(expected));
+    }
 }

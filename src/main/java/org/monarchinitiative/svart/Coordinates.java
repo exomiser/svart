@@ -79,7 +79,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
     default int overlapLength(Coordinates other) {
         // in one and zero-based systems the end is equivalent
-        // in one and zero-based systems the end is equivalent
         return Math.max(Math.min(end(), other.end()) - Math.max(this.openStart(), other.openStart()), 0);
     }
 
@@ -135,60 +134,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     Coordinates withPadding(int upstream, int downstream);
-
-    static int compare(Coordinates x, Coordinates y) {
-        int result = Integer.compare(x.start(), y.startWithCoordinateSystem(x.coordinateSystem()));
-        if (result == 0) {
-            result = ConfidenceInterval.compare(x.startConfidenceInterval(), y.startConfidenceInterval());
-        }
-        if (result == 0) {
-            result = Integer.compare(x.end(), y.endWithCoordinateSystem(x.coordinateSystem()));
-        }
-        if (result == 0) {
-            result = ConfidenceInterval.compare(x.endConfidenceInterval(), y.endConfidenceInterval());
-        }
-        return result;
-    }
-
-    static Coordinates of(CoordinateSystem coordinateSystem, int start, int end) {
-        return PreciseCoordinates.of(coordinateSystem, start, end);
-    }
-
-    static Coordinates of(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
-        if (startCi.isPrecise() && endCi.isPrecise()) {
-            return PreciseCoordinates.of(coordinateSystem, start, end);
-        }
-        return ImpreciseCoordinates.of(coordinateSystem, start, startCi, end, endCi);
-    }
-
-    static Coordinates ofAllele(CoordinateSystem coordinateSystem, int pos, String ref) {
-        // Given the coordinate system (C) and a reference allele starting at start position (S) with Length (L) the end
-        // position (E) is calculated as:
-        //  C   S  L  E
-        //  []  1  1  1  (S + L - 1)  ('one-based')
-        //  [)  0  1  1  (S + L)      ('zero-based')
-        return PreciseCoordinates.of(coordinateSystem, pos, pos + ref.length() + endDelta(coordinateSystem));
-    }
-
-    /**
-     * Returns a zero-length break at the given coordinate.
-     */
-    static Coordinates ofBreakend(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
-        Objects.requireNonNull(coordinateSystem);
-        return Coordinates.of(coordinateSystem, pos, confidenceInterval, pos + endDelta(coordinateSystem), confidenceInterval);
-    }
-
-    int hashCode();
-
-    boolean equals(Object o);
-
-    default void validate() {
-        validateCoordinates(coordinateSystem(), start(), end());
-    }
-
-    default void validateOnContig(Contig contig) {
-        validateOnContig(contig, this);
-    }
 
     /**
      * Returns the length of a region, in bases, for the given coordinates.
@@ -335,25 +280,25 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
         Objects.requireNonNull(coordinateSystem);
-        if (start < 0) {
-            throw new InvalidCoordinatesException("Cannot create start coordinate `" + start + "` with negative value");
-        }
         if (end < 0) {
-            throw new InvalidCoordinatesException("Cannot create end coordinate `" + end + "` with negative value");
+            throw new InvalidCoordinatesException("Coordinates " + start + '-' + end + " cannot have end coordinate `" + end + "` with negative value");
         }
-        switch (coordinateSystem) {
-            case ONE_BASED:
-                if (start > end + 1) {
-                    // region [2,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
-                }
-                break;
-            case ZERO_BASED:
-                if (start > end) {
-                    // region (1,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " must have a start position before the end position");
-                }
-                break;
+        if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+            if (start <= 0) {
+                throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with zero or negative value");
+            }
+            if (start > end + 1) {
+                // region [2,1] is an empty region, equivalent to (1,2)
+                throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
+            }
+        } else if (coordinateSystem == ZERO_BASED) {
+            if (start < 0) {
+                throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with negative value");
+            }
+            if (start > end) {
+                // region [1,1) is an empty region, equivalent to (0,2)
+                throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " must have a start position before the end position");
+            }
         }
     }
 
@@ -369,67 +314,65 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * <p>
      * Invalid coordinates will result in an unrecoverable exception being thrown.
      *
-     * @param coordinates      the given coordinates
-     * @param contig           on which the coordinates lie.
+     * @param coordinates the given coordinates
+     * @param contig      on which the coordinates lie.
      */
-    public static void validateOnContig(Contig contig, Coordinates coordinates) {
-        Objects.requireNonNull(contig);
+    static void validateOnContig(Coordinates coordinates, Contig contig) {
         Objects.requireNonNull(coordinates);
+        Objects.requireNonNull(contig);
+        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
         int start = coordinates.start();
         int end = coordinates.end();
-        switch (coordinates.coordinateSystem()) {
-            case ONE_BASED:
-                if (start < 1 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-                }
-                break;
-            case ZERO_BASED:
-                if (start < 0 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
-                }
-                break;
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+        } else if (coordinateSystem == ZERO_BASED && (start < 0 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
         }
     }
 
-    /**
-     * Checks whether a given set of coordinates is valid. This checks that the coordinates do not overflow the bounds
-     * of the {@link Contig} and that the coordinates are provided in the correct orientation, i.e. indicate an empty or
-     * positive interval where the end is generally 'downstream' or numerically greater than the start. Exceptions here
-     * are empty intervals where:
-     * <p>
-     * fully-closed,  end = start - 1;
-     * <p>
-     * half-open,     end = start;
-     * <p>
-     * Invalid coordinates will result in an unrecoverable exception being thrown.
-     *
-     * @param coordinateSystem for the given coordinates
-     * @param contig           on which the coordinates lie.
-     * @param start            start of the interval
-     * @param end              end of the interval
-     */
-    public static void validateCoordinates(CoordinateSystem coordinateSystem, Contig contig, int start, int end) {
-        Objects.requireNonNull(coordinateSystem);
-        Objects.requireNonNull(contig);
-        switch (coordinateSystem) {
-            case ONE_BASED:
-                if (start < 1 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-                }
-                if (start > end + 1) {
-                    // region [2,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position at most one place past the end position");
-                }
-                break;
-            case ZERO_BASED:
-                if (start < 0 || end > contig.length()) {
-                    throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
-                }
-                if (start > end) {
-                    // region (1,1] is an empty region, equivalent to (1,2)
-                    throw new InvalidCoordinatesException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " must have a start position before the end position");
-                }
-                break;
-        }
+    static Coordinates of(CoordinateSystem coordinateSystem, int start, int end) {
+        return PreciseCoordinates.of(coordinateSystem, start, end);
     }
+
+    static Coordinates of(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
+        if (startCi.isPrecise() && endCi.isPrecise()) {
+            return PreciseCoordinates.of(coordinateSystem, start, end);
+        }
+        return ImpreciseCoordinates.of(coordinateSystem, start, startCi, end, endCi);
+    }
+
+    static Coordinates ofAllele(CoordinateSystem coordinateSystem, int pos, String ref) {
+        // Given the coordinate system (C) and a reference allele starting at start position (S) with Length (L) the end
+        // position (E) is calculated as:
+        //  C   S  L  E
+        //  []  1  1  1  (S + L - 1)  ('one-based')
+        //  [)  0  1  1  (S + L)      ('zero-based')
+        return PreciseCoordinates.of(coordinateSystem, pos, pos + ref.length() + endDelta(coordinateSystem));
+    }
+
+    /**
+     * Returns a zero-length break at the given coordinate.
+     */
+    static Coordinates ofBreakend(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
+        Objects.requireNonNull(coordinateSystem);
+        return Coordinates.of(coordinateSystem, pos, confidenceInterval, pos + endDelta(coordinateSystem), confidenceInterval);
+    }
+
+    static int compare(Coordinates x, Coordinates y) {
+        int result = Integer.compare(x.start(), y.startWithCoordinateSystem(x.coordinateSystem()));
+        if (result == 0) {
+            result = ConfidenceInterval.compare(x.startConfidenceInterval(), y.startConfidenceInterval());
+        }
+        if (result == 0) {
+            result = Integer.compare(x.end(), y.endWithCoordinateSystem(x.coordinateSystem()));
+        }
+        if (result == 0) {
+            result = ConfidenceInterval.compare(x.endConfidenceInterval(), y.endConfidenceInterval());
+        }
+        return result;
+    }
+
+    int hashCode();
+
+    boolean equals(Object o);
 }
