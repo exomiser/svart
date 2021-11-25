@@ -67,73 +67,20 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     private int lengthDelta() {
-        return coordinateSystem() == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem());
+        return lengthDelta(coordinateSystem());
     }
 
+    Coordinates withPadding(int upstream, int downstream);
+
+    /**
+     * Returns the length of a region, in bases
+     */
     default int length() {
         // the easiest way to calculate length is to use half-open interval coordinates
         // Why? - See https://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html
         // in one and zero-based systems the end is equivalent
-        return end() - openStart();
+        return length(coordinateSystem(), start(), end());
     }
-
-    default int overlapLength(Coordinates other) {
-        // in one and zero-based systems the end is equivalent
-        return Math.max(Math.min(end(), other.end()) - Math.max(this.openStart(), other.openStart()), 0);
-    }
-
-    default int distanceTo(Coordinates other) {
-        if (this.overlaps(other)) return 0;
-
-        // in one and zero-based systems the end is equivalent
-        int first = other.openStart() - end();
-        // in one and zero-based systems the end is equivalent
-        int second = this.openStart() - other.end();
-
-        int result = Math.abs(first) < Math.abs(second) ? first : second;
-        return first > second ? result : -result;
-    }
-
-    default boolean overlaps(Coordinates other) {
-        // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
-        if (this.isEmpty()) {
-            return other.contains(this);
-        }
-        if (other.isEmpty()) {
-            return this.contains(other);
-        }
-        // in one and zero-based systems the end is equivalent
-        return this.openStart() < other.end() && other.openStart() < end();
-    }
-
-    default boolean overlaps(CoordinateSystem bSystem, int bStart, int bEnd) {
-        // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
-        if (this.isEmpty()) {
-            return aContainsB(bSystem, bStart, bEnd, this.coordinateSystem(), this.start(), this.end());
-        }
-        if (isEmpty(bSystem, bStart, bEnd)) {
-            return aContainsB(this.coordinateSystem(), this.start(), this.end(), bSystem, bStart, bEnd);
-        }
-        return this.openStart() < bEnd && openStart(bSystem, bStart) < end();
-    }
-
-    private boolean isEmpty() {
-        return length() == 0;
-    }
-
-    default boolean contains(Coordinates other) {
-        return this.openStart() <= other.openStart() && other.end() <= end();
-    }
-
-    default boolean contains(int position) {
-        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.ONE_BASED);
-    }
-
-    private int openStart() {
-        return coordinateSystem() == ZERO_BASED ? start() : start() - 1;
-    }
-
-    Coordinates withPadding(int upstream, int downstream);
 
     /**
      * Returns the length of a region, in bases, for the given coordinates.
@@ -161,12 +108,20 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
      * @return the inverted coordinate on the {@link Contig}
      */
-    public static int invertPosition(CoordinateSystem coordinateSystem, Contig contig, int pos) {
+    public static int invertCoordinate(CoordinateSystem coordinateSystem, Contig contig, int pos) {
         return contig.length() + lengthDelta(coordinateSystem) - pos;
     }
 
     private static int lengthDelta(CoordinateSystem coordinateSystem) {
         return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
+    }
+
+    default boolean overlaps(Coordinates other) {
+        return overlaps(other.coordinateSystem(), other.start(), other.end());
+    }
+
+    default boolean overlaps(CoordinateSystem bSystem, int bStart, int bEnd) {
+        return overlaps(this.coordinateSystem(), this.start(), this.end(), bSystem, bStart, bEnd);
     }
 
     /**
@@ -182,7 +137,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @param bEnd    end coordinate of interval b
      * @return true indicating intervals a and b overlap or false if they do not.
      */
-    public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
+    public static boolean overlaps(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
         if (isEmpty(aSystem, aStart, aEnd)) {
             return aContainsB(bSystem, bStart, bEnd, aSystem, aStart, aEnd);
@@ -191,6 +146,16 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             return aContainsB(aSystem, aStart, aEnd, bSystem, bStart, bEnd);
         }
         return openStart(aSystem, aStart) < bEnd && openStart(bSystem, bStart) < aEnd;
+    }
+
+    default int overlapLength(Coordinates other) {
+        // in one and zero-based systems the end is equivalent
+        return overlapLength(other.coordinateSystem(), other.start(), other.end());
+    }
+
+    default int overlapLength(CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd) {
+        // in one and zero-based systems the end is equivalent
+        return overlapLength(this.coordinateSystem(), this.start(), this.end(), otherCoordinateSystem, otherStart, otherEnd);
     }
 
     /**
@@ -207,6 +172,14 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      */
     public static int overlapLength(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         return Math.max(Math.min(aEnd, bEnd) - Math.max(openStart(aSystem, aStart), openStart(bSystem, bStart)), 0);
+    }
+
+    default boolean contains(Coordinates other) {
+        return contains(other.coordinateSystem(), other.start(), other.end());
+    }
+
+    default boolean contains(CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd) {
+        return aContainsB(this.coordinateSystem(), this.start(), this.end(), otherCoordinateSystem, otherStart, otherEnd);
     }
 
     /**
@@ -226,6 +199,14 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return openStart(aSystem, aStart) <= openStart(bSystem, bStart) && bEnd <= aEnd;
     }
 
+    default int distanceTo(Coordinates other) {
+        return distanceTo(other.coordinateSystem(), other.start(), other.end());
+    }
+
+    default int distanceTo(CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd) {
+        return distanceAToB(this.coordinateSystem(), this.start(), this.end(), otherCoordinateSystem, otherStart, otherEnd);
+    }
+
     /**
      * Returns the number of bases present between the intervals <code>a</code> and <code>b</code>. The distance is zero
      * if the <code>a</code> and <code>b</code> are adjacent or if they overlap. The distance is positive if <code>a</code>
@@ -240,7 +221,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return distance from interval <code>a</code> to interval <code>b</code>
      */
     public static int distanceAToB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        if (overlap(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
+        if (overlaps(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
 
         int first = openStart(bSystem, bStart) - aEnd;
         int second = openStart(aSystem, aStart) - bEnd;

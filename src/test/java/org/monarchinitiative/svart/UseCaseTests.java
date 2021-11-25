@@ -134,8 +134,8 @@ public class UseCaseTests {
         String[] fields = bedRecord.split("\t");
         Contig contig = genomicAssembly.contigByName(fields[0]);
         Strand strand = Strand.parseStrand(fields[5]);
-        int start = strand == Strand.POSITIVE ? Integer.parseInt(fields[1]) : Coordinates.invertPosition(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[2]));
-        int end = strand == Strand.POSITIVE ? Integer.parseInt(fields[2]) : Coordinates.invertPosition(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[1]));
+        int start = strand == Strand.POSITIVE ? Integer.parseInt(fields[1]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[2]));
+        int end = strand == Strand.POSITIVE ? Integer.parseInt(fields[2]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[1]));
         return GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), start, end);
     }
 

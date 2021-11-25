@@ -35,15 +35,15 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return true if the region shares at least 1 bp with the <code>other</code> region
      */
     default boolean overlapsWith(GenomicRegion other) {
-        if (contigId() != other.contigId()) {
+        if (this.contigId() != other.contigId()) {
             return false;
         }
         if (this.strand() == other.strand()) {
-            return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+            return this.coordinates().overlaps(other.coordinates());
         }
         int otherStart = other.startOnStrand(this.strand());
         int otherEnd = other.endOnStrand(this.strand());
-        return Coordinates.overlap(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+        return this.coordinates().overlaps(other.coordinateSystem(), otherStart, otherEnd);
     }
 
     /**
@@ -56,15 +56,15 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return the length of overlap in bases or zero if no overlap.
      */
     default int overlapLength(GenomicRegion other) {
-        if (contigId() != other.contigId()) {
+        if (this.contigId() != other.contigId()) {
             return 0;
         }
         if (this.strand() == other.strand()) {
-            return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+            return this.coordinates().overlapLength(other.coordinates());
         }
         int otherStart = other.startOnStrand(this.strand());
         int otherEnd = other.endOnStrand(this.strand());
-        return Coordinates.overlapLength(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+        return this.coordinates().overlapLength(other.coordinateSystem(), otherStart, otherEnd);
     }
 
     /**
@@ -75,7 +75,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return start coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int startOnStrand(Strand strand) {
-        return this.strand() == strand ? start() : Coordinates.invertPosition(coordinateSystem(), contig(), end());
+        return this.strand() == strand ? start() : coordinates().invertEnd(contig());
     }
 
     default int startOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
@@ -93,7 +93,7 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return end coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int endOnStrand(Strand strand) {
-        return this.strand() == strand ? end() : Coordinates.invertPosition(coordinateSystem(), contig(), start());
+        return this.strand() == strand ? end() : coordinates().invertStart(contig());
     }
 
     default int endOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
@@ -108,15 +108,15 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return true if the <code>other</code> region is fully contained within this region
      */
     default boolean contains(GenomicRegion other) {
-        if (contig().id() != other.contig().id()) {
+        if (this.contig().id() != other.contig().id()) {
             return false;
         }
         if (this.strand() == other.strand()) {
-            return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+            return this.coordinates().contains(other.coordinates());
         }
         int otherStart = other.startOnStrand(this.strand());
         int otherEnd = other.endOnStrand(this.strand());
-        return Coordinates.aContainsB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+        return this.coordinates().contains(other.coordinateSystem(), otherStart, otherEnd);
     }
 
     /**
@@ -131,15 +131,15 @@ public interface GenomicRegion extends Region<GenomicRegion>, Stranded<GenomicRe
      * @return distance from <code>this</code> region to the <code>other</code> region
      */
     default int distanceTo(GenomicRegion other) {
-        if (contig().id() != other.contig().id()) {
+        if (this.contig().id() != other.contig().id()) {
             throw new IllegalArgumentException("Cannot calculate distance between regions on different contigs: " + contig().id() + " <-> " + other.contig().id());
         }
         if (this.strand() == other.strand()) {
-            return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), other.start(), other.end());
+            return this.coordinates().distanceTo(other.coordinates());
         }
         int otherStart = other.startOnStrand(this.strand());
         int otherEnd = other.endOnStrand(this.strand());
-        return Coordinates.distanceAToB(coordinateSystem(), start(), end(), other.coordinateSystem(), otherStart, otherEnd);
+        return this.coordinates().distanceTo(other.coordinateSystem(), otherStart, otherEnd);
     }
 
     default GenomicRegion withPadding(int padding) {
