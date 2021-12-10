@@ -83,7 +83,7 @@ public class CoordinatesTest {
                 "ZERO_BASED,    0, 1,  ONE_BASED, 1, 1,    true",
         })
         public void overlap(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
-            assertThat(Coordinates.overlaps(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
+            assertThat(Coordinates.overlap(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
         }
 
         @ParameterizedTest
@@ -96,7 +96,7 @@ public class CoordinatesTest {
                 "ZERO_BASED,    0, 0,  ZERO_BASED,    0, 0,    true",
         })
         public void overlap_emptyRegions(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
-            assertThat(Coordinates.overlaps(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
+            assertThat(Coordinates.overlap(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
         }
 
         @ParameterizedTest
@@ -113,7 +113,7 @@ public class CoordinatesTest {
                 "ZERO_BASED,     1, 1,  ZERO_BASED,    0, 1,    true",
         })
         public void overlap_includesEmptyIntervalsOnBoundaries(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
-            assertThat(Coordinates.overlaps(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
+            assertThat(Coordinates.overlap(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
         }
 
         @ParameterizedTest
@@ -127,7 +127,7 @@ public class CoordinatesTest {
                 "ZERO_BASED,     3, 8,  ZERO_BASED,   0, 5,    true",
         })
         public void overlap_isTransitive(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
-            assertThat(Coordinates.overlaps(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
+            assertThat(Coordinates.overlap(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
         }
     }
 

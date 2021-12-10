@@ -121,7 +121,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     }
 
     default boolean overlaps(CoordinateSystem bSystem, int bStart, int bEnd) {
-        return overlaps(this.coordinateSystem(), this.start(), this.end(), bSystem, bStart, bEnd);
+        return overlap(this.coordinateSystem(), this.start(), this.end(), bSystem, bStart, bEnd);
     }
 
     /**
@@ -137,7 +137,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @param bEnd    end coordinate of interval b
      * @return true indicating intervals a and b overlap or false if they do not.
      */
-    public static boolean overlaps(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
+    public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
         if (isEmpty(aSystem, aStart, aEnd)) {
             return aContainsB(bSystem, bStart, bEnd, aSystem, aStart, aEnd);
@@ -221,7 +221,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return distance from interval <code>a</code> to interval <code>b</code>
      */
     public static int distanceAToB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        if (overlaps(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
+        if (overlap(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
 
         int first = openStart(bSystem, bStart) - aEnd;
         int second = openStart(aSystem, aStart) - bEnd;
@@ -320,6 +320,22 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             return PreciseCoordinates.of(coordinateSystem, start, end);
         }
         return ImpreciseCoordinates.of(coordinateSystem, start, startCi, end, endCi);
+    }
+
+    static Coordinates zeroBased(int start, int end) {
+        return PreciseCoordinates.of(CoordinateSystem.zeroBased(), start, end);
+    }
+
+    static Coordinates oneBased(int start, int end) {
+        return PreciseCoordinates.of(CoordinateSystem.oneBased(), start, end);
+    }
+
+    static Coordinates zeroBased(int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
+        return Coordinates.of(CoordinateSystem.zeroBased(), start, startCi, end, endCi);
+    }
+
+    static Coordinates oneBased(int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
+        return Coordinates.of(CoordinateSystem.oneBased(), start, startCi, end, endCi);
     }
 
     static Coordinates ofAllele(CoordinateSystem coordinateSystem, int pos, String ref) {
