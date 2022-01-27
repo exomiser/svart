@@ -3,6 +3,7 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
+import static org.monarchinitiative.svart.CoordinateSystem.ONE_BASED;
 import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
 
 /**
@@ -93,7 +94,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     public static int length(CoordinateSystem coordinateSystem, int start, int end) {
         // the easiest way to calculate length is to use half-open interval coordinates
         // Why? - See https://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html
-        return end - openStart(coordinateSystem, start);
+        return end - zeroBasedStart(coordinateSystem, start);
     }
 
     /**
@@ -145,7 +146,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         if (isEmpty(bSystem, bStart, bEnd)) {
             return aContainsB(aSystem, aStart, aEnd, bSystem, bStart, bEnd);
         }
-        return openStart(aSystem, aStart) < bEnd && openStart(bSystem, bStart) < aEnd;
+        return zeroBasedStart(aSystem, aStart) < bEnd && zeroBasedStart(bSystem, bStart) < aEnd;
     }
 
     default int overlapLength(Coordinates other) {
@@ -171,7 +172,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return length of overlap between a and b or zero if there is no overlap.
      */
     public static int overlapLength(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        return Math.max(Math.min(aEnd, bEnd) - Math.max(openStart(aSystem, aStart), openStart(bSystem, bStart)), 0);
+        return Math.max(Math.min(aEnd, bEnd) - Math.max(zeroBasedStart(aSystem, aStart), zeroBasedStart(bSystem, bStart)), 0);
     }
 
     default boolean contains(Coordinates other) {
@@ -196,7 +197,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return true indicating interval a fully contains b or false if it does not.
      */
     public static boolean aContainsB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        return openStart(aSystem, aStart) <= openStart(bSystem, bStart) && bEnd <= aEnd;
+        return zeroBasedStart(aSystem, aStart) <= zeroBasedStart(bSystem, bStart) && bEnd <= aEnd;
     }
 
     default int distanceTo(Coordinates other) {
@@ -223,8 +224,8 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     public static int distanceAToB(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
         if (overlap(aSystem, aStart, aEnd, bSystem, bStart, bEnd)) return 0;
 
-        int first = openStart(bSystem, bStart) - aEnd;
-        int second = openStart(aSystem, aStart) - bEnd;
+        int first = zeroBasedStart(bSystem, bStart) - aEnd;
+        int second = zeroBasedStart(aSystem, aStart) - bEnd;
 
         int result = Math.abs(first) < Math.abs(second) ? first : second;
         return first > second ? result : -result;
@@ -234,7 +235,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return length(coordinateSystem, start, end) == 0;
     }
 
-    private static int openStart(CoordinateSystem coordinateSystem, int start) {
+    private static int zeroBasedStart(CoordinateSystem coordinateSystem, int start) {
         return coordinateSystem == ZERO_BASED ? start : start - 1;
     }
 
