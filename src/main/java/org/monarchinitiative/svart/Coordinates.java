@@ -40,7 +40,15 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     Coordinates withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     default int startWithCoordinateSystem(CoordinateSystem target) {
-        return start() + coordinateSystem().startDelta(target);
+        return coordinateSystem() == target ? start() : start() + coordinateSystem().startDelta(target);
+    }
+
+    default int startZeroBased() {
+        return startWithCoordinateSystem(ZERO_BASED);
+    }
+
+    default int startOneBased() {
+        return startWithCoordinateSystem(ONE_BASED);
     }
 
     default int endWithCoordinateSystem(CoordinateSystem target) {

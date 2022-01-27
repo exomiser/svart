@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -9,6 +10,39 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CoordinatesTest {
+
+    @Test
+    public void zeroBasedConstructorPrecise() {
+        Coordinates instance = Coordinates.zeroBased(0, 10);
+        assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.zeroBased(), 0, ConfidenceInterval.precise(), 10, ConfidenceInterval.precise())));
+    }
+
+    @Test
+    public void zeroBasedConstructorImprecise() {
+        Coordinates instance = Coordinates.zeroBased(0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise());
+        assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.zeroBased(), 0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise())));
+    }
+
+    @Test
+    public void oneBasedConstructorPrecise() {
+        Coordinates instance = Coordinates.oneBased(1, 10);
+        assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.oneBased(), 1, ConfidenceInterval.precise(), 10, ConfidenceInterval.precise())));
+    }
+
+    @Test
+    public void oneBasedConstructorImprecise() {
+        Coordinates instance = Coordinates.oneBased(1, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise());
+        assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.oneBased(), 1, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise())));
+    }
+
+        @Test
+    public void testStartTypes() {
+        Coordinates oneBasedCoords = Coordinates.oneBased(1, 10);
+        Coordinates zeroBasedCoords = Coordinates.zeroBased(0, 10);
+        assertThat(oneBasedCoords.start(), not(equalTo(zeroBasedCoords.start())));
+        assertThat(oneBasedCoords.startZeroBased(), equalTo(zeroBasedCoords.start()));
+        assertThat(oneBasedCoords.start(), equalTo(zeroBasedCoords.startOneBased()));
+    }
 
     @ParameterizedTest
     @CsvSource({
