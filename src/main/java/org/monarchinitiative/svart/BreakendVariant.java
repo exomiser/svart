@@ -10,7 +10,7 @@ public interface BreakendVariant extends Variant {
     String eventId();
 
     default String mateId() {
-        return right().mateId();
+        return right().id();
     }
 
     Breakend left();
