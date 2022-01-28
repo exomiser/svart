@@ -43,7 +43,7 @@ public class VcfBreakendResolver {
         this.genomicAssembly = genomicAssembly;
     }
 
-    public BreakendVariant resolve(String eventId, String id, String mateId, Contig contig, Position position, ConfidenceInterval ciEnd, String ref, String alt) {
+    public BreakendVariant resolve(String eventId, String id, String mateId, Contig contig, int position, ConfidenceInterval ciPos, ConfidenceInterval ciEnd, String ref, String alt) {
         if (ref.length() > 1) {
             throw new IllegalArgumentException("Invalid breakend! Ref allele '" + ref + "' must be single base");
         }
@@ -59,11 +59,12 @@ public class VcfBreakendResolver {
                 throw new IllegalArgumentException("Sequence present both at the beginning (`" + head + "`) and the end (`" + tail + "`) of alt field");
             }
             Strand rightStrand = determineRightStrand(alt, altMatcher.group("left"), altMatcher.group("right"));
-            Position rightStart = Position.of(Integer.parseInt(altMatcher.group("pos")), ciEnd);
+            int rightStart = Integer.parseInt(altMatcher.group("pos"));
             // The right breakend position needs to be shifted by -1 because the fully-closed empty region will place the
             // break to the right of the input position but this needs to be to the left because the VCF always includes the
             // reference base but indicates the break is to the left of this. Hence 'left' and 'right' breakends.
-            right = parseRightBreakend(mateId, altMatcher.group("contig"), rightStrand, rightStart, rightStart.shift(-1));
+            Coordinates coordinates = Coordinates.of(VCF_COORDINATE_SYSTEM, rightStart, ciEnd, rightStart - 1, ciEnd);
+            right = parseRightBreakend(mateId, altMatcher.group("contig"), rightStrand, coordinates);
             leftStrand = determineLeftStrand(ref, alt, head, tail);
             insertedSeq = leftStrand.isPositive() ? head.substring(1) : tail.substring(0, tail.length() - 1);
         }
@@ -78,11 +79,20 @@ public class VcfBreakendResolver {
         // The left breakend position needs to be shifted by +1 because the fully-closed empty region will place the
         // break to the left of the input position but this needs to be to the right because the VCF always includes the
         // reference base but indicates the break is to the right of this. Hence 'left' and 'right' breakends.
-        Breakend left = createBreakend(contig, id, leftStrand, position.shift(1), position);
+        Coordinates leftCoordinates = Coordinates.of(VCF_COORDINATE_SYSTEM, position + 1, ciPos, position, ciPos);
+        Breakend left = createBreakend(contig, id, leftStrand, leftCoordinates);
 
         return BreakendVariant.of(eventId, left, right,
                 leftStrand == VCF_STRAND ? ref : Seq.reverseComplement(ref),
                 leftStrand == VCF_STRAND ? insertedSeq : Seq.reverseComplement(insertedSeq));
+    }
+
+    public Contig parseMateContig(String alt) {
+        Matcher altMatcher = BND_ALT_PATTERN.matcher(alt);
+        if (altMatcher.matches()) {
+            return genomicAssembly.contigByName(altMatcher.group("contig"));
+        }
+        return Contig.unknown();
     }
 
     private Strand determineRightStrand(String alt, String leftBracket, String rightBracket) {
@@ -92,20 +102,21 @@ public class VcfBreakendResolver {
         return rightBracket.equals("[") ? Strand.POSITIVE : Strand.NEGATIVE;
     }
 
-    private Breakend parseRightBreakend(String mateId, String mateContigName, Strand rightStrand, Position rightStart, Position rightEnd) {
+    private Breakend parseRightBreakend(String mateId, String mateContigName, Strand rightStrand, Coordinates coordinates) {
         Contig mateContig = genomicAssembly.contigByName(mateContigName);
         if (mateContig.equals(Contig.unknown())) {
             throw new IllegalArgumentException("Unknown mate contig `" + mateContigName + '`');
         }
-        return createBreakend(mateContig, mateId, rightStrand, rightStart, rightEnd);
+        return createBreakend(mateContig, mateId, rightStrand, coordinates);
     }
 
-    private static Breakend createBreakend(Contig contig, String id, Strand strand, Position start, Position end) {
+    private static Breakend createBreakend(Contig contig, String id, Strand strand, Coordinates coordinates) {
         // VCF coordinates are always given in 1-based coordinates on the POS strand, so we need to check the position
         // and *then* create the breakend on the to the strand indicated - do not be tempted to inline the strand part prematurely!
-        Position breakStart = strand == VCF_STRAND ? start : end.invert(VCF_COORDINATE_SYSTEM, contig);
-        Position breakEnd = strand == VCF_STRAND ? end : start.invert(VCF_COORDINATE_SYSTEM, contig);
-        return Breakend.of(contig, id, strand, VCF_COORDINATE_SYSTEM, breakStart, breakEnd);
+//        Position breakStart = strand == VCF_STRAND ? start : end.invert(VCF_COORDINATE_SYSTEM, contig);
+//        Position breakEnd = strand == VCF_STRAND ? end : start.invert(VCF_COORDINATE_SYSTEM, contig);
+        Coordinates coord = strand == VCF_STRAND ? coordinates : coordinates.invert(contig);
+        return Breakend.of(contig, id, strand, coord);
     }
 
     private Strand determineLeftStrand(String ref, String alt, String head, String tail) {
@@ -136,7 +147,7 @@ public class VcfBreakendResolver {
 
     @Override
     public String toString() {
-        return "BreakendResolver{" +
+        return "VcfBreakendResolver{" +
                 "genomicAssembly=" + genomicAssembly.name() +
                 '}';
     }

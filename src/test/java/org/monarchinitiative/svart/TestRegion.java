@@ -4,37 +4,24 @@ import java.util.Objects;
 
 class TestRegion implements Region<TestRegion> {
 
-    private final Position start, end;
-    private final CoordinateSystem coordinateSystem;
+    private final Coordinates coordinates;
 
     static TestRegion of(CoordinateSystem coordinateSystem, int start, int end) {
-        return new TestRegion(coordinateSystem, Position.of(start), Position.of(end));
+        return new TestRegion(Coordinates.of(coordinateSystem, start, end));
     }
 
-    private TestRegion(CoordinateSystem coordinateSystem, Position start, Position end) {
-        this.start = start;
-        this.end = end;
-        this.coordinateSystem = coordinateSystem;
+    private TestRegion(Coordinates coordinates) {
+        this.coordinates = coordinates;
     }
 
     @Override
-    public CoordinateSystem coordinateSystem() {
-        return coordinateSystem;
+    public Coordinates coordinates() {
+        return coordinates;
     }
 
     @Override
     public TestRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
-        return new TestRegion(coordinateSystem, startPositionWithCoordinateSystem(coordinateSystem), endPositionWithCoordinateSystem(coordinateSystem));
-    }
-
-    @Override
-    public Position startPosition() {
-        return start;
-    }
-
-    @Override
-    public Position endPosition() {
-        return end;
+        return new TestRegion(coordinates.withCoordinateSystem(coordinateSystem));
     }
 
     @Override
@@ -42,20 +29,20 @@ class TestRegion implements Region<TestRegion> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TestRegion that = (TestRegion) o;
-        return Objects.equals(start, that.start) && Objects.equals(end, that.end) && coordinateSystem == that.coordinateSystem;
+        return coordinates.equals(that.coordinates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(start, end, coordinateSystem);
+        return Objects.hash(coordinates);
     }
 
     @Override
     public String toString() {
         return "TestRegion{" +
-                "start=" + start +
-                ", end=" + end +
-                ", coordinateSystem=" + coordinateSystem +
+                "coordinateSystem=" + coordinateSystem() +
+                ", start=" + start() +
+                ", end=" + end() +
                 '}';
     }
 }

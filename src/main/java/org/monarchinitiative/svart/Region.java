@@ -4,15 +4,12 @@ import java.util.Comparator;
 
 public interface Region<T> extends CoordinateSystemed<T> {
 
-    /**
-     * @return start coordinate of the region
-     */
-    Position startPosition();
+    Coordinates coordinates();
 
-    /**
-     * @return end coordinate of the region
-     */
-    Position endPosition();
+    @Override
+    default CoordinateSystem coordinateSystem() {
+        return coordinates().coordinateSystem();
+    }
 
     @Override
     T withCoordinateSystem(CoordinateSystem coordinateSystem);
@@ -21,30 +18,46 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @return start coordinate of the region
      */
     default int start() {
-        return startPosition().pos();
+        return coordinates().start();
     }
 
     default int startWithCoordinateSystem(CoordinateSystem target) {
-        return start() + coordinateSystem().startDelta(target);
+        return coordinates().startWithCoordinateSystem(target);
     }
 
-    default Position startPositionWithCoordinateSystem(CoordinateSystem target) {
-        return startPosition().shift(coordinateSystem().startDelta(target));
+    default ConfidenceInterval startConfidenceInterval() {
+        return coordinates().startConfidenceInterval();
+    }
+
+    default int startMin() {
+        return startConfidenceInterval().minPos(start());
+    }
+
+    default int startMax() {
+        return startConfidenceInterval().maxPos(start());
     }
 
     /**
      * @return end coordinate of the region
      */
     default int end() {
-        return endPosition().pos();
+        return coordinates().end();
     }
 
     default int endWithCoordinateSystem(CoordinateSystem target) {
-        return end() + coordinateSystem().endDelta(target);
+        return coordinates().endWithCoordinateSystem(target);
     }
 
-    default Position endPositionWithCoordinateSystem(CoordinateSystem target) {
-        return endPosition().shift(coordinateSystem().endDelta(target));
+    default ConfidenceInterval endConfidenceInterval() {
+        return coordinates().endConfidenceInterval();
+    }
+
+    default int endMin() {
+        return endConfidenceInterval().minPos(end());
+    }
+
+    default int endMax() {
+        return endConfidenceInterval().maxPos(end());
     }
 
     /**
@@ -53,10 +66,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
      */
     default boolean contains(Region<?> other) {
         return start() <= other.startWithCoordinateSystem(coordinateSystem()) && other.endWithCoordinateSystem(coordinateSystem()) <= end();
-    }
-
-    default boolean contains(Position position) {
-        return contains(position.pos());
     }
 
     default boolean contains(int position) {
@@ -95,10 +104,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
     }
 
     static int compare(Region<?> x, Region<?> y) {
-        int result = Position.compare(x.startPosition(), y.startPositionWithCoordinateSystem(x.coordinateSystem()));
-        if (result == 0) {
-            result = Position.compare(x.endPosition(), y.endPositionWithCoordinateSystem(x.coordinateSystem()));
-        }
-        return result;
+        return Coordinates.compare(x.coordinates(), y.coordinates());
     }
 }

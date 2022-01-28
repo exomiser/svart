@@ -14,7 +14,7 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
     private static final String ID = "";
 
     private UnresolvedBreakend(CoordinateSystem coordinateSystem, int start) {
-        super(Contig.unknown(), Strand.POSITIVE, coordinateSystem, Position.of(start), Position.of(start + Coordinates.endDelta(coordinateSystem)));
+        super(Contig.unknown(), Strand.POSITIVE, Coordinates.of(coordinateSystem, start, start + Coordinates.endDelta(coordinateSystem)));
     }
 
     static UnresolvedBreakend instance(CoordinateSystem coordinateSystem) {
@@ -37,8 +37,8 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
     }
 
     @Override
-    protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
-        return instance(coordinateSystem);
+    protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+        return instance(coordinates.coordinateSystem());
     }
 
     @Override

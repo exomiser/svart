@@ -57,12 +57,13 @@ public class VcfConverter {
 
     public Variant convert(Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(trimmed.start()), trimmed.ref(), trimmed.alt());
+        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
     public <T extends BaseVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(trimmed.start()), trimmed.ref(), trimmed.alt());
+        Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.FULLY_CLOSED, trimmed.start(), trimmed.ref());
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt());
     }
 
     private VariantPosition checkAndTrimNonSymbolic(int pos, String ref, String alt) {
@@ -70,25 +71,33 @@ public class VcfConverter {
         return variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
     }
 
-    public Variant convertSymbolic(Contig contig, String id, Position pos, Position end, String ref, String alt, int svlen) {
+    public Variant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
-        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos.pos(), ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, pos.withPos(trimmed.start()), end, trimmed.ref(), trimmed.alt(), svlen);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
+        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
     }
 
-    public <T extends BaseVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, Position pos, Position end, String ref, String alt, int svlen) {
+    public Variant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
-        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos.pos(), ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, pos.withPos(trimmed.start()), end, trimmed.ref(), trimmed.alt(), svlen);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, trimmed.start(), startCi, end, endCi);
+        return Variant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
-    public BreakendVariant convertBreakend(Contig contig, String id, Position position, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
+    public <T extends BaseVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi,  String ref, String alt, int svlen) {
+        VariantType.requireSymbolic(alt);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.FULLY_CLOSED, trimmed.start(), startCi, end, endCi);
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
+    }
+
+    public BreakendVariant convertBreakend(Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
         VariantType.requireBreakend(alt);
-        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciEnd, ref, alt);
+        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciPos, ciEnd, ref, alt);
     }
 
-    public <T extends BaseBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, Position position, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
-        BreakendVariant breakendVariant = convertBreakend(contig, id, position, ref, alt, ciEnd, mateId, eventId);
+    public <T extends BaseBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
+        BreakendVariant breakendVariant = convertBreakend(contig, id, position, ciPos, ref, alt, ciEnd, mateId, eventId);
         return builder.with(breakendVariant);
     }
 

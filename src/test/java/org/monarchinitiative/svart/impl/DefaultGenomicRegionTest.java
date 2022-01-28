@@ -21,8 +21,8 @@ public class DefaultGenomicRegionTest {
     })
     public void singleOrEmptyBase(CoordinateSystem inputCoords, int inputStart, int inputEnd,
                                   CoordinateSystem exptCoords, int exptStart, int exptEnd) {
-        GenomicRegion instance = DefaultGenomicRegion.of(chr1, Strand.POSITIVE, inputCoords, Position.of(inputStart), Position.of(inputEnd));
-        GenomicRegion expected = DefaultGenomicRegion.of(chr1, Strand.POSITIVE, exptCoords, Position.of(exptStart), Position.of(exptEnd));
+        GenomicRegion instance = DefaultGenomicRegion.of(chr1, Strand.POSITIVE, Coordinates.of(inputCoords, inputStart, inputEnd));
+        GenomicRegion expected = DefaultGenomicRegion.of(chr1, Strand.POSITIVE, Coordinates.of(exptCoords, exptStart, exptEnd));
         assertThat(instance.withCoordinateSystem(exptCoords), equalTo(expected));
     }
 
@@ -34,8 +34,8 @@ public class DefaultGenomicRegionTest {
     })
     public void toOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
                                  Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
-        GenomicRegion instance = DefaultGenomicRegion.of(chr1, inputStrand, inputCoords, Position.of(inputStart), Position.of(inputEnd));
-        GenomicRegion expected = DefaultGenomicRegion.of(chr1, exptStrand, exptCoords, Position.of(exptStart), Position.of(exptEnd));
+        GenomicRegion instance = DefaultGenomicRegion.of(chr1, inputStrand, Coordinates.of(inputCoords, inputStart, inputEnd));
+        GenomicRegion expected = DefaultGenomicRegion.of(chr1, exptStrand, Coordinates.of(exptCoords, exptStart, exptEnd));
         assertThat(instance.withStrand(exptStrand), equalTo(expected));
     }
 
@@ -46,8 +46,8 @@ public class DefaultGenomicRegionTest {
     })
     public void emptyRegionUnknownChromosomeToOppositeStrand(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd,
                                                              Strand exptStrand, CoordinateSystem exptCoords, int exptStart, int exptEnd) {
-        GenomicRegion instance = DefaultGenomicRegion.of(Contig.unknown(), inputStrand, inputCoords, Position.of(inputStart), Position.of(inputEnd));
-        GenomicRegion expected = DefaultGenomicRegion.of(Contig.unknown(), exptStrand, exptCoords, Position.of(exptStart), Position.of(exptEnd));
+        GenomicRegion instance = DefaultGenomicRegion.of(Contig.unknown(), inputStrand, Coordinates.of(inputCoords, inputStart, inputEnd));
+        GenomicRegion expected = DefaultGenomicRegion.of(Contig.unknown(), exptStrand, Coordinates.of(exptCoords, exptStart, exptEnd));
         assertThat(instance.withStrand(exptStrand), equalTo(expected));
     }
 }

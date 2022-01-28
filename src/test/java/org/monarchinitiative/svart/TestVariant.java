@@ -9,13 +9,13 @@ public final class TestVariant extends BaseVariant<TestVariant> {
         super(builder);
     }
 
-    public TestVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        super(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength);
+    public TestVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
     @Override
-    protected TestVariant newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return new TestVariant(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength);
+    protected TestVariant newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+        return new TestVariant(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
     public static Builder builder() {
