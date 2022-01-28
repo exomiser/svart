@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantTypeTest {
+public class GenomicVariantTypeTest {
 
     @Test
     public void nullInput() {

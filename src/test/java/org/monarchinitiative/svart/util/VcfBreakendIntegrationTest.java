@@ -3,6 +3,7 @@ package org.monarchinitiative.svart.util;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.nio.file.Path;
 
@@ -27,7 +28,7 @@ public class VcfBreakendIntegrationTest {
             "17, 198983, bndZ, C, .C, '', event5",
     })
     public void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
-        BreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+        GenomicBreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
 //// TODO: Want to preserve input CHROM, POS, REF, ALT
 //        assertThat(variant.coordinateSystem(), equalTo(ref));
 //        assertThat(variant.strand(), equalTo(ref));

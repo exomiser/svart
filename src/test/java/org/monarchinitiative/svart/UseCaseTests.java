@@ -1,6 +1,8 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
 import org.monarchinitiative.svart.util.VcfConverter;
@@ -42,18 +44,18 @@ public class UseCaseTests {
         TestContig contig = TestContig.of(1, 100);
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), 50, 70);
 
-        Variant insertion = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 60, "A", "AC");
+        GenomicVariant insertion = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 60, "A", "AC");
         assertThat(insertion.overlapsWith(exon), equalTo(true));
     }
 
     @Test
     public void symbolicVariantContainsSnv() {
         Contig chr1 = TestContig.of(1, 1000);
-        Variant largeIns = Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
-        assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
-        assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, "A", "T")));
-        assertFalse(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 2, "C", "A")));
-        assertTrue(largeIns.contains(Breakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0)));
+        GenomicVariant largeIns = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, "A", "T")));
+        assertFalse(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 2, "C", "A")));
+        assertTrue(largeIns.contains(GenomicBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0)));
     }
 
     @Test
@@ -63,16 +65,16 @@ public class UseCaseTests {
         Contig chr1 = TestContig.of(1, 249_250_621);
         VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
 
-        Variant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
-        assertThat(firstAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
+        GenomicVariant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
+        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
 
-        Variant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
-        assertThat(secondAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
+        GenomicVariant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
+        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
     }
 
-    private Variant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
-        VariantPosition firstTrimmed = variantTrimmer.trim(strand, start, ref, alt);
-        return Variant.of(contig, id, strand, coordinateSystem, firstTrimmed.start(), firstTrimmed.ref(), firstTrimmed.alt());
+    private GenomicVariant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        VariantPosition trimmed = variantTrimmer.trim(strand, start, ref, alt);
+        return GenomicVariant.of(contig, id, strand, coordinateSystem, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
     @Test
@@ -83,7 +85,7 @@ public class UseCaseTests {
         Contig chr10b37 = b37.contigByName("10");
         GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.oneBased(), 123_237_848, 123_357_972);
         // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
-        Variant snv = Variant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
+        GenomicVariant snv = GenomicVariant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
         // Because svart knows about coordinate systems and strands it is possible to...
         // keep the gene on the positive strand:
         // GenomicRegion{contig=10, strand=+, coordinateSystem=ONE_BASED, startPosition=123237848, endPosition=123357972}
@@ -146,11 +148,11 @@ public class UseCaseTests {
         // VCF file, parsed with the HTSJDK to get a VariantContext instance...
         // CHR	POS	ID	REF	ALT
         // chr1	12345	rs123456	C	T	6	PASS	.
-        Variant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
+        GenomicVariant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
         // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-        Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
+        GenomicVariant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
         // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        GenomicVariant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
         assertThat(snv.ref(), equalTo(ins.ref()));
         assertThat(snv.ref(), equalTo(bnd.ref()));
@@ -166,9 +168,9 @@ public class UseCaseTests {
     public void nonCanonicalBreakend_mantaUnresolved() {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // 1	166448783	gnomAD-SV_v2.1_BND_1_4095	N	<BND>	892	UNRESOLVED	END=166448784;SVTYPE=BND;SVLEN=-1;CHR2=6;POS2=166448783;END2=166448784;ALGORITHMS=manta;EVIDENCE=PE;UNRESOLVED_TYPE=SINGLE_ENDER_+-;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 166448784, 166448783);
-        Breakend right = Breakend.unresolved(CoordinateSystem.oneBased());
-        Variant bnd = Variant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
+        GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 166448784, 166448783);
+        GenomicBreakend right = GenomicBreakend.unresolved(CoordinateSystem.oneBased());
+        GenomicVariant bnd = GenomicVariant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(166448783));
@@ -182,10 +184,10 @@ public class UseCaseTests {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // https://github.com/fritzsedlazeck/Sniffles/issues/73  - should run with  "--report_BND true"
         // 1 	797316 	TRA0029399SUR 	N 	<TRA> 	. 	PASS 	SUPP=2;AVGLEN=100000;med_start=797265;med_stop=797265;SVTYPE=TRA;SVMETHOD=SURVIVORv2;CHR2=8;END=245650;STRANDS=++;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 797317, 797316));
+        GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 797317, 797316));
         // CHR2=8;END=245650;STRANDS=++;
-        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 245651, 245650));
-        Variant bnd = Variant.of("TRA0029399SUR", left, right, "N", "");
+        GenomicBreakend right = GenomicBreakend.of(b37.contigById(8), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 245651, 245650));
+        GenomicVariant bnd = GenomicVariant.of("TRA0029399SUR", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(797316));

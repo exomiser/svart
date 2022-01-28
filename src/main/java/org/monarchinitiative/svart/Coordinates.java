@@ -75,8 +75,28 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return contig.length() + lengthDelta() - pos;
     }
 
+    /**
+     * Inverts the coordinate on the given contig. To be used when transforming coordinates from one strand to the
+     * opposite strand. For example if the input coordinate indicates the first base on a contig, the output will return
+     * the coordinate of the last base of a contig. This operation is symmetrical and inputting the output of one
+     * operation will return the original input. For example given a contig of length 5 and a fully-closed ('1-based')
+     * coordinate of 1 (i.e. the first base): invert(1) -> 5, invert(5) -> 1.
+     *
+     * @param coordinateSystem for the position
+     * @param contig           on which the coordinate lies.
+     * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
+     * @return the inverted coordinate on the {@link Contig}
+     */
+    public static int invertCoordinate(CoordinateSystem coordinateSystem, Contig contig, int pos) {
+        return contig.length() + lengthDelta(coordinateSystem) - pos;
+    }
+
     private int lengthDelta() {
         return lengthDelta(coordinateSystem());
+    }
+
+    private static int lengthDelta(CoordinateSystem coordinateSystem) {
+        return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
     }
 
     Coordinates withPadding(int upstream, int downstream);
@@ -103,26 +123,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         // the easiest way to calculate length is to use half-open interval coordinates
         // Why? - See https://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html
         return end - zeroBasedStart(coordinateSystem, start);
-    }
-
-    /**
-     * Inverts the coordinate on the given contig. To be used when transforming coordinates from one strand to the
-     * opposite strand. For example if the input coordinate indicates the first base on a contig, the output will return
-     * the coordinate of the last base of a contig. This operation is symmetrical and inputting the output of one
-     * operation will return the original input. For example given a contig of length 5 and a fully-closed ('1-based')
-     * coordinate of 1 (i.e. the first base): invert(1) -> 5, invert(5) -> 1.
-     *
-     * @param coordinateSystem for the position
-     * @param contig           on which the coordinate lies.
-     * @param pos              position on the {@link Contig} in the given {@link CoordinateSystem}
-     * @return the inverted coordinate on the {@link Contig}
-     */
-    public static int invertCoordinate(CoordinateSystem coordinateSystem, Contig contig, int pos) {
-        return contig.length() + lengthDelta(coordinateSystem) - pos;
-    }
-
-    private static int lengthDelta(CoordinateSystem coordinateSystem) {
-        return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
     }
 
     default boolean overlaps(Coordinates other) {

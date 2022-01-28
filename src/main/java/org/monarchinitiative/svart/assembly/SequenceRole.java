@@ -1,4 +1,6 @@
-package org.monarchinitiative.svart;
+package org.monarchinitiative.svart.assembly;
+
+import org.monarchinitiative.svart.Contig;
 
 /**
  * Enum representing the 'sequence-role' of a {@link Contig} in a {@link GenomicAssembly}
@@ -15,16 +17,16 @@ public enum SequenceRole {
     ALT_SCAFFOLD("alt-scaffold"),
     UNKNOWN("unknown");
 
-    String sequenceRole;
+    private final String role;
 
-    SequenceRole(String sequenceRole) {
-        this.sequenceRole = sequenceRole;
+    SequenceRole(String role) {
+        this.role = role;
     }
 
     public static SequenceRole parseRole(String value) {
-        for (SequenceRole role : SequenceRole.values()) {
-            if (role.sequenceRole.equals(value)) {
-                return role;
+        for (SequenceRole sequenceRole : SequenceRole.values()) {
+            if (sequenceRole.role.equals(value)) {
+                return sequenceRole;
             }
         }
         return UNKNOWN;

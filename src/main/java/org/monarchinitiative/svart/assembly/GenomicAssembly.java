@@ -18,8 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.svart;
+package org.monarchinitiative.svart.assembly;
 
+import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 

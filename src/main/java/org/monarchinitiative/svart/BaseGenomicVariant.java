@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T> implements Variant {
+public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseGenomicRegion<T> implements GenomicVariant {
 
     private final String id;
     private final String ref;
@@ -16,7 +16,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
     private final VariantType variantType;
     private final int changeLength;
 
-    protected BaseVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+    protected BaseGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         super(contig, strand, coordinates);
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.ref = VariantType.requireNonSymbolic(ref);
@@ -25,7 +25,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         this.changeLength = checkChangeLength(coordinates, changeLength, variantType);
     }
 
-    protected BaseVariant(Builder<?> builder) {
+    protected BaseGenomicVariant(Builder<?> builder) {
         this(builder.contig, builder.id, builder.strand, builder.coordinates, builder.ref, builder.alt, builder.changeLength);
     }
 
@@ -132,7 +132,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        BaseVariant<?> that = (BaseVariant<?>) o;
+        BaseGenomicVariant<?> that = (BaseGenomicVariant<?>) o;
         return changeLength == that.changeLength && ref.equals(that.ref) && alt.equals(that.alt) && variantType == that.variantType;
     }
 
@@ -171,9 +171,9 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
         // to maintain the correct state when finally built.
 
         @Override
-        public T with(Variant variant) {
-            Objects.requireNonNull(variant, "variant cannot be null");
-            return with(variant.contig(), variant.id(), variant.strand(), variant.coordinates(), variant.ref(), variant.alt(), variant.changeLength());
+        public T with(GenomicVariant genomicVariant) {
+            Objects.requireNonNull(genomicVariant, "variant cannot be null");
+            return with(genomicVariant.contig(), genomicVariant.id(), genomicVariant.strand(), genomicVariant.coordinates(), genomicVariant.ref(), genomicVariant.alt(), genomicVariant.changeLength());
         }
 
         public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
@@ -222,7 +222,7 @@ public abstract class BaseVariant<T extends Variant> extends BaseGenomicRegion<T
             return self();
         }
 
-        protected abstract BaseVariant<?> build();
+        protected abstract BaseGenomicVariant<?> build();
 
         protected abstract T self();
     }

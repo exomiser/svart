@@ -16,7 +16,18 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.contig = Objects.requireNonNull(contig, "contig must not be null");
         this.strand = Objects.requireNonNull(strand, "strand must not be null");
         this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
-        Coordinates.validateOnContig(this.coordinates, this.contig);
+        validateCoordinatesOnContig(coordinates, contig);
+    }
+
+    private void validateCoordinatesOnContig(Coordinates coordinates, Contig contig) {
+        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
+        int start = coordinates.start();
+        int end = coordinates.end();
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
+        }
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {
@@ -132,9 +143,9 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
             return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
         }
 
-        public T with(Variant variant) {
-            Objects.requireNonNull(variant, "variant cannot be null");
-            return with(variant.contig(), variant.strand(), variant.coordinates());
+        public T with(GenomicVariant genomicVariant) {
+            Objects.requireNonNull(genomicVariant, "variant cannot be null");
+            return with(genomicVariant.contig(), genomicVariant.strand(), genomicVariant.coordinates());
         }
 
         public T with(Contig contig, Strand strand, Coordinates coordinates) {

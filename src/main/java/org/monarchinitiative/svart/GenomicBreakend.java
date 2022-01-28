@@ -1,15 +1,15 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultBreakend;
+import org.monarchinitiative.svart.impl.DefaultGenomicBreakend;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Breakend extends GenomicRegion {
+public interface GenomicBreakend extends GenomicRegion {
 
-    static Breakend unresolved(CoordinateSystem coordinateSystem) {
-        return UnresolvedBreakend.instance(coordinateSystem);
+    static GenomicBreakend unresolved(CoordinateSystem coordinateSystem) {
+        return UnresolvedGenomicBreakend.instance(coordinateSystem);
     }
 
     /**
@@ -23,16 +23,16 @@ public interface Breakend extends GenomicRegion {
 
     // override Stranded<T> methods from ChromosomalRegion in order to return the more specific Breakend type
     @Override
-    Breakend withStrand(Strand other);
+    GenomicBreakend withStrand(Strand other);
 
     @Override
-    Breakend withCoordinateSystem(CoordinateSystem coordinateSystem);
+    GenomicBreakend withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
      * Convert the breakend to opposite strand.
      */
     @Override
-    default Breakend toOppositeStrand() {
+    default GenomicBreakend toOppositeStrand() {
         return withStrand(strand().opposite());
     }
 
@@ -43,13 +43,13 @@ public interface Breakend extends GenomicRegion {
         return this.equals(unresolved(coordinateSystem()));
     }
 
-    static Breakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
+    static GenomicBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return DefaultBreakend.of(contig, id, strand, coordinates);
+        return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }
 
         // TODO - should we have Breakend.left() and Breakend.right() constructors as this will enable direct input of the VCF coordinates.
-    static Breakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
-        return DefaultBreakend.of(contig, id, strand, coordinates);
+    static GenomicBreakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
+        return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }
 }

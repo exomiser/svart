@@ -2,9 +2,9 @@ package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;

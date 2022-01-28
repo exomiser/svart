@@ -2,11 +2,11 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
-public abstract class BaseBreakendVariant<T extends BreakendVariant> extends BaseGenomicRegion<T> implements BreakendVariant {
+public abstract class BaseGenomicBreakendVariant<T extends GenomicBreakendVariant> extends BaseGenomicRegion<T> implements GenomicBreakendVariant {
 
     private final String eventId;
-    private final Breakend left;
-    private final Breakend right;
+    private final GenomicBreakend left;
+    private final GenomicBreakend right;
     // Ref allele from the VCF record
     private final String ref;
     /**
@@ -15,7 +15,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
      */
     private final String alt;
 
-    protected BaseBreakendVariant(String eventId, Breakend left, Breakend right, String ref, String alt) {
+    protected BaseGenomicBreakendVariant(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
         super(left.contig(), left.strand(), left.coordinates());
         this.eventId = Objects.requireNonNull(eventId, "Event ID must not be null");
         this.left = Objects.requireNonNull(left, "Left breakend cannot be null");
@@ -31,11 +31,11 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         }
     }
 
-    protected BaseBreakendVariant(Builder<?> builder) {
+    protected BaseGenomicBreakendVariant(Builder<?> builder) {
         this(builder.eventId, builder.left, builder.right, builder.ref, builder.alt);
     }
 
-    protected abstract T newBreakendVariantInstance(String eventId, Breakend left, Breakend right, String ref, String alt);
+    protected abstract T newBreakendVariantInstance(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt);
 
     @Override
     protected T newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
@@ -55,12 +55,12 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
     }
 
     @Override
-    public Breakend left() {
+    public GenomicBreakend left() {
         return left;
     }
 
     @Override
-    public Breakend right() {
+    public GenomicBreakend right() {
         return right;
     }
 
@@ -93,8 +93,8 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         if (left.coordinateSystem() == coordinateSystem) {
             return (T) this;
         }
-        Breakend leftAltered = left.withCoordinateSystem(coordinateSystem);
-        Breakend rightAltered = right.withCoordinateSystem(coordinateSystem);
+        GenomicBreakend leftAltered = left.withCoordinateSystem(coordinateSystem);
+        GenomicBreakend rightAltered = right.withCoordinateSystem(coordinateSystem);
         return newBreakendVariantInstance(eventId, leftAltered, rightAltered, ref, alt);
     }
 
@@ -178,7 +178,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        BaseBreakendVariant<?> that = (BaseBreakendVariant<?>) o;
+        BaseGenomicBreakendVariant<?> that = (BaseGenomicBreakendVariant<?>) o;
         return eventId.equals(that.eventId) &&
                 left.equals(that.left) &&
                 right.equals(that.right) &&
@@ -204,8 +204,8 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
 
     public abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
 
-        protected Breakend left;
-        protected Breakend right;
+        protected GenomicBreakend left;
+        protected GenomicBreakend right;
         protected String ref = "";
         protected String alt = "";
         protected String eventId = "";
@@ -215,12 +215,12 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
         // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
         // to maintain the correct state when finally built.
 
-        public T with(BreakendVariant breakendVariant) {
+        public T with(GenomicBreakendVariant breakendVariant) {
             Objects.requireNonNull(breakendVariant, "breakendVariant cannot be null");
             return with(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), breakendVariant.alt());
         }
 
-        public T with(String eventId, Breakend left, Breakend right, String ref, String alt) {
+        public T with(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
             Objects.requireNonNull(left, "left breakend cannot be null");
             super.with(left);
             this.eventId = Objects.requireNonNull(eventId);
@@ -242,7 +242,7 @@ public abstract class BaseBreakendVariant<T extends BreakendVariant> extends Bas
             return self();
         }
 
-        protected abstract BaseBreakendVariant<?> build();
+        protected abstract BaseGenomicBreakendVariant<?> build();
 
         protected abstract T self();
     }

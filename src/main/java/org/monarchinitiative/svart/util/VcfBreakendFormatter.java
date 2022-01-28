@@ -1,7 +1,7 @@
 package org.monarchinitiative.svart.util;
 
-import org.monarchinitiative.svart.Breakend;
-import org.monarchinitiative.svart.BreakendVariant;
+import org.monarchinitiative.svart.GenomicBreakend;
+import org.monarchinitiative.svart.GenomicBreakendVariant;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
 
@@ -21,7 +21,7 @@ public class VcfBreakendFormatter {
      * @param variant breakend variant
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
-    public static String makeAltVcfField(BreakendVariant variant) {
+    public static String makeAltVcfField(GenomicBreakendVariant variant) {
         String alt = toPositiveStrand(variant.strand(), variant.alt());
         String ref = toPositiveStrand(variant.strand(), variant.ref());
         return makeAltVcfField(variant.left(), variant.right(), ref, alt);
@@ -40,7 +40,7 @@ public class VcfBreakendFormatter {
      * @param ins   string with <em>inserted</em> sequence on {@link Strand#POSITIVE}
      * @return string with breakend <em>alt</em> allele representation in VCF format
      */
-    public static String makeAltVcfField(Breakend left, Breakend right, String ref, String ins) {
+    public static String makeAltVcfField(GenomicBreakend left, GenomicBreakend right, String ref, String ins) {
         if (right.isUnresolved()) {
             return left.strand() == Strand.POSITIVE ? ref + '.' : '.' + ref;
         }
@@ -50,7 +50,7 @@ public class VcfBreakendFormatter {
     /**
      * Builds the mate breakend string e.g. '[6:12345[' for the POSITIVE strand or ']6:12345]' for the NEGATIVE strand
      */
-    private static String mateString(Breakend right) {
+    private static String mateString(GenomicBreakend right) {
         int pos = right.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ONE_BASED);
         char mateEndStrand = right.strand() == Strand.POSITIVE ? '[' : ']';
         return mateEndStrand + right.contigName() + ':' + pos + mateEndStrand;

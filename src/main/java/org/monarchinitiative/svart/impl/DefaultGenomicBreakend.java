@@ -8,11 +8,11 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public final class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> implements Breakend {
+public final class DefaultGenomicBreakend extends BaseGenomicRegion<DefaultGenomicBreakend> implements GenomicBreakend {
 
     private final String id;
 
-    private DefaultBreakend(Contig contig, String id, Strand strand, Coordinates coordinates) {
+    private DefaultGenomicBreakend(Contig contig, String id, Strand strand, Coordinates coordinates) {
         super(contig, strand, coordinates);
         this.id = Objects.requireNonNull(id);
         if (length() != 0) {
@@ -20,16 +20,16 @@ public final class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> im
         }
     }
 
-    public static DefaultBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
+    public static DefaultGenomicBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return new DefaultBreakend(contig, id, strand, coordinates);
+        return new DefaultGenomicBreakend(contig, id, strand, coordinates);
     }
 
         /**
          * Create partial breakend from coordinates in the given {@link CoordinateSystem}.
          */
-    public static DefaultBreakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
-        return new DefaultBreakend(contig, id, strand, coordinates);
+    public static DefaultGenomicBreakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
+        return new DefaultGenomicBreakend(contig, id, strand, coordinates);
     }
 
     @Override
@@ -38,8 +38,8 @@ public final class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> im
     }
 
     @Override
-    protected DefaultBreakend newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
-        return new DefaultBreakend(contig, id, strand, coordinates);
+    protected DefaultGenomicBreakend newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+        return new DefaultGenomicBreakend(contig, id, strand, coordinates);
     }
 
     @Override
@@ -47,7 +47,7 @@ public final class DefaultBreakend extends BaseGenomicRegion<DefaultBreakend> im
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        DefaultBreakend that = (DefaultBreakend) o;
+        DefaultGenomicBreakend that = (DefaultGenomicBreakend) o;
         return Objects.equals(id, that.id);
     }
 

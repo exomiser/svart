@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DefaultBreakendTest {
+public class DefaultGenomicBreakendTest {
 
     private static final Contig ctg1 = TestContig.of(1, 10);
 
@@ -18,7 +18,7 @@ public class DefaultBreakendTest {
         int position = 3;
         ConfidenceInterval ciPos = ConfidenceInterval.of(-2, 1);
         Coordinates coordinates = Coordinates.of(CoordinateSystem.zeroBased(), position, ciPos, position, ciPos);
-        Breakend breakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
+        GenomicBreakend breakend = DefaultGenomicBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
 
         assertThat(breakend.contig(), equalTo(ctg1));
         assertThat(breakend.strand(), equalTo(Strand.POSITIVE));
@@ -31,11 +31,11 @@ public class DefaultBreakendTest {
         int position = 3;
         ConfidenceInterval ciPos = ConfidenceInterval.of(-2, 1);
         Coordinates coordinates = Coordinates.of(CoordinateSystem.zeroBased(), position, ciPos, position, ciPos);
-        Breakend posBreakend = DefaultBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
+        GenomicBreakend posBreakend = DefaultGenomicBreakend.of(ctg1, "a", Strand.POSITIVE, coordinates);
 
         assertThat(posBreakend.withStrand(Strand.POSITIVE), is(sameInstance(posBreakend)));
 
-        Breakend negBreakend = posBreakend.withStrand(Strand.NEGATIVE);
+        GenomicBreakend negBreakend = posBreakend.withStrand(Strand.NEGATIVE);
         assertThat(negBreakend.contig(), equalTo(ctg1));
         assertThat(negBreakend.strand(), equalTo(Strand.NEGATIVE));
         assertThat(negBreakend.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
@@ -46,7 +46,7 @@ public class DefaultBreakendTest {
 
     @Test
     public void unresolved() {
-        Breakend unresolved = Breakend.unresolved(CoordinateSystem.ZERO_BASED);
+        GenomicBreakend unresolved = GenomicBreakend.unresolved(CoordinateSystem.ZERO_BASED);
         assertThat(unresolved.isUnresolved(), equalTo(true));
         assertThat(unresolved.contig(), equalTo(Contig.unknown()));
         assertThat(unresolved.strand(), equalTo(Strand.POSITIVE));

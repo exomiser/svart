@@ -4,18 +4,18 @@ package org.monarchinitiative.svart;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> implements Breakend {
+final class UnresolvedGenomicBreakend extends BaseGenomicRegion<UnresolvedGenomicBreakend> implements GenomicBreakend {
 
-    private static final UnresolvedBreakend ONE_BASED_UNRESOLVED_BREAKEND = new UnresolvedBreakend(CoordinateSystem.ONE_BASED, 1);
-    private static final UnresolvedBreakend ZERO_BASED_UNRESOLVED_BREAKEND = new UnresolvedBreakend(CoordinateSystem.ZERO_BASED, 0);
+    private static final UnresolvedGenomicBreakend ONE_BASED_UNRESOLVED_BREAKEND = new UnresolvedGenomicBreakend(CoordinateSystem.ONE_BASED, 1);
+    private static final UnresolvedGenomicBreakend ZERO_BASED_UNRESOLVED_BREAKEND = new UnresolvedGenomicBreakend(CoordinateSystem.ZERO_BASED, 0);
 
     private static final String ID = "";
 
-    private UnresolvedBreakend(CoordinateSystem coordinateSystem, int start) {
+    private UnresolvedGenomicBreakend(CoordinateSystem coordinateSystem, int start) {
         super(Contig.unknown(), Strand.POSITIVE, Coordinates.of(coordinateSystem, start, start + Coordinates.endDelta(coordinateSystem)));
     }
 
-    static UnresolvedBreakend instance(CoordinateSystem coordinateSystem) {
+    static UnresolvedGenomicBreakend instance(CoordinateSystem coordinateSystem) {
         switch (coordinateSystem) {
             case ONE_BASED:
                 return ONE_BASED_UNRESOLVED_BREAKEND;
@@ -32,7 +32,7 @@ final class UnresolvedBreakend extends BaseGenomicRegion<UnresolvedBreakend> imp
     }
 
     @Override
-    protected UnresolvedBreakend newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+    protected UnresolvedGenomicBreakend newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
         return instance(coordinates.coordinateSystem());
     }
 

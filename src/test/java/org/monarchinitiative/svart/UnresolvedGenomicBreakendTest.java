@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class UnresolvedBreakendTest {
+public class UnresolvedGenomicBreakendTest {
 
     @ParameterizedTest
     @CsvSource({
@@ -14,6 +14,6 @@ public class UnresolvedBreakendTest {
             "ZERO_BASED",
     })
     public void instance(CoordinateSystem coordinateSystem) {
-        assertThat(UnresolvedBreakend.instance(coordinateSystem).coordinateSystem(), equalTo(coordinateSystem));
+        assertThat(UnresolvedGenomicBreakend.instance(coordinateSystem).coordinateSystem(), equalTo(coordinateSystem));
     }
 }

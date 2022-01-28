@@ -1,4 +1,4 @@
-package org.monarchinitiative.svart;
+package org.monarchinitiative.svart.assembly;
 
 /**
  * Probably incomplete enumeration of the NCBI assembly_report Assigned-Molecule-Location/Type field. These should be

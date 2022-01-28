@@ -3,8 +3,9 @@ package org.monarchinitiative.svart.util;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.impl.DefaultBreakendVariant;
-import org.monarchinitiative.svart.impl.DefaultVariant;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.impl.DefaultGenomicBreakendVariant;
+import org.monarchinitiative.svart.impl.DefaultGenomicVariant;
 
 import java.nio.file.Path;
 
@@ -27,23 +28,23 @@ public class VcfConverterTest {
         public void convert() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
-            Variant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
-            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
+            GenomicVariant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
+            assertThat(snv, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
         public void convertWithBuilder() {
-            DefaultVariant.Builder builder = instance.convert(DefaultVariant.builder(), instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
-            Variant variant = builder.build();
-            assertThat(variant, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
+            DefaultGenomicVariant.Builder builder = instance.convert(DefaultGenomicVariant.builder(), instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
+            GenomicVariant variant = builder.build();
+            assertThat(variant, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
         public void trimsInput() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	rs123456	C	T	6	PASS	.
-            Variant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
-            assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
+            GenomicVariant snv = instance.convert(instance.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
+            assertThat(snv, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
@@ -74,14 +75,14 @@ public class VcfConverterTest {
         public void convertSymbolic() {
             // CHR	POS	ID	REF	ALT
             // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-            Variant ins = instance.convertSymbolic(instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
-            assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
+            GenomicVariant ins = instance.convertSymbolic(instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
+            assertThat(ins, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
         }
 
         @Test
         public void convertSymbolicWithBuilder() {
-            TestVariant.Builder builder = instance.convertSymbolic(TestVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
-            Variant variant = builder.build();
+            TestGenomicVariant.Builder builder = instance.convertSymbolic(TestGenomicVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
+            GenomicVariant variant = builder.build();
             assertThat(variant.isSymbolic(), equalTo(true));
             assertThat(variant.contig(), equalTo(chr1));
             assertThat(variant.id(), equalTo(""));
@@ -96,8 +97,8 @@ public class VcfConverterTest {
         @Test
         public void convertSymbolicWithFullyTrimmedRefAlleleBuilder() {
             VcfConverter converter = new VcfConverter(b37, VariantTrimmer.rightShiftingTrimmer(VariantTrimmer.removingCommonBase()));
-            TestVariant.Builder builder = converter.convertSymbolic(TestVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
-            Variant variant = builder.build();
+            TestGenomicVariant.Builder builder = converter.convertSymbolic(TestGenomicVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
+            GenomicVariant variant = builder.build();
             assertThat(variant.isSymbolic(), equalTo(true));
             assertThat(variant.contig(), equalTo(chr1));
             assertThat(variant.id(), equalTo(""));
@@ -123,28 +124,28 @@ public class VcfConverterTest {
     }
 
     @Nested
-    public class ConvertBreakendTests {
+    public class ConvertGenomicBreakendTests {
 
         @Test
         public void convertBreakend() {
             // CHR	POS	ID	REF	ALT
             // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-            Variant bnd = instance.convertBreakend(instance.parseContig("chr1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+            GenomicVariant bnd = instance.convertBreakend(instance.parseContig("chr1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
-            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
-            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
-            assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
+            GenomicBreakend left = GenomicBreakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+            GenomicBreakend right = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
+            assertThat(bnd, equalTo(GenomicVariant.of("tra2", left, right, "C", "")));
         }
 
         @Test
         public void convertBreakendWithBuilder() {
             // CHR	POS	ID	REF	ALT
             // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-            DefaultBreakendVariant.Builder builder = instance.convertBreakend(DefaultBreakendVariant.builder(), instance.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
-            Variant bnd = builder.build();
-            Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
-            Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
-            assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
+            DefaultGenomicBreakendVariant.Builder builder = instance.convertBreakend(DefaultGenomicBreakendVariant.builder(), instance.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+            GenomicVariant bnd = builder.build();
+            GenomicBreakend left = GenomicBreakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+            GenomicBreakend right = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
+            assertThat(bnd, equalTo(GenomicVariant.of("tra2", left, right, "C", "")));
         }
 
         @Test

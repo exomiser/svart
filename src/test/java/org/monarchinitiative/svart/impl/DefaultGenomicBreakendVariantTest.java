@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class DefaultBreakendVariantTest {
+public class DefaultGenomicBreakendVariantTest {
 
     private static final Contig chr2 = TestContigs.chr2;
     private static final Contig chr13 = TestContigs.chr13;
@@ -29,9 +29,9 @@ public class DefaultBreakendVariantTest {
     @Test
     public void variantProperties() {
         // 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        Breakend bnd_U = Breakend.of(chr13, "bnd_U", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_457, 123_456);
-        Breakend bnd_V = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.oneBased(), 321_682, 321_681);
-        BreakendVariant variant = BreakendVariant.of("tra2", bnd_U, bnd_V, "C", "");
+        GenomicBreakend bnd_U = GenomicBreakend.of(chr13, "bnd_U", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_457, 123_456);
+        GenomicBreakend bnd_V = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.oneBased(), 321_682, 321_681);
+        GenomicBreakendVariant variant = GenomicBreakendVariant.of("tra2", bnd_U, bnd_V, "C", "");
         assertThat(variant.contig(), equalTo(chr13));
         assertThat(variant.start(), equalTo(123_456));
         assertThat(variant.end(), equalTo(123_456));
@@ -52,17 +52,17 @@ public class DefaultBreakendVariantTest {
 
     @Test
     public void throwsExceptionWithMixedCoordinatesSystems() {
-        Breakend left = Breakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.ONE_BASED, 123_457, 123_456));
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
-        Exception exception = assertThrows(IllegalStateException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
+        GenomicBreakend left = GenomicBreakend.of(chr13, "left", Strand.POSITIVE, Coordinates.of(CoordinateSystem.ONE_BASED, 123_457, 123_456));
+        GenomicBreakend right = GenomicBreakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
+        Exception exception = assertThrows(IllegalStateException.class, () -> DefaultGenomicBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Breakend variant left and right breakends must have same coordinate system!"));
     }
 
     @Test
     public void throwsExceptionWithLeftUnplacedBreakend() {
-        Breakend left = Breakend.unresolved(CoordinateSystem.ZERO_BASED);
-        Breakend right = Breakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> DefaultBreakendVariant.of("", left, right, "", ""));
+        GenomicBreakend left = GenomicBreakend.unresolved(CoordinateSystem.ZERO_BASED);
+        GenomicBreakend right = GenomicBreakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> DefaultGenomicBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Left breakend cannot be unresolved."));
     }
 }

@@ -1,7 +1,7 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultBreakendVariant;
-import org.monarchinitiative.svart.impl.DefaultVariant;
+import org.monarchinitiative.svart.impl.DefaultGenomicBreakendVariant;
+import org.monarchinitiative.svart.impl.DefaultGenomicVariant;
 
 import java.util.Comparator;
 
@@ -11,7 +11,7 @@ import static org.monarchinitiative.svart.GenomicComparators.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Variant extends GenomicRegion {
+public interface GenomicVariant extends GenomicRegion {
 
     String id();
 
@@ -30,23 +30,23 @@ public interface Variant extends GenomicRegion {
     int changeLength();
 
     @Override
-    Variant withStrand(Strand other);
+    GenomicVariant withStrand(Strand other);
 
     @Override
-    Variant withCoordinateSystem(CoordinateSystem coordinateSystem);
+    GenomicVariant withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     @Override
-    default Variant toZeroBased() {
+    default GenomicVariant toZeroBased() {
         return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     @Override
-    default Variant toOneBased() {
+    default GenomicVariant toOneBased() {
         return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     @Override
-    default Variant toOppositeStrand() {
+    default GenomicVariant toOppositeStrand() {
         return withStrand(strand().opposite());
     }
 
@@ -62,11 +62,11 @@ public interface Variant extends GenomicRegion {
         return VariantType.isBreakend(alt()) || variantType() == VariantType.BND;
     }
 
-    static Comparator<? super Variant> naturalOrder() {
-        return VariantNaturalOrderComparator.INSTANCE;
+    static Comparator<? super GenomicVariant> naturalOrder() {
+        return GenomicVariantNaturalOrderComparator.INSTANCE;
     }
 
-    static int compare(Variant x, Variant y) {
+    static int compare(GenomicVariant x, GenomicVariant y) {
         int result = GenomicRegion.compare(x, y);
         if (result == 0) {
             result = x.ref().compareTo(y.ref());
@@ -80,28 +80,28 @@ public interface Variant extends GenomicRegion {
         return result;
     }
 
-    static Variant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
+    static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
         VariantType.requireNonSymbolic(alt);
-        return DefaultVariant.of(contig, id, strand, coordinates, ref, alt);
+        return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, alt);
     }
 
-    static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+    static GenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
         VariantType.requireNonSymbolic(alt);
-        return DefaultVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
+        return DefaultGenomicVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
     }
 
-    static Variant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+    static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         VariantType.requireSymbolic(alt);
-        return DefaultVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
+        return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
-    static Variant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
+    static GenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
         VariantType.requireSymbolic(alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return DefaultVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
+        return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
-    static Variant of(String eventId, Breakend left, Breakend right, String ref, String alt) {
-        return DefaultBreakendVariant.of(eventId, left, right, ref, alt);
+    static GenomicVariant of(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
+        return DefaultGenomicBreakendVariant.of(eventId, left, right, ref, alt);
     }
 }

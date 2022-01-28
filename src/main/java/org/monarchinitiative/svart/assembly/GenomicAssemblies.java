@@ -1,4 +1,4 @@
-package org.monarchinitiative.svart;
+package org.monarchinitiative.svart.assembly;
 
 import java.io.*;
 import java.net.URL;
