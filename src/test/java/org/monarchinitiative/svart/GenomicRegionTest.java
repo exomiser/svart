@@ -16,6 +16,22 @@ public class GenomicRegionTest {
 
     private final Contig chr1 = TestContig.of(1, 5);
 
+    @ParameterizedTest
+    @CsvSource({
+            // given a coordinate on a contig of length 5
+            "ONE_BASED,   5,  6",
+            "ONE_BASED,   6,  6",
+
+            "ZERO_BASED,  5,  6",
+            "ZERO_BASED,  6,  6",
+    })
+    public void coordinatesOutOfBounds(CoordinateSystem coordinateSystem, int start, int end) {
+        Contig contig = TestContig.of(1, 5);
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+        Exception exception = assertThrows(CoordinatesOutOfBoundsException.class, () -> GenomicRegion.of(contig, Strand.POSITIVE, coordinates));
+        assertThat(exception.getMessage(), containsString("coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds"));
+    }
+
     @Test
     public void oneBasedSingleBase() {
         GenomicRegion instance = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1);

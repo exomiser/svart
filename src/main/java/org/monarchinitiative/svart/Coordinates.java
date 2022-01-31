@@ -292,34 +292,6 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         }
     }
 
-    /**
-     * Checks whether a given set of coordinates is valid. This checks that the coordinates do not overflow the bounds
-     * of the {@link Contig} and that the coordinates are provided in the correct orientation, i.e. indicate an empty or
-     * positive interval where the end is generally 'downstream' or numerically greater than the start. Exceptions here
-     * are empty intervals where:
-     * <p>
-     * fully-closed,  end = start - 1;
-     * <p>
-     * half-open,     end = start;
-     * <p>
-     * Invalid coordinates will result in an unrecoverable exception being thrown.
-     *
-     * @param coordinates the given coordinates
-     * @param contig      on which the coordinates lie.
-     */
-    static void validateOnContig(Coordinates coordinates, Contig contig) {
-        Objects.requireNonNull(coordinates);
-        Objects.requireNonNull(contig);
-        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
-        int start = coordinates.start();
-        int end = coordinates.end();
-        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-        } else if (coordinateSystem == ZERO_BASED && (start < 0 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
-        }
-    }
-
     static Coordinates of(CoordinateSystem coordinateSystem, int start, int end) {
         return PreciseCoordinates.of(coordinateSystem, start, end);
     }
