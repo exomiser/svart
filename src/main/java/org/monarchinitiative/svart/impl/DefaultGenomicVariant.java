@@ -55,11 +55,10 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
     @Override
     public String toString() {
         return "Variant{" +
-                "contig=" + contig().id() +
+                "contig=" + contigId() +
+                ", id='" + id() + '\'' +
                 ", strand=" + strand() +
-                ", coordinateSystem=" + coordinateSystem() +
-                ", startPosition=" + start() +
-                ", endPosition=" + end() +
+                ", " + formatCoordinates() +
                 ", ref='" + ref() + '\'' +
                 ", alt='" + alt() + '\'' +
                 ", variantType=" + variantType() +

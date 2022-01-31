@@ -36,11 +36,9 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
     @Override
     public String toString() {
         return "GenomicRegion{" +
-                "contig=" + contig().id() +
+                "contig=" + contigId() +
                 ", strand=" + strand() +
-                ", coordinateSystem=" + coordinateSystem() +
-                ", startPosition=" + start() +
-                ", endPosition=" + end() +
+                ", " + formatCoordinates() +
                 '}';
     }
 }

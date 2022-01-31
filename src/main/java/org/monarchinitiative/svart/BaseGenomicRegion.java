@@ -106,22 +106,22 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
     @Override
     public String toString() {
-        if (!coordinates.isPrecise()) {
-            return "BaseGenomicRegion{" +
-                    "contig=" + contig.id() +
-                    ", strand=" + strand +
-                    ", coordinateSystem=" + coordinateSystem() +
-                    ", start=" + coordinates.start() + " " + coordinates.startConfidenceInterval() +
-                    ", end=" + coordinates.end() + " " + coordinates.endConfidenceInterval() +
-                    '}';
-        }
         return "BaseGenomicRegion{" +
                 "contig=" + contig.id() +
                 ", strand=" + strand +
-                ", coordinateSystem=" + coordinateSystem() +
-                ", start=" + coordinates.start() +
-                ", end=" + coordinates.end() +
+                ", " + formatCoordinates() +
                 '}';
+    }
+
+    protected String formatCoordinates() {
+        if (coordinates.isPrecise()) {
+            return "coordinateSystem=" + coordinateSystem() +
+                    ", start=" + start() +
+                    ", end=" + end();
+        }
+        return "coordinateSystem=" + coordinateSystem() +
+                ", start=" + start() + ' ' + startConfidenceInterval() +
+                ", end=" + end() + ' ' + endConfidenceInterval();
     }
 
     protected abstract static class Builder<T extends Builder<T>> {
