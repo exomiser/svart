@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.util.Arrays;
 
@@ -37,7 +38,7 @@ public class VcfBreakendResolverTest {
     public void invalidInput(String ref, String alt, String message) {
         VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> instance.resolve("tra2", "bnd_U", "bnd_V", assembly.contigById(1), Position.of(3), ConfidenceInterval.precise(), ref, alt));
+                () -> instance.resolve("tra2", "bnd_U", "bnd_V", assembly.contigById(1), 3, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt));
         assertThat(e.getMessage(), equalTo(message));
     }
 
@@ -60,13 +61,13 @@ public class VcfBreakendResolverTest {
             GenomicAssembly assembly = testAssembly(TestContig.of(1, 5), TestContig.of(2, 10));
 
             VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
-            BreakendVariant variant = instance.resolve("event1", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
+            GenomicBreakendVariant variant = instance.resolve("event1", id, mateId, assembly.contigByName(leftChr), leftPos, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
             assertThat(variant.eventId(), equalTo("event1"));
             assertThat(variant.mateId(), equalTo(mateId));
             assertThat(variant.id(), equalTo(id));
             assertThat(variant.contig(), equalTo(assembly.contigByName(leftContig)));
             assertThat(variant.strand(), equalTo(leftStrand));
-            assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(variant.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(variant.start(), equalTo(leftStart));
             assertThat(variant.end(), equalTo(leftEnd));
             assertThat(variant.ref(), equalTo(exptRef));
@@ -109,11 +110,11 @@ public class VcfBreakendResolverTest {
             // tra2:ctg2:+         6 7 8 9 10
 
             // ctg1	3	bndA	C	C[ctg2:5[	.	PASS	SVTYPE=BND;MATEID=bndB;EVENT=tra2
-            BreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
-            Breakend left = variant.left();
-            assertThat(left.id(), equalTo("bndA"));
+            GenomicBreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), leftPos, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
+            GenomicBreakend left = variant.left();
+            assertThat(left.id(), equalTo(id));
             assertThat(left.contig(), equalTo(assembly.contigByName(leftContig)));
-            assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(left.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(left.start(), equalTo(leftStart));
             assertThat(left.end(), equalTo(leftEnd));
             assertThat(left.strand(), equalTo(leftStrand));
@@ -152,12 +153,12 @@ public class VcfBreakendResolverTest {
             // tra2:ctg2:+         6 7 8 9 10
 
             // ctg1	3	bndA	C	C[ctg2:5[	.	PASS	SVTYPE=BND;MATEID=bndB;EVENT=tra2
-            BreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), Position.of(leftPos), ConfidenceInterval.precise(), ref, alt);
+            GenomicBreakendVariant variant = instance.resolve("", id, mateId, assembly.contigByName(leftChr), leftPos, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
 
-            Breakend right = variant.right();
+            GenomicBreakend right = variant.right();
             assertThat(right.id(), equalTo(mateId));
             assertThat(right.contig(), equalTo(assembly.contigByName(rightContig)));
-            assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.FULLY_CLOSED));
+            assertThat(right.coordinateSystem(), equalTo(CoordinateSystem.ONE_BASED));
             assertThat(right.start(), equalTo(rightStart));
             assertThat(right.end(), equalTo(rightEnd));
             assertThat(right.strand(), equalTo(rightStrand));

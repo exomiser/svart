@@ -10,21 +10,28 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
     private final Contig contig;
     private final Strand strand;
-    private final CoordinateSystem coordinateSystem;
-    private final Position startPosition;
-    private final Position endPosition;
+    private final Coordinates coordinates;
 
-    protected BaseGenomicRegion(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+    protected BaseGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) {
         this.contig = Objects.requireNonNull(contig, "contig must not be null");
         this.strand = Objects.requireNonNull(strand, "strand must not be null");
-        this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "coordinateSystem must not be null");
-        this.startPosition = Objects.requireNonNull(startPosition, "startPosition must not be null");
-        this.endPosition = Objects.requireNonNull(endPosition, "endPosition must not be null");
-        Coordinates.validateCoordinates(coordinateSystem, contig, startPosition.pos(), endPosition.pos());
+        this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
+        validateCoordinatesOnContig(coordinates, contig);
+    }
+
+    private void validateCoordinatesOnContig(Coordinates coordinates, Contig contig) {
+        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
+        int start = coordinates.start();
+        int end = coordinates.end();
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
+        }
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {
-        this(builder.contig, builder.strand, builder.coordinateSystem, builder.start, builder.end);
+        this(builder.contig, builder.strand, builder.coordinates);
     }
 
     @Override
@@ -33,44 +40,32 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     }
 
     @Override
-    public Position startPosition() {
-        return startPosition;
-    }
-
-    @Override
-    public Position endPosition() {
-        return endPosition;
-    }
-
-    @Override
-    public CoordinateSystem coordinateSystem() {
-        return coordinateSystem;
-    }
-
-    @Override
     public Strand strand() {
         return strand;
     }
 
     @Override
+    public Coordinates coordinates() {
+        return coordinates;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public T withCoordinateSystem(CoordinateSystem requiredCoordinateSystem) {
-        if (this.coordinateSystem == requiredCoordinateSystem) {
+        if (this.coordinateSystem() == requiredCoordinateSystem) {
             return (T) this;
         }
-        return newRegionInstance(contig, strand, requiredCoordinateSystem,
-                startPositionWithCoordinateSystem(requiredCoordinateSystem),
-                endPositionWithCoordinateSystem(requiredCoordinateSystem));
+        return newRegionInstance(contig, strand, coordinates.withCoordinateSystem(requiredCoordinateSystem));
     }
 
     @Override
     public T toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     @Override
     public T toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
     @Override
@@ -79,9 +74,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         if (this.strand == strand) {
             return (T) this;
         }
-        Position start = startPosition.invert(coordinateSystem, contig);
-        Position end = endPosition.invert(coordinateSystem, contig);
-        return newRegionInstance(contig, strand, coordinateSystem, end, start);
+        return newRegionInstance(contig, strand, coordinates.invert(contig));
     }
 
     @Override
@@ -93,15 +86,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
      * Hook for classes extending this base class to provide a way for the {@link BaseGenomicRegion} to provide the results
      * of a withStrand() or withCoordinateSystem() without the extending classes having to implement {@link CoordinateSystemed}
      * or {@link Stranded} themselves and for the specialised type to be returned.
-     *
-     * @param contig
-     * @param strand
-     * @param coordinateSystem
-     * @param startPosition
-     * @param endPosition
-     * @return
      */
-    protected abstract T newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition);
+    protected abstract T newRegionInstance(Contig contig, Strand strand, Coordinates coordinates);
 
     @Override
     public boolean equals(Object o) {
@@ -110,14 +96,12 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         BaseGenomicRegion<?> that = (BaseGenomicRegion<?>) o;
         return contig.equals(that.contig) &&
                 strand == that.strand &&
-                coordinateSystem == that.coordinateSystem &&
-                startPosition.equals(that.startPosition) &&
-                endPosition.equals(that.endPosition);
+                coordinates.equals(that.coordinates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, strand, coordinateSystem, startPosition, endPosition);
+        return Objects.hash(contig, strand, coordinates);
     }
 
     @Override
@@ -125,20 +109,29 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         return "BaseGenomicRegion{" +
                 "contig=" + contig.id() +
                 ", strand=" + strand +
-                ", coordinateSystem=" + coordinateSystem +
-                ", startPosition=" + startPosition +
-                ", endPosition=" + endPosition +
+                ", " + formatCoordinates() +
                 '}';
+    }
+
+    protected String formatCoordinates() {
+        if (coordinates.isPrecise()) {
+            return "coordinateSystem=" + coordinateSystem() +
+                    ", start=" + start() +
+                    ", end=" + end();
+        }
+        return "coordinateSystem=" + coordinateSystem() +
+                ", start=" + start() + ' ' + startConfidenceInterval() +
+                ", end=" + end() + ' ' + endConfidenceInterval();
     }
 
     protected abstract static class Builder<T extends Builder<T>> {
 
+        private static final Coordinates DEFAULT_COORDINATES = Coordinates.of(CoordinateSystem.ONE_BASED, 1, 1);
+
         protected Contig contig;
         // we're primarily interested in VCF coordinates so we're defaulting to 1-based coordinates on the + strand
         protected Strand strand = Strand.POSITIVE;
-        protected CoordinateSystem coordinateSystem = CoordinateSystem.FULLY_CLOSED;
-        protected Position start = Position.of(1);
-        protected Position end = start;
+        protected Coordinates coordinates = DEFAULT_COORDINATES;
 
         // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
         // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
@@ -147,38 +140,31 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
         public T with(GenomicRegion genomicRegion) {
             Objects.requireNonNull(genomicRegion, "genomicRegion cannot be null");
-            return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinateSystem(), genomicRegion.startPosition(), genomicRegion.endPosition());
+            return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
         }
 
-        public T with(Variant variant) {
-            Objects.requireNonNull(variant, "variant cannot be null");
-            return with(variant.contig(), variant.strand(), variant.coordinateSystem(), variant.startPosition(), variant.endPosition());
+        public T with(GenomicVariant genomicVariant) {
+            Objects.requireNonNull(genomicVariant, "variant cannot be null");
+            return with(genomicVariant.contig(), genomicVariant.strand(), genomicVariant.coordinates());
         }
 
-        public T with(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition) {
+        public T with(Contig contig, Strand strand, Coordinates coordinates) {
             this.contig = Objects.requireNonNull(contig, "contig must not be null");
             this.strand = Objects.requireNonNull(strand, "strand must not be null");
-            this.coordinateSystem = Objects.requireNonNull(coordinateSystem, "coordinateSystem must not be null");
-            this.start = Objects.requireNonNull(startPosition, "startPosition must not be null");
-            this.end = Objects.requireNonNull(endPosition, "endPosition must not be null");
+            this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
             return self();
         }
 
         public T asZeroBased() {
-            return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
         }
 
         public T asOneBased() {
-            return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
         }
 
         public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
-            if (this.coordinateSystem == coordinateSystem) {
-                return self();
-            }
-            start = start.shift(this.coordinateSystem.startDelta(coordinateSystem));
-            end = end.shift(this.coordinateSystem.endDelta(coordinateSystem));
-            this.coordinateSystem = coordinateSystem;
+            this.coordinates = coordinates.withCoordinateSystem(coordinateSystem);
             return self();
         }
 
@@ -195,9 +181,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
                 return self();
             }
             this.strand = strand;
-            Position invertedStart = start.invert(coordinateSystem, contig);
-            start = end.invert(coordinateSystem, contig);
-            end = invertedStart;
+            coordinates = coordinates.invert(contig);
             return self();
         }
 

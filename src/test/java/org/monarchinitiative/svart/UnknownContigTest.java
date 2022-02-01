@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

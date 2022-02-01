@@ -1,13 +1,13 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

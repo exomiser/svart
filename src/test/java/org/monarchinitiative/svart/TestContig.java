@@ -1,5 +1,8 @@
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
+
 import java.util.Objects;
 
 /**

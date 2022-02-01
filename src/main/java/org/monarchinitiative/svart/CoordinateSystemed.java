@@ -10,7 +10,7 @@ public interface CoordinateSystemed<T> {
     T withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
-     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#LEFT_OPEN}, where a region
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ZERO_BASED}, where a region
      * is specified by a half-closed-half-open interval
      */
     default boolean isZeroBased() {
@@ -18,7 +18,7 @@ public interface CoordinateSystemed<T> {
     }
 
     /**
-     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#FULLY_CLOSED}, where a region
+     * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ONE_BASED}, where a region
      * is specified by a closed interval
      */
     default boolean isOneBased() {
@@ -26,11 +26,11 @@ public interface CoordinateSystemed<T> {
     }
 
     default T toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.LEFT_OPEN);
+        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
     }
 
     default T toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.FULLY_CLOSED);
+        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
 }

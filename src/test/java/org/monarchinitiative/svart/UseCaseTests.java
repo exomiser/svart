@@ -1,6 +1,8 @@
 package org.monarchinitiative.svart;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
 import org.monarchinitiative.svart.util.VcfConverter;
@@ -10,26 +12,21 @@ import java.nio.file.Path;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.monarchinitiative.svart.CoordinateSystem.*;
 
 public class UseCaseTests {
 
     @Test
     public void createDonorAcceptorRegionFromExon() {
         TestContig contig = TestContig.of(1, 100);
-        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, LEFT_OPEN, 50, 70);
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, 70);
 
         // DONOR
-        Position donorStart = exon.endPosition().shift(-3);
-        Position donorEnd = exon.endPosition().shift(+6);
-        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), donorStart, donorEnd);
+        GenomicRegion donor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.end() - 3, exon.end() + 6);
         assertThat(donor.overlapsWith(exon), equalTo(true));
         assertThat(donor.length(), equalTo(9));
 
         // ACCEPTOR
-        Position acceptorStart = exon.startPosition().shift(-8);
-        Position acceptorEnd = exon.startPosition().shift(+3); // (region of length 11)
-        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), acceptorStart, acceptorEnd);
+        GenomicRegion acceptor = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exon.start() - 8 , exon.start() + 3);
         assertThat(acceptor.overlapsWith(exon), equalTo(true));
         assertThat(acceptor.length(), equalTo(11));
     }
@@ -37,20 +34,20 @@ public class UseCaseTests {
     @Test
     public void insertionLiesInExon() {
         TestContig contig = TestContig.of(1, 100);
-        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, FULLY_CLOSED, 50, 70);
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), 50, 70);
 
-        Variant insertion = Variant.of(contig, "", Strand.POSITIVE, FULLY_CLOSED, Position.of(60), "A", "AC");
+        GenomicVariant insertion = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 60, "A", "AC");
         assertThat(insertion.overlapsWith(exon), equalTo(true));
     }
 
     @Test
     public void symbolicVariantContainsSnv() {
         Contig chr1 = TestContig.of(1, 1000);
-        Variant largeIns = Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(1), Position.of(1), "T", "<INS>", 100);
-        assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(1), "A", "T")));
-        assertTrue(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, zeroBased(), Position.of(0), "A", "T")));
-        assertFalse(largeIns.contains(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(2), "C", "A")));
-        assertTrue(largeIns.contains(Breakend.of(chr1, "bnd_A", Strand.POSITIVE, oneBased(), Position.of(1), Position.of(0))));
+        GenomicVariant largeIns = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, "A", "T")));
+        assertFalse(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 2, "C", "A")));
+        assertTrue(largeIns.contains(GenomicBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0)));
     }
 
     @Test
@@ -60,16 +57,16 @@ public class UseCaseTests {
         Contig chr1 = TestContig.of(1, 249_250_621);
         VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
 
-        Variant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C");
-        assertThat(firstAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C")));
+        GenomicVariant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
+        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
 
-        Variant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "CT");
-        assertThat(secondAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CT", "C")));
+        GenomicVariant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
+        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
     }
 
-    private Variant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-        VariantPosition firstTrimmed = variantTrimmer.trim(strand, start.pos(), ref, alt);
-        return Variant.of(contig, id, strand, coordinateSystem, start.withPos(firstTrimmed.start()), firstTrimmed.ref(), firstTrimmed.alt());
+    private GenomicVariant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        VariantPosition trimmed = variantTrimmer.trim(strand, start, ref, alt);
+        return GenomicVariant.of(contig, id, strand, coordinateSystem, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
     @Test
@@ -78,29 +75,29 @@ public class UseCaseTests {
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
         Contig chr10b37 = b37.contigByName("10");
-        GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, FULLY_CLOSED, 123_237_848, 123_357_972);
+        GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.oneBased(), 123_237_848, 123_357_972);
         // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
-        Variant snv = Variant.of(chr10b37, "", Strand.POSITIVE, oneBased(), Position.of(123_256_215), "T", "G");
+        GenomicVariant snv = GenomicVariant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
         // Because svart knows about coordinate systems and strands it is possible to...
         // keep the gene on the positive strand:
-        // GenomicRegion{contig=10, strand=+, coordinateSystem=FULLY_CLOSED, startPosition=123237848, endPosition=123357972}
+        // GenomicRegion{contig=10, strand=+, coordinateSystem=ONE_BASED, startPosition=123237848, endPosition=123357972}
         assertThat(fgfr2Gene.contains(snv), equalTo(true));
         // or use it on the negative strand:
-        // GenomicRegion{contig=10, strand=-, coordinateSystem=FULLY_CLOSED, startPosition=12176776, endPosition=12296900}
+        // GenomicRegion{contig=10, strand=-, coordinateSystem=ONE_BASED, startPosition=12176776, endPosition=12296900}
         assertThat(fgfr2Gene.toNegativeStrand().contains(snv), equalTo(true));
     }
 
     @Test
     public void emptyRegionsWithDifferentCoordinateSystems() {
         // these are empty regions and can be used to represent a 'slice' in-between two bases
-        GenomicRegion oneBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, FULLY_CLOSED, Position.of(1), Position.of(0));
-        GenomicRegion zeroBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, LEFT_OPEN, Position.of(0), Position.of(0));
+        GenomicRegion oneBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0);
+        GenomicRegion zeroBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 0);
 
         assertThat(oneBasedEmpty.contains(zeroBasedEmpty), equalTo(true));
         // convert coordinate systems using convenience methods
         assertThat(oneBasedEmpty.toZeroBased(), equalTo(zeroBasedEmpty));
         // convert coordinate systems using specific systems
-        assertThat(oneBasedEmpty.withCoordinateSystem(LEFT_OPEN), equalTo(zeroBasedEmpty));
+        assertThat(oneBasedEmpty.withCoordinateSystem(CoordinateSystem.zeroBased()), equalTo(zeroBasedEmpty));
     }
 
     @Test
@@ -131,9 +128,9 @@ public class UseCaseTests {
         String[] fields = bedRecord.split("\t");
         Contig contig = genomicAssembly.contigByName(fields[0]);
         Strand strand = Strand.parseStrand(fields[5]);
-        Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[2])));
-        Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[1])));
-        return GenomicRegion.of(contig, strand, LEFT_OPEN, start, end);
+        int start = strand == Strand.POSITIVE ? Integer.parseInt(fields[1]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[2]));
+        int end = strand == Strand.POSITIVE ? Integer.parseInt(fields[2]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[1]));
+        return GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), start, end);
     }
 
     @Test
@@ -143,11 +140,11 @@ public class UseCaseTests {
         // VCF file, parsed with the HTSJDK to get a VariantContext instance...
         // CHR	POS	ID	REF	ALT
         // chr1	12345	rs123456	C	T	6	PASS	.
-        Variant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
+        GenomicVariant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "CCC", "TCC");
         // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-        Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
+        GenomicVariant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
         // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        GenomicVariant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
 
         assertThat(snv.ref(), equalTo(ins.ref()));
         assertThat(snv.ref(), equalTo(bnd.ref()));
@@ -163,9 +160,9 @@ public class UseCaseTests {
     public void nonCanonicalBreakend_mantaUnresolved() {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // 1	166448783	gnomAD-SV_v2.1_BND_1_4095	N	<BND>	892	UNRESOLVED	END=166448784;SVTYPE=BND;SVLEN=-1;CHR2=6;POS2=166448783;END2=166448784;ALGORITHMS=manta;EVIDENCE=PE;UNRESOLVED_TYPE=SINGLE_ENDER_+-;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(166448784), Position.of(166448783));
-        Breakend right = Breakend.unresolved(FULLY_CLOSED);
-        Variant bnd = Variant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
+        GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 166448784, 166448783);
+        GenomicBreakend right = GenomicBreakend.unresolved(CoordinateSystem.oneBased());
+        GenomicVariant bnd = GenomicVariant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(166448783));
@@ -179,10 +176,10 @@ public class UseCaseTests {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // https://github.com/fritzsedlazeck/Sniffles/issues/73  - should run with  "--report_BND true"
         // 1 	797316 	TRA0029399SUR 	N 	<TRA> 	. 	PASS 	SUPP=2;AVGLEN=100000;med_start=797265;med_stop=797265;SVTYPE=TRA;SVMETHOD=SURVIVORv2;CHR2=8;END=245650;STRANDS=++;
-        Breakend left = Breakend.of(b37.contigById(1), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(797317), Position.of(797316));
+        GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 797317, 797316));
         // CHR2=8;END=245650;STRANDS=++;
-        Breakend right = Breakend.of(b37.contigById(8), "", Strand.POSITIVE, FULLY_CLOSED, Position.of(245651), Position.of(245650));
-        Variant bnd = Variant.of("TRA0029399SUR", left, right, "N", "");
+        GenomicBreakend right = GenomicBreakend.of(b37.contigById(8), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 245651, 245650));
+        GenomicVariant bnd = GenomicVariant.of("TRA0029399SUR", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(797316));
