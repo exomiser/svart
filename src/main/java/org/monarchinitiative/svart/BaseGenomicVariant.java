@@ -2,6 +2,7 @@ package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.util.Seq;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -19,8 +20,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
     protected BaseGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         super(contig, strand, coordinates);
         this.id = Objects.requireNonNull(id, "id must not be null");
-        this.ref = VariantType.requireNonSymbolic(ref);
-        this.alt = VariantType.requireNonBreakend(alt);
+        this.ref = AlleleCache.cacheAllele(VariantType.requireNonSymbolic(ref));
+        this.alt = AlleleCache.cacheAllele(VariantType.requireNonBreakend(alt));
         this.variantType = VariantType.parseType(ref, alt);
         this.changeLength = checkChangeLength(coordinates, changeLength, variantType);
     }
@@ -227,4 +228,44 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         protected abstract T self();
     }
 
+    private static class AlleleCache {
+        
+        private static final String A = "A";
+        private static final String T = "T";
+        private static final String G = "G";
+        private static final String C = "C";
+        private static final String NO_CALL = ".";
+        private static final String SPAN_DEL = "*";
+        private static final String N = "N";
+
+        private AlleleCache() {
+        }
+
+        private static String cacheAllele(String alt) {
+            return alt.length() == 1 ? getCachedBase(alt) : alt;
+        }
+        
+        private static String getCachedBase(String alt) {
+            byte base = alt.getBytes(StandardCharsets.UTF_8)[0];
+                switch (base) {
+                    case 'A':
+                        return A;
+                    case 'T':
+                        return T;
+                    case 'G':
+                        return G;
+                    case 'C':
+                        return C;
+                    case '.':
+                        return NO_CALL;
+                    case '*':
+                        return SPAN_DEL;
+                    case 'N':
+                        return N;
+                    default:
+                        return alt;
+                }
+            }
+    }
+    
 }

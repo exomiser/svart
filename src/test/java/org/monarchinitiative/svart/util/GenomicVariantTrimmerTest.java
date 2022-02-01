@@ -69,17 +69,21 @@ public class GenomicVariantTrimmerTest {
     @CsvSource({
             // Fully-trimmed input
             "0, T, .,   LEFT,  RETAIN, 0, T, .",
-            "0, T, T,   LEFT,  RETAIN, 0, T, T",
             "0, '', '', LEFT,  RETAIN, 0, '', ''",
             "0, T, '',  LEFT,  RETAIN, 0, T, ''",
             "0, '', T,  LEFT,  RETAIN, 0, '', T",
+
+            "0, T, .,   LEFT,  REMOVE, 0, T, .",
             "0, '', '', LEFT,  REMOVE, 0, '', ''",
             "0, T, '',  LEFT,  REMOVE, 0, T, ''",
             "0, '', T,  LEFT,  REMOVE, 0, '', T",
+
             "0, T, .,   RIGHT, RETAIN, 0, T, .",
             "0, '', '', RIGHT, RETAIN, 0, '', ''",
             "0, T, '',  RIGHT, RETAIN, 0, T, ''",
             "0, '', T,  RIGHT, RETAIN, 0, '', T",
+
+            "0, T, .,   RIGHT, REMOVE, 0, T, .",
             "0, '', '', RIGHT, REMOVE, 0, '', ''",
             "0, T, '',  RIGHT, REMOVE, 0, T, ''",
             "0, '', T,  RIGHT, REMOVE, 0, '', T",
@@ -104,12 +108,39 @@ public class GenomicVariantTrimmerTest {
             "0, CGAT, CGGT, LEFT,  REMOVE, 2, A, G",
             "0, CGAT, CGGT, RIGHT, RETAIN, 2, A, G",
             "0, CGAT, CGGT, RIGHT, REMOVE, 2, A, G",
+
             // DEL
+            "0, CC, C,  LEFT,  REMOVE, 0, C, ''",
+            "0, CC, C,  LEFT,  RETAIN, 0, CC, C",
+            "0, CC, C,  RIGHT,  REMOVE, 1, C, ''",
+            "0, CC, C,  RIGHT,  RETAIN, 0, CC, C",
+            // same start and end base
+            "0, CGC, C,  LEFT,  REMOVE, 0, CG, ''",
+            "0, CGC, C,  LEFT,  RETAIN, 0, CGC, C",
+            "0, CGC, C,  RIGHT,  REMOVE, 1, GC, ''",
+            "0, CGC, C,  RIGHT,  RETAIN, 0, CGC, C",
+
+            "0, CGA, C,  LEFT,  REMOVE, 1, GA, ''",
+            "0, CGA, C,  LEFT,  RETAIN, 0, CGA, C",
+            "0, CGA, C,  RIGHT,  REMOVE, 1, GA, ''",
+            "0, CGA, C,  RIGHT,  RETAIN, 0, CGA, C",
+
             "0, CGAT, CGT,  LEFT,  RETAIN, 1, GA, G",
             "0, CGAT, CGT,  LEFT,  REMOVE, 2, A, ''",
             "0, CGAT, CGT,  RIGHT, RETAIN, 2, AT, T",
             "0, CGAT, CGT,  RIGHT, REMOVE, 2, A, ''",
+
             // INS
+            "0, C, CC,  LEFT,  REMOVE, 0, '', C",
+            "0, C, CC,  LEFT,  RETAIN, 0, C, CC",
+            "0, C, CC,  RIGHT,  REMOVE, 1, '', C",
+            "0, C, CC,  RIGHT,  RETAIN, 0, C, CC",
+            // same start and end base
+            "0, C, CGC,  LEFT,  REMOVE, 0, '', CG",
+            "0, C, CGC,  LEFT,  RETAIN, 0, C, CGC",
+            "0, C, CGC,  RIGHT,  REMOVE, 1, '', GC",
+            "0, C, CGC,  RIGHT,  RETAIN, 0, C, CGC",
+
             "0, CGAT, CGTAT,  LEFT,  RETAIN, 1, G, GT",
             "0, CGAT, CGTAT,  LEFT,  REMOVE, 2, '', T",
             "0, CGAT, CGTAT,  RIGHT, RETAIN, 2, A, TA",

@@ -13,6 +13,9 @@ public abstract class VariantTrimmer {
     private static final BaseRetentionStrategy RETAINING = new RetainingCommonBase();
     private static final BaseRetentionStrategy REMOVING = new RemovingCommonBase();
 
+    private static final String REF_STRING_CANNOT_BE_NULL = "REF string cannot be null";
+    private static final String ALT_STRING_CANNOT_BE_NULL = "ALT string cannot be null";
+
     private VariantTrimmer() {
     }
 
@@ -97,8 +100,8 @@ public abstract class VariantTrimmer {
     static VariantPosition leftShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
-        String trimRef = Objects.requireNonNull(ref, "REF string cannot be null");
-        String trimAlt = Objects.requireNonNull(alt, "ALT string cannot be null");
+        String trimRef = Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+        String trimAlt = Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
 
         if (VariantType.isLargeSymbolic(alt)) {
             return baseRetentionStrategy.trimLargeSymbolic(start, ref, alt);
@@ -136,8 +139,8 @@ public abstract class VariantTrimmer {
     static VariantPosition rightShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
-        String trimRef = Objects.requireNonNull(ref, "REF string cannot be null");
-        String trimAlt = Objects.requireNonNull(alt, "ALT string cannot be null");
+        String trimRef = Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+        String trimAlt = Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
 
         if (VariantType.isLargeSymbolic(alt)) {
             return baseRetentionStrategy.trimLargeSymbolic(start, ref, alt);
@@ -178,7 +181,7 @@ public abstract class VariantTrimmer {
 
     private static boolean canLeftTrim(String ref, String alt) {
         // alter 0 to 1 in order to change fully trimmed homomorphic sites from '' '' to 'A' 'A'
-        return (ref.length() > 0 || alt.length() > 0) && ref.charAt(0) == alt.charAt(0);
+        return ref.length() > 0 && alt.length() > 0 && ref.charAt(0) == alt.charAt(0);
     }
 
     public static BaseRetentionStrategy retainingCommonBase() {
@@ -308,8 +311,8 @@ public abstract class VariantTrimmer {
          * @return an exact representation of the input coordinates and sequence.
          */
         public static VariantPosition of(int start, String ref, String alt) {
-            Objects.requireNonNull(ref, "REF string cannot be null");
-            Objects.requireNonNull(alt, "ALT string cannot be null");
+            Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+            Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
             return new VariantPosition(start, ref, alt);
         }
 
