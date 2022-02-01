@@ -1,5 +1,6 @@
 svart - (structural) variant tool
 =
+[![Java CI with Maven](https://github.com/exomiser/svart/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/exomiser/svart/actions/workflows/maven.yml)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.monarchinitiative.svart/svart/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.monarchinitiative.svart/svart)
 
 Svart is a small library for representing genomic variants and regions. It attempts to solve several common issues:

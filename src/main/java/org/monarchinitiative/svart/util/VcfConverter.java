@@ -1,12 +1,13 @@
 package org.monarchinitiative.svart.util;
 
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
 
 import java.util.Objects;
 
 /**
- * Utility class for converting VCF variants into {@link Variant} objects. This class assumes VCF input coordinates with
+ * Utility class for converting VCF variants into {@link GenomicVariant} objects. This class assumes VCF input coordinates with
  * the positions being provided as FULLY_CLOSED (one-based) on the POSITIVE strand. The class will trim any non-symbolic/breakend
  * alleles.
  */
@@ -55,14 +56,15 @@ public class VcfConverter {
         return genomicAssembly.contigByName(chr);
     }
 
-    public Variant convert(Contig contig, String id, int pos, String ref, String alt) {
+    public GenomicVariant convert(Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(trimmed.start()), trimmed.ref(), trimmed.alt());
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
-    public <T extends BaseVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
+    public <T extends BaseGenomicVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(trimmed.start()), trimmed.ref(), trimmed.alt());
+        Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref());
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt());
     }
 
     private VariantPosition checkAndTrimNonSymbolic(int pos, String ref, String alt) {
@@ -70,25 +72,33 @@ public class VcfConverter {
         return variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
     }
 
-    public Variant convertSymbolic(Contig contig, String id, Position pos, Position end, String ref, String alt, int svlen) {
+    public GenomicVariant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
-        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos.pos(), ref, alt);
-        return Variant.of(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, pos.withPos(trimmed.start()), end, trimmed.ref(), trimmed.alt(), svlen);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
     }
 
-    public <T extends BaseVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, Position pos, Position end, String ref, String alt, int svlen) {
+    public GenomicVariant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
-        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos.pos(), ref, alt);
-        return builder.with(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, pos.withPos(trimmed.start()), end, trimmed.ref(), trimmed.alt(), svlen);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
-    public BreakendVariant convertBreakend(Contig contig, String id, Position position, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
+    public <T extends BaseGenomicVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
+        VariantType.requireSymbolic(alt);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
+        return builder.with(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
+    }
+
+    public GenomicBreakendVariant convertBreakend(Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
         VariantType.requireBreakend(alt);
-        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciEnd, ref, alt);
+        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciPos, ciEnd, ref, alt);
     }
 
-    public <T extends BaseBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, Position position, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
-        BreakendVariant breakendVariant = convertBreakend(contig, id, position, ref, alt, ciEnd, mateId, eventId);
+    public <T extends BaseGenomicBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
+        GenomicBreakendVariant breakendVariant = convertBreakend(contig, id, position, ciPos, ref, alt, ciEnd, mateId, eventId);
         return builder.with(breakendVariant);
     }
 

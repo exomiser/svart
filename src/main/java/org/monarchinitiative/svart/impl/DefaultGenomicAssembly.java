@@ -1,8 +1,8 @@
 package org.monarchinitiative.svart.impl;
 
-import org.monarchinitiative.svart.SequenceRole;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,10 +1,10 @@
 package org.monarchinitiative.svart.parsers;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.svart.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.GenomicAssembly;
-import org.monarchinitiative.svart.SequenceRole;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

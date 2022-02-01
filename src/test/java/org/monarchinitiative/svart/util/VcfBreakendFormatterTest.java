@@ -3,6 +3,7 @@ package org.monarchinitiative.svart.util;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.util.Arrays;
 
@@ -31,17 +32,17 @@ public class VcfBreakendFormatterTest {
                           String ref, String inserted,
                           String expected) {
         GenomicAssembly assembly = testAssembly(TestContig.of(1, 5), TestContig.of(2, 10));
-        Breakend left = makeBreakend(leftStrand, leftChr, leftStart, leftEnd, assembly);
-        Breakend right = makeBreakend(rightStrand, rightChr, rightStart, rightEnd, assembly);
-        BreakendVariant variant = BreakendVariant.of("", left, right, ref, inserted);
+        GenomicBreakend left = makeBreakend(leftStrand, leftChr, leftStart, leftEnd, assembly);
+        GenomicBreakend right = makeBreakend(rightStrand, rightChr, rightStart, rightEnd, assembly);
+        GenomicBreakendVariant variant = GenomicBreakendVariant.of("", left, right, ref, inserted);
         assertThat(VcfBreakendFormatter.makeAltVcfField(variant), equalTo(expected));
     }
 
-    public Breakend makeBreakend(Strand strand, String chr, int start, int end, GenomicAssembly assembly) {
+    public GenomicBreakend makeBreakend(Strand strand, String chr, int start, int end, GenomicAssembly assembly) {
         if (assembly.contigByName(chr) == Contig.unknown()) {
-            return Breakend.unresolved(CoordinateSystem.LEFT_OPEN);
+            return GenomicBreakend.unresolved(CoordinateSystem.ZERO_BASED);
         }
-        return Breakend.of(assembly.contigByName(chr), "", Strand.POSITIVE, CoordinateSystem.LEFT_OPEN, Position.of(start), Position.of(end)).withStrand(strand);
+        return GenomicBreakend.of(assembly.contigByName(chr), "", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, start, end).withStrand(strand);
     }
 
     private GenomicAssembly testAssembly(Contig... contigs) {

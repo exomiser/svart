@@ -6,6 +6,8 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,18 +21,31 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * These tests are used for performance benchmarking the library and for comparing it with the HTSJDK. The pauses
+ * introduced by Thread.sleep() are to allow time for benchmarking tools to be launched.
+ */
 @Disabled("Performance tests")
 public class PerformanceTests {
 
     @Test
-    public void readVariantContexts() {
+    public void readVariantContexts() throws InterruptedException {
+        Thread.sleep(2000);
 
         // warm-up
-        for (int i = 0; i < 100; i++) {
+        var allVariants = new ArrayList<>();
+        int totalRead = 0;
+        for (int i = 0; i < 50; i++) {
             List<VariantContext> variants = new VcfVariantContextReader()
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
                     .collect(Collectors.toList());
+            allVariants.addAll(variants);
+            Thread.sleep(500);
+            totalRead += variants.size();
         }
+        System.gc();
+        System.out.println("Read " + totalRead + " variants to warm-up");
+        Thread.sleep(2000);
 
         Instant start = Instant.now();
 
@@ -48,10 +63,13 @@ public class PerformanceTests {
     public void readVariantContextsHtsJdk() {
 
         // warm-up
-        for (int i = 0; i < 100; i++) {
+        int totalRead = 0;
+        for (int i = 0; i < 50; i++) {
             List<VariantContext> variants = readVariantContexts(Path.of("src/test/resources/pfeiffer.vcf"))
                     .collect(Collectors.toList());
+            totalRead += variants.size();
         }
+        System.out.println("Read " + totalRead + " variants to warm-up");
 
         Instant start = Instant.now();
 
@@ -66,18 +84,26 @@ public class PerformanceTests {
     }
 
     @Test
-    public void readSvartVariants() {
+    public void readSvartVariants() throws InterruptedException {
+        Thread.sleep(2000);
 
         // warm-up
-        for (int i = 0; i < 100; i++) {
-            List<Variant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
+        int totalRead = 0;
+        var allVariants = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
                     .collect(Collectors.toList());
+            Thread.sleep(500);
+            allVariants.addAll(variants);
+            totalRead += variants.size();
         }
-
+        System.gc();
+        System.out.println("Read " + totalRead + " variants to warm-up");
+        Thread.sleep(2000);
         Instant start = Instant.now();
 
-        List<Variant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
+        List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                 .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
                 .collect(Collectors.toList());
 
@@ -103,7 +129,7 @@ public class PerformanceTests {
             this.genomicAssembly = genomicAssembly;
         }
 
-        public Stream<Variant> readVariants(Path vcfPath) {
+        public Stream<GenomicVariant> readVariants(Path vcfPath) {
             try {
                 return Files.lines(vcfPath)
                         .filter(line -> !line.startsWith("#"))
@@ -114,7 +140,7 @@ public class PerformanceTests {
             return Stream.empty();
         }
 
-        private Function<String, Stream<Variant>> toVariants() {
+        private Function<String, Stream<GenomicVariant>> toVariants() {
             return line -> {
                 // #CHROM POS ID REF ALT QUAL FILTER INFO
                 String[] columns = line.split("\t");
@@ -123,7 +149,7 @@ public class PerformanceTests {
             };
         }
 
-        private Variant convertToVariant(String altAllele, String[] columns) {
+        private GenomicVariant convertToVariant(String altAllele, String[] columns) {
             // #CHROM POS ID REF ALT QUAL FILTER INFO
             String chrom = columns[0];
             int start = Integer.parseInt(columns[1]);
@@ -135,9 +161,9 @@ public class PerformanceTests {
                 Map<String, String> infoFields = readInfoFields(info);
                 int changeLength = intOrDefault(infoFields.get("SVLEN"), 0);
                 int end = intOrDefault(infoFields.get("END"), 0);
-                return Variant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), Position.of(end), ref, altAllele, changeLength);
+                return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, end, ref, altAllele, changeLength);
             }
-            return Variant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), ref, altAllele);
+            return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, altAllele);
         }
 
         private Map<String, String> readInfoFields(String info) {

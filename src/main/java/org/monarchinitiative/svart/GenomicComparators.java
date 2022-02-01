@@ -25,12 +25,12 @@ class GenomicComparators {
         }
     }
 
-    enum VariantNaturalOrderComparator implements Comparator<Variant> {
+    enum GenomicVariantNaturalOrderComparator implements Comparator<GenomicVariant> {
         INSTANCE;
 
         @Override
-        public int compare(Variant o1, Variant o2) {
-            return Variant.compare(o1, o2);
+        public int compare(GenomicVariant o1, GenomicVariant o2) {
+            return GenomicVariant.compare(o1, o2);
         }
     }
 }
