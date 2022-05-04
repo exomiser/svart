@@ -19,6 +19,8 @@ public abstract class VariantTrimmer {
     private VariantTrimmer() {
     }
 
+    public abstract boolean canTrim(String ref, String alt);
+
     public abstract VariantPosition trim(Strand strand, int start, String ref, String alt);
 
     public static VariantTrimmer leftShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
@@ -36,6 +38,13 @@ public abstract class VariantTrimmer {
         @Override
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? leftShift(start, ref, alt, baseRetentionStrategy) : rightShift(start, ref, alt, baseRetentionStrategy);
+        }
+
+        @Override
+        public boolean canTrim(String ref, String alt) {
+            Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+            Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
+            return !baseRetentionStrategy.cantTrim(ref, alt) && (canRightTrim(ref, alt) || canLeftTrim(ref, alt));
         }
 
         @Override
@@ -74,6 +83,13 @@ public abstract class VariantTrimmer {
         @Override
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? rightShift(start, ref, alt, baseRetentionStrategy) : leftShift(start, ref, alt, baseRetentionStrategy);
+        }
+
+        @Override
+        public boolean canTrim(String ref, String alt) {
+            Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+            Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
+            return !baseRetentionStrategy.cantTrim(ref, alt) && (canLeftTrim(ref, alt) || canRightTrim(ref, alt));
         }
 
         @Override
