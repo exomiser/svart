@@ -33,17 +33,37 @@ Design
 ==
 There is a (mostly) compositional hierarchy of data types:
 
+Contig
+-
+`Contig` -has_length-> `int`
+
+`Contig` -has_identifier-> `int`
+
+`Contig` -has_name-> `String`
+
 GenomicAssembly
 -
  `GenomicAssembly` -has_some-> `Contig`
 
+CoordinateSystem
+-
+ `ONE_BASED` or `ZERO_BASED`
+
+Coordinates
+-
+ `Coordinates` -has_a-> `CoordinateSystem`
+
+ `Coordinates` -has_start-> `int`
+
+ `Coordinates` -has_end-> `int`
+
 Region
 -
- `Region` -has_a-> `CoordinateSystem`
+ `Region` -has_some-> `Coordinates`
 
- `Region` -has_start-> `Position`
-
- `Region` -has_end-> `Position`
+Strand
+-
+ `POSITIVE` or `NEGATIVE`
 
 GenomicRegion
 -
@@ -53,25 +73,21 @@ GenomicRegion
 
  `GenomicRegion` -has_a-> `Strand`
 
-Position
--
- `Position` -has_a-> `ConfidenceInterval`
-
 GenomicVariant
 -
  `GenomicVariant` -is_a-> `GenomicRegion`
 
  `GenomicVariant` -has_a-> `VariantType`
 
-BreakendVariant
+GenomicBreakendVariant
 -
- `BreakendVariant` -is_a-> `GenomicVariant`
+ `GenomicBreakendVariant` -is_a-> `GenomicVariant`
 
- `BreakendVariant` -has_left-> `Breakend`
+ `GenomicBreakendVariant` -has_left-> `GenomicBreakend`
 
- `BreakendVariant` -has_right-> `Breakend`
+ `GenomicBreakendVariant` -has_right-> `GenomicBreakend`
 
- `Breakend` -is_a-> `GenomicRegion`
+ `GenomicBreakend` -is_a-> `GenomicRegion`
 
 
 With this model, it is possible to express variation, using zero or one-based coordinates on a strand of a chromosome, for a 
@@ -95,25 +111,30 @@ VCF are reported on the positive strand, so at first sight it might not appear t
 gene. 
 
 ```java
-// Load the Human GRCh37.13 assembly from a NCBI assembly report
-GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
-// alternatively you can use svart to download one using the GenBank or RefSeq accession:
-//    GenomicAssembly grch37p13 = GenomicAssemblies.downloadAssembly("GCF_000001405.25");
-// or use a default assembly:
-//    GenomicAssembly grch37p13 = GenomicAssemblies.GRCh37p13();
+class SnpAndGeneTest {
 
-// FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
-Contig chr10b37 = b37.contigByName("10");
-GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 123_237_848, 123_357_972);
-// 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
-Variant snv = Variant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(123_256_215), "T", "G");
-// Because svart knows about coordinate systems and strands it is possible to...
-// keep the gene on the positive strand:
-// GenomicRegion{contig=10, strand=+, coordinateSystem=FULLY_CLOSED, startPosition=123237848, endPosition=123357972}
-assertThat(fgfr2Gene.contains(snv), equalTo(true));
-// or use it on the negative strand:
-// GenomicRegion{contig=10, strand=-, coordinateSystem=FULLY_CLOSED, startPosition=12176776, endPosition=12296900}
-assertThat(fgfr2Gene.toNegativeStrand().contains(snv), equalTo(true));
+    public void checkGeneContainsVariant() {
+        // Load the Human GRCh37.13 assembly from a NCBI assembly report
+        GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        // alternatively you can use svart to download one using the GenBank or RefSeq accession:
+        //    GenomicAssembly grch37p13 = GenomicAssemblies.downloadAssembly("GCF_000001405.25");
+        // or use a default assembly:
+        //    GenomicAssembly grch37p13 = GenomicAssemblies.GRCh37p13();
+
+        // FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
+        Contig chr10b37 = b37.contigByName("10");
+        GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.oneBased(), 123_237_848, 123_357_972);
+        // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
+        GenomicVariant snv = GenomicVariant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
+        // Because svart knows about coordinate systems and strands it is possible to...
+        // keep the gene on the positive strand:
+        // GenomicRegion{contig=10, strand=+, coordinateSystem=ONE_BASED, startPosition=123237848, endPosition=123357972}
+        assertThat(fgfr2Gene.contains(snv), equalTo(true));
+        // or use it on the negative strand:
+        // GenomicRegion{contig=10, strand=-, coordinateSystem=ONE_BASED, startPosition=12176776, endPosition=12296900}
+        assertThat(fgfr2Gene.toNegativeStrand().contains(snv), equalTo(true));
+    }
+}
 ```
 
 In the above example the default implementations provided by the library were used. These are immutable classes which 
@@ -152,28 +173,30 @@ instances from, for example an HTSJDK `VariantContext`. The `VcfConverter` needs
 sites to be trimmed. For example, this is how the VCF fields for a SNV called against GRCh37 would be converted:
 
 ```java
-@Test
-public void convert() {
-    VcfConverter vcfConverter = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
-    
-    // non-symbolic alleles
-    // CHR	POS	ID	REF	ALT
-    // chr1	12345	rs123456	C	T	6	PASS	.
-    Variant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "C", "T");
-    assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), "C", "T")));
+class ConvertVcfTest {
+    @Test
+    public void convert() {
+        VcfConverter vcfConverter = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
 
-    // symbolic alleles
-    // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
-    Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"),  "", Position.of(12345), Position.of(12345), "C", "<INS>", 200);
-    assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), Position.of(12345), "C", "<INS>", 200)));
+        // non-symbolic alleles
+        // CHR	POS	ID	REF	ALT
+        // chr1	12345	rs123456	C	T	6	PASS	.
+        Variant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "C", "T");
+        assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
 
-    // breakend variants
-    // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-    Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("chr1"), "bnd_U", Position.of(12345), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        // symbolic alleles
+        // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
+        Variant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
+        assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
 
-    Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12346), Position.of(12345));
-    Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(321682), Position.of(321681));
-    assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
+        // breakend variants
+        // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
+        Variant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("chr1"), "bnd_U", 12345, "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+
+        Breakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+        Breakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
+        assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
+    }
 }
 ```
 
@@ -189,23 +212,25 @@ complicated by requiring a 'padding' base, as VCF does for the reference allele,
 provides the `VariantTrimmer` class to enable users to perform this in a strand-safe way.
 
 ```java
-@Test
-public void trimMultiAllelicSite() {
-    // Given the VCF record:
-    // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
-    Contig chr1 = TestContig.of(1, 249_250_621);
-    VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
+class TrimMultipleAlleleTests {
+    @Test
+    public void trimMultiAllelicSite() {
+        // Given the VCF record:
+        // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
+        Contig chr1 = TestContig.of(1, 249_250_621);
+        VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
 
-    Variant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C");
-    assertThat(firstAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "C")));
+        GenomicVariant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
+        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
 
-    Variant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CTT", "CT");
-    assertThat(secondAllele, equalTo(Variant.of(chr1, "", Strand.POSITIVE, oneBased(), Position.of(225_725_424), "CT", "C")));
-}
+        GenomicVariant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
+        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
+    }
 
-private Variant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, String ref, String alt) {
-    VariantPosition firstTrimmed = variantTrimmer.trim(strand, start.pos(), ref, alt);
-    return Variant.of(contig, id, strand, coordinateSystem, start.withPos(firstTrimmed.start()), firstTrimmed.ref(), firstTrimmed.alt());
+    private GenomicVariant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        VariantPosition trimmed = variantTrimmer.trim(strand, start, ref, alt);
+        return GenomicVariant.of(contig, id, strand, coordinateSystem, trimmed.start(), trimmed.ref(), trimmed.alt());
+    }
 }
 ```
 
@@ -220,35 +245,37 @@ indicate the strand on which the feature is located in column 6 with a `+` (forw
 below shows how these records can be parsed into `GenomicRegion` instances.
 
 ```java
-@Test
-public void parseGenomicRegionFromBedFile() {
-    // Load the Human GRCh37.13 assembly
-    GenomicAssembly b37 = GenomicAssembly.GRCh37p13();
-    // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
-    // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
-    GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");
-    GenomicRegion neg1 = parseBedRecord(b37, "chr7\t127475864\t127477031\tNeg1\t0\t-");
+class BedTests {
+    @Test
+    public void parseGenomicRegionFromBedFile() {
+        // Load the Human GRCh37.13 assembly
+        GenomicAssembly b37 = GenomicAssembly.GRCh37p13();
+        // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
+        // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
+        GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");
+        GenomicRegion neg1 = parseBedRecord(b37, "chr7\t127475864\t127477031\tNeg1\t0\t-");
 
-    assertThat(pos1.contigName(), equalTo("7"));
-    assertThat(pos1.startOnStrand(Strand.POSITIVE), equalTo(127471196));
-    assertThat(pos1.endOnStrand(Strand.POSITIVE), equalTo(127472363));
-    assertThat(pos1.strand(), equalTo(Strand.POSITIVE));
+        assertThat(pos1.contigName(), equalTo("7"));
+        assertThat(pos1.startOnStrand(Strand.POSITIVE), equalTo(127471196));
+        assertThat(pos1.endOnStrand(Strand.POSITIVE), equalTo(127472363));
+        assertThat(pos1.strand(), equalTo(Strand.POSITIVE));
 
-    assertThat(neg1.contigName(), equalTo("7"));
-    // a new instance on the positive strand can be created using neg1.toPositiveStrand(), however this will create
-    // a new object which may not be wanted in the long term, so to avoid this you can use the start/endOnStrand method
-    // which will efficiently calculate the result of neg1.withStrand(POSITIVE).start()/.end()
-    assertThat(neg1.startOnStrand(Strand.POSITIVE), equalTo(127475864));
-    assertThat(neg1.endOnStrand(Strand.POSITIVE), equalTo(127477031));
-    assertThat(neg1.strand(), equalTo(Strand.NEGATIVE));
-}
+        assertThat(neg1.contigName(), equalTo("7"));
+        // a new instance on the positive strand can be created using neg1.toPositiveStrand(), however this will create
+        // a new object which may not be wanted in the long term, so to avoid this you can use the start/endOnStrand method
+        // which will efficiently calculate the result of neg1.withStrand(POSITIVE).start()/.end()
+        assertThat(neg1.startOnStrand(Strand.POSITIVE), equalTo(127475864));
+        assertThat(neg1.endOnStrand(Strand.POSITIVE), equalTo(127477031));
+        assertThat(neg1.strand(), equalTo(Strand.NEGATIVE));
+    }
 
-private GenomicRegion parseBedRecord(GenomicAssembly genomicAssembly, String bedRecord) {
-    String[] fields = bedRecord.split("\t");
-    Contig contig = genomicAssembly.contigByName(fields[0]);
-    Strand strand = Strand.parseStrand(fields[5]);
-    Position start = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[1])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[2])));
-    Position end = strand == Strand.POSITIVE ? Position.of(Integer.parseInt(fields[2])) : Position.of(Coordinates.invertPosition(LEFT_OPEN, contig, Integer.parseInt(fields[1])));
-    return GenomicRegion.of(contig, strand, LEFT_OPEN, start, end);
+    private GenomicRegion parseBedRecord(GenomicAssembly genomicAssembly, String bedRecord) {
+        String[] fields = bedRecord.split("\t");
+        Contig contig = genomicAssembly.contigByName(fields[0]);
+        Strand strand = Strand.parseStrand(fields[5]);
+        int start = strand == Strand.POSITIVE ? Integer.parseInt(fields[1]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[2]));
+        int end = strand == Strand.POSITIVE ? Integer.parseInt(fields[2]) : Coordinates.invertCoordinate(CoordinateSystem.zeroBased(), contig, Integer.parseInt(fields[1]));
+        return GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), start, end);
+    }
 }
 ```
