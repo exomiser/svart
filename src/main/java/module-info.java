@@ -1,4 +1,4 @@
-module org.monarchitiative.svart {
+module org.monarchinitiative.svart {
     exports org.monarchinitiative.svart;
     exports org.monarchinitiative.svart.assembly;
     exports org.monarchinitiative.svart.interval;
