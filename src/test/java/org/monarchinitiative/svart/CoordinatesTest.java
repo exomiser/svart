@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -333,5 +337,25 @@ public class CoordinatesTest {
     })
     public void overlapLengthCoordinates(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, int expected) {
         assertThat(Coordinates.of(x, xStart, xEnd).overlapLength(Coordinates.of(y, yStart, yEnd)), equalTo(expected));
+    }
+
+    @Test
+    public void comparatorNaturalOrderTest() {
+        Coordinates first = Coordinates.of(CoordinateSystem.zeroBased(), 0, 5);
+        Coordinates second = Coordinates.of(CoordinateSystem.oneBased(), 2, 5);
+        Coordinates third = Coordinates.of(CoordinateSystem.zeroBased(), 2, 4);
+
+        List<Coordinates> sorted = Stream.of(second, first, third).sorted(Coordinates.naturalOrder()).collect(Collectors.toUnmodifiableList());
+        assertThat(sorted, equalTo(List.of(first, second, third)));
+    }
+
+    @Test
+    public void comparableTest() {
+        Coordinates first = Coordinates.of(CoordinateSystem.zeroBased(), 0, 5);
+        Coordinates second = Coordinates.of(CoordinateSystem.oneBased(), 2, 5);
+        Coordinates third = Coordinates.of(CoordinateSystem.zeroBased(), 2, 4);
+
+        List<Coordinates> sorted = Stream.of(second, first, third).sorted().collect(Collectors.toUnmodifiableList());
+        assertThat(sorted, equalTo(List.of(first, second, third)));
     }
 }

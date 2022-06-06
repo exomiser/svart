@@ -7,6 +7,15 @@ import java.util.Comparator;
  */
 class GenomicComparators {
 
+    enum CoordinatesNaturalOrderComparator implements Comparator<Coordinates>{
+        INSTANCE;
+
+        @Override
+        public int compare(Coordinates o1, Coordinates o2) {
+            return Coordinates.compare(o1, o2);
+        }
+    }
+
     enum RegionNaturalOrderComparator implements Comparator<Region<?>> {
         INSTANCE;
 

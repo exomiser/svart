@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import static org.monarchinitiative.svart.CoordinateSystem.ONE_BASED;
@@ -334,6 +335,10 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
     static Coordinates ofBreakend(CoordinateSystem coordinateSystem, int pos, ConfidenceInterval confidenceInterval) {
         Objects.requireNonNull(coordinateSystem);
         return Coordinates.of(coordinateSystem, pos, confidenceInterval, pos + endDelta(coordinateSystem), confidenceInterval);
+    }
+
+    static Comparator<Coordinates> naturalOrder() {
+        return GenomicComparators.CoordinatesNaturalOrderComparator.INSTANCE;
     }
 
     static int compare(Coordinates x, Coordinates y) {
