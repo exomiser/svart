@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.svart.util.VariantTrimmer.*;
 
-public class GenomicVariantTrimmerTest {
+public class VariantTrimmerTest {
 
     private enum TrimDirection {
         LEFT, RIGHT
@@ -18,6 +18,72 @@ public class GenomicVariantTrimmerTest {
 
     private enum BaseRetention {
         RETAIN, REMOVE
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // Fully-trimmed input
+            "T, .,   LEFT,  RETAIN, false",
+            "'', '', LEFT,  RETAIN, false",
+            "T, '',  LEFT,  RETAIN, false",
+            "'', T,  LEFT,  RETAIN, false",
+
+            "T, .,   LEFT,  REMOVE, false",
+            "'', '', LEFT,  REMOVE, false",
+            "T, '',  LEFT,  REMOVE, false",
+            "'', T,  LEFT,  REMOVE, false",
+
+            "T, .,   RIGHT, RETAIN, false",
+            "'', '', RIGHT, RETAIN, false",
+            "T, '',  RIGHT, RETAIN, false",
+            "'', T,  RIGHT, RETAIN, false",
+
+            "T, .,   RIGHT, REMOVE, false",
+            "'', '', RIGHT, REMOVE, false",
+            "T, '',  RIGHT, REMOVE, false",
+            "'', T,  RIGHT, REMOVE, false",
+
+            // Identity variant - single base
+            "T, T, LEFT,  RETAIN, false",
+            "T, T, LEFT,  REMOVE, true",
+            "T, T, RIGHT,  RETAIN, false",
+            "T, T, RIGHT,  REMOVE, true",
+            // Identity variant - multiple bases
+            "TA, TA, LEFT,  RETAIN, true",
+            "TA, TA, LEFT,  REMOVE, true",
+            "TA, TA, RIGHT,  RETAIN, true",
+            "TA, TA, RIGHT,  REMOVE, true",
+            // SNV - trimmed
+            "T, C, LEFT,  RETAIN, false",
+            "T, C, LEFT,  REMOVE, false",
+            "T, C, RIGHT,  RETAIN, false",
+            "T, C, RIGHT,  REMOVE, false",
+            // SNV - untrimmed
+            "CGAT, CGGT, LEFT,  RETAIN, true",
+            "CGAT, CGGT, LEFT,  REMOVE, true",
+            "CGAT, CGGT, RIGHT, RETAIN, true",
+            "CGAT, CGGT, RIGHT, REMOVE, true",
+
+            // DEL same start and end base
+            "CGC, C,  LEFT,  REMOVE, true",
+            "CGC, C,  LEFT,  RETAIN, false",
+            "CGC, C,  RIGHT,  REMOVE, true",
+            "CGC, C,  RIGHT,  RETAIN, false",
+
+            // INS same start and end base
+            "C, CGC,  LEFT,  REMOVE, true",
+            "C, CGC,  LEFT,  RETAIN, false",
+            "C, CGC,  RIGHT,  REMOVE, true",
+            "C, CGC,  RIGHT,  RETAIN, false",
+    })
+    public void testCanTrim(String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, boolean expected) {
+        VariantTrimmer instance = variantTrimmer(trimDirection, baseRetention);
+        assertThat(instance.canTrim(ref, alt), equalTo(expected));
+    }
+
+    private VariantTrimmer variantTrimmer(TrimDirection trimDirection, BaseRetention baseRetention) {
+        BaseRetentionStrategy baseRetentionStrategy = baseRetention == BaseRetention.RETAIN ? retainingCommonBase() : removingCommonBase();
+        return trimDirection == TrimDirection.LEFT ? VariantTrimmer.leftShiftingTrimmer(baseRetentionStrategy) : VariantTrimmer.rightShiftingTrimmer(baseRetentionStrategy);
     }
 
     @Test

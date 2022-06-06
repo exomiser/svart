@@ -115,7 +115,7 @@ class SnpAndGeneTest {
 
     public void checkGeneContainsVariant() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
-        GenomicAssembly b37 = GenomicAssemblyParser.parseAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // alternatively you can use svart to download one using the GenBank or RefSeq accession:
         //    GenomicAssembly grch37p13 = GenomicAssemblies.downloadAssembly("GCF_000001405.25");
         // or use a default assembly:

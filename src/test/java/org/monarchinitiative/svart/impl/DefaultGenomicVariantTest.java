@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -513,6 +517,18 @@ public class DefaultGenomicVariantTest {
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").isSymbolic(), is(false));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "A", "<DEL>", -99).isSymbolic(), is(true));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<BND>", 0).isSymbolic(), is(true));
+        }
+
+        @Test
+        public void comparableTest() {
+            GenomicVariant first = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<BND>", 0);
+            GenomicVariant second = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
+            GenomicVariant third = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "A", "<DEL>", -99);
+            Contig chr2 = TestContig.of(2, 2000);
+            GenomicVariant fourth = DefaultGenomicVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "T");
+
+            List<GenomicVariant> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
+            assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
         }
     }
 }

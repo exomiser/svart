@@ -8,7 +8,7 @@ import org.monarchinitiative.svart.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomicRegion> {
+public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomicRegion> implements Comparable<GenomicRegion> {
 
     private DefaultGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) {
         super(contig, strand, coordinates);
@@ -21,6 +21,11 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
     @Override
     protected DefaultGenomicRegion newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
         return new DefaultGenomicRegion(contig, strand, coordinates);
+    }
+
+    @Override
+    public int compareTo(GenomicRegion o) {
+        return GenomicRegion.compare(this, o);
     }
 
     @Override

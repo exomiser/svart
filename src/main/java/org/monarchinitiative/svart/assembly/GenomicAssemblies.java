@@ -106,7 +106,7 @@ public class GenomicAssemblies {
             return localResourceStream;
         }
         // load from the module path
-        Optional<Module> svartModuleOptional = ModuleLayer.boot().findModule("org.monarchitiative.svart");
+        Optional<Module> svartModuleOptional = ModuleLayer.boot().findModule("org.monarchinitiative.svart");
         if (svartModuleOptional.isPresent()) {
             Module svartModule = svartModuleOptional.get();
             try {

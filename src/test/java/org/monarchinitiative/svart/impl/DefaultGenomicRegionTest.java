@@ -1,8 +1,13 @@
 package org.monarchinitiative.svart.impl;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -93,5 +98,18 @@ public class DefaultGenomicRegionTest {
     })
     public void testThrowsExceptionWithCoordinatesOutOfBounds(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd) {
         assertThrows(CoordinatesOutOfBoundsException.class, () -> GenomicRegion.of(chr1, inputStrand, inputCoords, inputStart, inputEnd));
+    }
+
+    @Test
+    public void comparableTest() {
+        GenomicRegion first = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1);
+        GenomicRegion second = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 2, 10).toNegativeStrand();
+        GenomicRegion third = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 2, 8);
+        Contig chr2 = TestContig.of(2, 2000);
+        GenomicRegion fourth = GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2);
+
+        List<GenomicRegion> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
+        sorted.forEach(System.out::println);
+        assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
     }
 }

@@ -2,6 +2,7 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.BaseGenomicBreakendVariant;
 import org.monarchinitiative.svart.GenomicBreakend;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * Implementation of a structural variant that involves two different contigs.
@@ -9,7 +10,7 @@ import org.monarchinitiative.svart.GenomicBreakend;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public final class DefaultGenomicBreakendVariant extends BaseGenomicBreakendVariant<DefaultGenomicBreakendVariant> {
+public final class DefaultGenomicBreakendVariant extends BaseGenomicBreakendVariant<DefaultGenomicBreakendVariant> implements Comparable<GenomicVariant> {
 
     private DefaultGenomicBreakendVariant(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
         super(eventId, left, right, ref, alt);
@@ -26,6 +27,11 @@ public final class DefaultGenomicBreakendVariant extends BaseGenomicBreakendVari
     @Override
     protected DefaultGenomicBreakendVariant newBreakendVariantInstance(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
         return new DefaultGenomicBreakendVariant(eventId, left, right, ref, alt);
+    }
+
+    @Override
+    public int compareTo(GenomicVariant o) {
+        return GenomicVariant.compare(this, o);
     }
 
     @Override

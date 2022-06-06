@@ -2,7 +2,7 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.*;
 
-public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenomicVariant> {
+public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenomicVariant> implements Comparable<GenomicVariant> {
 
     private DefaultGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         super(contig, id, strand, coordinates, ref, alt, changeLength);
@@ -69,6 +69,11 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    @Override
+    public int compareTo(GenomicVariant o) {
+        return GenomicVariant.compare(this, o);
     }
 
     public static class Builder extends BaseGenomicVariant.Builder<Builder> {

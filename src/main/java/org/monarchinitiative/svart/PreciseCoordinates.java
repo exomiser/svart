@@ -2,7 +2,7 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
-class PreciseCoordinates implements Coordinates {
+class PreciseCoordinates implements Coordinates, Comparable<Coordinates> {
 
     private final CoordinateSystem coordinateSystem;
     private final int start;
@@ -58,6 +58,11 @@ class PreciseCoordinates implements Coordinates {
             return this;
         }
         return new PreciseCoordinates(coordinateSystem(), start() - upstream, end() + downstream);
+    }
+
+    @Override
+    public int compareTo(Coordinates o) {
+        return Coordinates.compare(this, o);
     }
 
     @Override

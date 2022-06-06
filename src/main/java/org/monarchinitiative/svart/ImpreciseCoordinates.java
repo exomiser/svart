@@ -2,7 +2,7 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
-class ImpreciseCoordinates implements Coordinates {
+class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
 
     private final CoordinateSystem coordinateSystem;
     private final int start;
@@ -72,6 +72,12 @@ class ImpreciseCoordinates implements Coordinates {
             return this;
         }
         return new ImpreciseCoordinates(coordinateSystem(), start() - upstream, startCi, end() + downstream, endCi);    }
+
+
+    @Override
+    public int compareTo(Coordinates o) {
+        return Coordinates.compare(this, o);
+    }
 
     @Override
     public boolean equals(Object o) {

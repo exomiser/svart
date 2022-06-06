@@ -19,7 +19,7 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
 
     protected BaseGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
         super(contig, strand, coordinates);
-        this.id = Objects.requireNonNull(id, "id must not be null");
+        this.id = IdCache.cacheId(id);
         this.ref = AlleleCache.cacheAllele(VariantType.requireNonSymbolic(ref));
         this.alt = AlleleCache.cacheAllele(VariantType.requireNonBreakend(alt));
         this.variantType = VariantType.parseType(ref, alt);
@@ -267,5 +267,30 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
                 }
             }
     }
-    
+
+    private static class IdCache {
+
+        private static final String MISSING = ".";
+        private static final String EMPTY = "";
+
+        private IdCache() {
+        }
+
+        /**
+         * Returns a cached empty ("") or missing value (".") instance. Nulls will return an empty value. Other
+         * identifiers are returned as input.
+         *
+         * @param id   An identifier string.
+         * @return     A cached "" or "." instance or the original input value
+         */
+        private static String cacheId(String id) {
+            if (id == null || id.isEmpty()) {
+                return EMPTY;
+            }
+            if (id.length() == 1 && MISSING.equals(id)) {
+                return MISSING;
+            }
+            return id;
+        }
+    }
 }
