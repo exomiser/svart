@@ -8,6 +8,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,11 @@ import java.util.regex.Pattern;
 public class GenomicAssemblies {
 
     private static final String ASSEMBLY_RESOURCE_PATH = "org/monarchinitiative/svart/assemblies/";
+    private static final Pattern ACCESSION_PATTERN = Pattern.compile("(?<prefix>GC[A,F])_(?<accession>[\\d]{9})\\.(?<version>[\\d]+)");
+    private static final Set<String> ASSEMBLIES = Set.of("GCA_000001405.14", "GCF_000001405.25",
+            "GCA_000001405.28", "GCF_000001405.39",
+            "GCA_000001635.8", "GCF_000001635.26",
+            "GCA_000001635.9", "GCF_000001635.27");
 
     private static volatile GenomicAssembly GRCh37p13 = null;
     private static volatile GenomicAssembly GRCh38p13 = null;
@@ -25,6 +31,35 @@ public class GenomicAssemblies {
     private static volatile GenomicAssembly GRCm39 = null;
 
     private GenomicAssemblies() {
+    }
+
+    public static Set<String> listAssemblies() {
+        return ASSEMBLIES;
+    }
+
+    public static boolean containsAssembly(String accession) {
+        return ASSEMBLIES.contains(accession);
+    }
+
+    /**
+     * Will return the cached {@link GenomicAssembly} for the given accession. Will return null if not one of the
+     * pre-cached assemblies. To obtain an uncached assembly, use the {@link GenomicAssemblies::downloadAssembly} method.
+     *
+     * @param accession A GenBank or RefSeq accession
+     * @return a {@link GenomicAssembly} for the given accession or null if not recognised.
+     */
+    public static GenomicAssembly getAssembly(String accession) {
+        if (!ACCESSION_PATTERN.matcher(accession).matches()) {
+            throw new IllegalArgumentException("Invalid GenBank/RefSeq assembly accession " + accession);
+        }
+        // these aren't a map as we only want to load them when asked for.
+        return switch (accession) {
+            case "GCA_000001405.14", "GCF_000001405.25" -> GRCh37p13();
+            case "GCA_000001405.28", "GCF_000001405.39" -> GRCh38p13();
+            case "GCA_000001635.8", "GCF_000001635.26" -> GRCm38p6();
+            case "GCA_000001635.9", "GCF_000001635.27" -> GRCm39();
+            default -> null;
+        };
     }
 
     /**
@@ -120,16 +155,67 @@ public class GenomicAssemblies {
 
     /**
      * Attempts to download the assembly_report.txt file for the given GenBank or RefSeq accession. Accessions must have
-     * the pattern "GC[A,F])_[0-9]{9}\.[0-9]+" e.g. GCF_000001405.39
-     *
-     * This method will attempt to locate and download the file from the NCBI FTP servers from the URL <url>ftp://ftp.ncbi.nlm.nih.gov/genomes/all</url>
+     * the pattern "GC[A,F])_[\d]{9}\.[\d]+" e.g. GCF_000001405.39
+     * <p>
+     * This method will attempt to locate and download the file from the NCBI FTP servers from the URL <url>ftp://ftp.ncbi.nlm.nih.gov/genomes/all</url>.
+     * It will not cache the result internally so each call will re-download the data.
      *
      * @param accession A GenBank or RefSeq accession
      * @return a {@link GenomicAssembly} for the given accession.
      */
     public static GenomicAssembly downloadAssembly(String accession) {
-        URL url = locateNcbiAssemblyReportUrl(accession);
-        return downloadAssembly(url);
+        URL assemblyReportUrl = locateNcbiAssemblyReportUrl(accession);
+        return downloadAssembly(assemblyReportUrl);
+    }
+
+    /**
+     * Attempts to download an NCBI assembly report from the URL provided. This method will not cache the result, so
+     * each call will re-download the data. It is the responsibility of the user to implement cacheing if required.
+     *
+     * @param assemblyReportUrl {@link URL} pointing to an NCBI assembly_report.txt file
+     * @return a {@link GenomicAssembly} read from the report.
+     */
+    public static GenomicAssembly downloadAssembly(URL assemblyReportUrl) {
+        try (ReadableByteChannel readableByteChannel = Channels.newChannel(assemblyReportUrl.openStream())) {
+            String file = assemblyReportUrl.getFile();
+            String fileName = file.substring(file.lastIndexOf('/') + 1);
+            Path tempFile = Files.createTempFile(fileName, null);
+            try (FileOutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
+                outputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }
+            return GenomicAssembly.readAssembly(tempFile);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Attempts to download an NCBI assembly report for a given accession to the specified directory. This method will
+     * not cache the result, so each call will re-download the data. It is the responsibility of the user to implement
+     * cacheing if required.
+     *
+     * @param accession         {@link URL} pointing to an NCBI assembly_report.txt file
+     * @param downloadDirectory {@link Path} to the directory where the file should be downloaded
+     * @return a {@link Path} to the downloaded report.
+     */
+    public static Path downloadAssembly(String accession, Path downloadDirectory) {
+        try {
+            Files.createDirectories(downloadDirectory);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+        URL assemblyReportUrl = locateNcbiAssemblyReportUrl(accession);
+        try (ReadableByteChannel readableByteChannel = Channels.newChannel(assemblyReportUrl.openStream())) {
+            String file = assemblyReportUrl.getFile();
+            String fileName = file.substring(file.lastIndexOf('/') + 1);
+            Path downloadedFile = downloadDirectory.resolve(fileName);
+            try (FileOutputStream outputStream = new FileOutputStream(downloadedFile.toFile())) {
+                outputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }
+            return downloadedFile;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static URL locateNcbiAssemblyReportUrl(String accession) {
@@ -138,9 +224,8 @@ public class GenomicAssemblies {
         // Two directories under "all" are named for the accession prefix (GCA or GCF) and these directories
         // contain another three levels of directories named for digits 1-3, 4-6 & 7-9 of the assembly accession.
         // ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/
-        Pattern accessionPattern = Pattern.compile("(?<prefix>GC[A,F])_(?<accession>[0-9]{9})\\.(?<version>[0-9]+)");
-        Matcher matcher = accessionPattern.matcher(accession);
-        if (!matcher.matches() ) {
+        Matcher matcher = ACCESSION_PATTERN.matcher(accession);
+        if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid GenBank/RefSeq assembly accession " + accession);
         }
         String acc = matcher.group("accession");
@@ -149,7 +234,7 @@ public class GenomicAssemblies {
         try {
             URL parentDirUrl = new URL(assembliesParentDir + ";type=d");
             URLConnection conn = parentDirUrl.openConnection();
-            try(InputStream inputStream = conn.getInputStream()) {
+            try (InputStream inputStream = conn.getInputStream()) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 for (String line; (line = reader.readLine()) != null; ) {
                     if (line.contains(accession)) {
@@ -166,25 +251,5 @@ public class GenomicAssemblies {
             throw new IllegalStateException(e);
         }
         throw new IllegalArgumentException("Unable to find accession " + accession + " in NCBI FTP directory " + assembliesParentDir);
-    }
-
-    /**
-     * Attempts to download an NCBI assembly report from the URL provided.
-     *
-     * @param assemblyReportUrl {@link URL} pointing to an NCBI assembly_report.txt file
-     * @return a {@link GenomicAssembly} read from the report.
-     */
-    public static GenomicAssembly downloadAssembly(URL assemblyReportUrl) {
-        try(ReadableByteChannel readableByteChannel = Channels.newChannel(assemblyReportUrl.openStream())) {
-            String file = assemblyReportUrl.getFile();
-            String fileName = file.substring(file.lastIndexOf('/') + 1);
-            Path tempFile = Files.createTempFile(fileName, null);
-            try (FileOutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
-                outputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            }
-            return GenomicAssembly.readAssembly(tempFile);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
     }
 }
