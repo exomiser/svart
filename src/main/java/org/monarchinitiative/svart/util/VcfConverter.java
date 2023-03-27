@@ -78,11 +78,25 @@ public class VcfConverter {
         return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
     }
 
+    public GenomicVariant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen, String mateId, String eventId) {
+        VariantType.requireSymbolic(alt);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), end);
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen, mateId, eventId);
+    }
+
     public GenomicVariant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
         Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
         return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
+    }
+
+    public GenomicVariant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen, String mateId, String eventId) {
+        VariantType.requireSymbolic(alt);
+        VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen, mateId, eventId);
     }
 
     public <T extends BaseGenomicVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {

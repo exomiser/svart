@@ -321,11 +321,6 @@ public class DefaultGenomicVariantTest {
         }
 
         @Test
-        public void symbolicThrowsIllegalArgumentWithBreakendAllele() {
-            assertThrows(IllegalArgumentException.class, () -> DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "A[1:2]", 1));
-        }
-
-        @Test
         public void throwsIllegalArgumentWithNonSymbolicAllele() {
             // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
             DefaultGenomicVariant instance = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "T", 1);
@@ -513,10 +508,27 @@ public class DefaultGenomicVariantTest {
         }
 
         @Test
+        public void canCreateSymbolicBreakendAllele() {
+            GenomicVariant instance = DefaultGenomicVariant.of(chr1, "bnd_u", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "G]2:123456]", 0, "bnd_v", "event_1");
+            assertThat(instance.contig(), equalTo(chr1));
+            assertThat(instance.strand(), equalTo(Strand.POSITIVE));
+            assertThat(instance.start(), equalTo(1));
+            assertThat(instance.end(), equalTo(1));
+            assertThat(instance.ref(), equalTo("A"));
+            assertThat(instance.alt(), equalTo("G]2:123456]"));
+            assertThat(instance.variantType(), equalTo(VariantType.BND));
+            assertThat(instance.length(), equalTo(1));
+            assertThat(instance.changeLength(), equalTo(0));
+            assertThat(instance.mateId(), equalTo("bnd_v"));
+            assertThat(instance.eventId(), equalTo("event_1"));
+        }
+
+        @Test
         public void isSymbolic() {
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").isSymbolic(), is(false));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "A", "<DEL>", -99).isSymbolic(), is(true));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<BND>", 0).isSymbolic(), is(true));
+            assertThat(DefaultGenomicVariant.of(chr1, "bnd_u", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "G]2:123456]", 0).isSymbolic(), is(true));
         }
 
         @Test

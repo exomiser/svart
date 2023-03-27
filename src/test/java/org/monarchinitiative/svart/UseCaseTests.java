@@ -5,6 +5,8 @@ import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
+import org.monarchinitiative.svart.util.VcfBreakendFormatter;
+import org.monarchinitiative.svart.util.VcfBreakendResolver;
 import org.monarchinitiative.svart.util.VcfConverter;
 
 import java.nio.file.Path;
@@ -144,16 +146,45 @@ public class UseCaseTests {
         // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
         GenomicVariant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
         // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        GenomicVariant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        // Breakends can be treated as a symbolic variant
+        GenomicVariant bnd = vcfConverter.convertSymbolic(vcfConverter.parseContig("1"), "bnd_U", 12345, 12345, "C", "C[2:321682[", 0, "bnd_V", "tra2");
+        assertInstanceOf(GenomicVariant.class, bnd);
+        // or they can be converted to a specialised breakend variant
+        GenomicVariant bndb = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        assertInstanceOf(GenomicBreakendVariant.class, bndb);
 
         assertThat(snv.ref(), equalTo(ins.ref()));
         assertThat(snv.ref(), equalTo(bnd.ref()));
         assertThat(snv.overlapsWith(ins), equalTo(true));
         assertThat(snv.overlapsWith(bnd), equalTo(true));
         assertThat(snv.isSymbolic(), equalTo(false));
+
         assertThat(ins.isSymbolic(), equalTo(true));
+        assertThat(ins.ref(), equalTo("C"));
+        assertThat(ins.alt(), equalTo("<INS>"));
+
         assertThat(bnd.isSymbolic(), equalTo(true));
         assertThat(bnd.isBreakend(), equalTo(true));
+        assertThat(bnd.ref(), equalTo("C"));
+        assertThat(bnd.alt(), equalTo("C[2:321682["));
+
+        // breakends cannot be flipped from one strand to the other
+        assertSame(bndb, bndb.toOppositeStrand());
+        assertSame(bnd, bnd.toOppositeStrand());
+        // the GenomicVariant can be converted to a BreakendGenomicVariant if required
+        if (bnd.isBreakend()) {
+            VcfBreakendResolver vcfBreakendResolver = new VcfBreakendResolver(b37);
+            GenomicBreakendVariant breakendVariant = vcfBreakendResolver.resolveBreakend(bnd);
+            assertThat(breakendVariant, equalTo(bndb));
+            assertThat(bnd.contig(), equalTo(breakendVariant.contig()));
+            assertThat(bnd.length(), equalTo(breakendVariant.length()));
+            assertThat(bnd.ref(), equalTo(breakendVariant.ref()));
+            // C[2:321682[
+            String breakendAltValue = VcfBreakendFormatter.makeAltVcfField(breakendVariant);
+            assertThat(bnd.alt(), equalTo(breakendAltValue));
+            assertThat(bnd.mateId(), equalTo(breakendVariant.mateId()));
+            assertThat(bnd.eventId(), equalTo(breakendVariant.eventId()));
+        }
     }
 
     @Test

@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart.util;
 
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
@@ -162,6 +163,24 @@ public class VcfBreakendResolverTest {
             assertThat(right.start(), equalTo(rightStart));
             assertThat(right.end(), equalTo(rightEnd));
             assertThat(right.strand(), equalTo(rightStrand));
+        }
+
+        @Test
+        void resolveVariant() {
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+            //"event1, bndA, bndB, chr1, 3, C, C[chr2:8[,       chr2, POSITIVE, 8, 7",
+            GenomicVariant genomicVariant = GenomicVariant.of(assembly.contigByName("chr1"), "bndA", Strand.POSITIVE, Coordinates.oneBased(3, 3), "C", "C[chr2:8[", 0, "bndB", "event1");
+            GenomicBreakendVariant resolvedFromVariant = instance.resolveBreakend(genomicVariant);
+            GenomicVariant expected = instance.resolve("event1", "bndA", "bndB", assembly.contigByName("chr1"), 3, ConfidenceInterval.precise(), ConfidenceInterval.precise(), "C", "C[chr2:8[");
+            assertThat(resolvedFromVariant, equalTo(expected));
+        }
+
+        @Test
+        void resolveVariantOnlyAcceptsBreakends() {
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+            GenomicVariant snp = GenomicVariant.of(assembly.contigByName("chr1"), "rs123456", Strand.POSITIVE, Coordinates.oneBased(3, 3), "C", "A", 0, "", "");
+            Exception exception = assertThrows(IllegalArgumentException.class, () -> instance.resolveBreakend(snp));
+            assertThat(exception.getMessage(), equalTo("Unable to resolve non-breakend variant!"));
         }
 
     }

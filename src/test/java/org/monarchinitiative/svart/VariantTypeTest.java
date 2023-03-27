@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GenomicVariantTypeTest {
+public class VariantTypeTest {
 
     @Test
     public void nullInput() {
@@ -166,6 +166,7 @@ public class GenomicVariantTypeTest {
 
     @ParameterizedTest
     @CsvSource({
+            "<INS>, true",
             "]13:123456]AGTNNNNNCAT, true",
             "]13:123456[AGTNNNNNCAT, true",
             "[13:123456[AGTNNNNNCAT, true",
@@ -173,13 +174,40 @@ public class GenomicVariantTypeTest {
             "[, false",
             "], false",
             "AGTNNNNNCAT, false",
-            "<INS>, true",
             "., false",
             ".ATC, true",
             "ATC., true",
     })
     public void isSymbolic(String allele, boolean expected) {
         assertThat(VariantType.isSymbolic(allele), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "<INS>",
+            "]13:123456]AGTNNNNNCAT",
+            "]13:123456[AGTNNNNNCAT",
+            "[13:123456[AGTNNNNNCAT",
+            "[13:123456]AGTNNNNNCAT",
+            ".ATC",
+            "ATC.",
+    })
+    public void requireSymbolicPasses(String allele) {
+        assertThat(VariantType.requireSymbolic(allele), equalTo(allele));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "AGTNNNNNCAT",
+            "[",
+            "]",
+            ".",
+            "<",
+            ">",
+    })
+    public void requireSymbolicThrowsException(String allele) {
+        Exception actual = assertThrows(IllegalArgumentException.class, () -> VariantType.requireSymbolic(allele));
+        assertThat(actual.getMessage(), equalTo("Illegal non-symbolic alt allele '" + allele + "'"));
     }
 
     @Test
@@ -189,6 +217,7 @@ public class GenomicVariantTypeTest {
 
     @ParameterizedTest
     @CsvSource({
+            "<INS>, true",
             "]13:123456]AGTNNNNNCAT, false",
             "]13:123456[AGTNNNNNCAT, false",
             "[13:123456[AGTNNNNNCAT, false",
@@ -196,7 +225,6 @@ public class GenomicVariantTypeTest {
             "[, false",
             "], false",
             "AGTNNNNNCAT, false",
-            "<INS>, true",
             "., false",
             ".ATC, false",
             "ATC., false",

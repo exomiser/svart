@@ -4,24 +4,22 @@ import org.monarchinitiative.svart.*;
 
 public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenomicVariant> implements Comparable<GenomicVariant> {
 
-    private DefaultGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
-        super(contig, id, strand, coordinates, ref, alt, changeLength);
+    private DefaultGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
     }
 
-    public DefaultGenomicVariant(Builder builder) {
+    public DefaultGenomicVariant(BaseGenomicVariant.Builder<?> builder) {
         super(builder);
     }
 
     // symbolic variants
     public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
-        VariantType.requireNonBreakend(alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+        return of(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
     }
 
     public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
-        VariantType.requireNonBreakend(alt);
-        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+        return of(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
     }
 
     // sequence variants
@@ -29,17 +27,26 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
         int end = calculateEnd(start, coordinateSystem, ref, alt);
         int changeLength = calculateChangeLength(ref, alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
     }
 
     public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
         int changeLength = calculateChangeLength(ref, alt);
-        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+        return of(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
+    }
+
+    public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength, String mateId, String eventId) {
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+        return of(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
+    }
+
+    public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
     }
 
     @Override
-    protected DefaultGenomicVariant newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
-        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength);
+    protected DefaultGenomicVariant newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        return new DefaultGenomicVariant(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
     }
 
     @Override
@@ -54,17 +61,7 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
 
     @Override
     public String toString() {
-        return "Variant{" +
-                "contig=" + contigId() +
-                ", id='" + id() + '\'' +
-                ", strand=" + strand() +
-                ", " + formatCoordinates() +
-                ", ref='" + ref() + '\'' +
-                ", alt='" + alt() + '\'' +
-                ", variantType=" + variantType() +
-                ", length=" + length() +
-                ", changeLength=" + changeLength() +
-                '}';
+        return super.toString();
     }
 
     public static Builder builder() {

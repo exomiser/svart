@@ -247,31 +247,38 @@ public enum VariantType {
 
     public static String requireNonSymbolic(String alt) {
         if (alt == null || isSymbolic(alt)) {
-            throw new IllegalArgumentException("Illegal symbolic alt allele " + alt);
+            throw new IllegalArgumentException("Illegal symbolic alt allele '" + alt + "'");
         }
         if (alt.contains(",")) {
-            throw new IllegalArgumentException("Illegal multi-allelic alt allele " + alt);
+            throw new IllegalArgumentException("Illegal multi-allelic alt allele '" + alt + "'");
         }
         return alt;
     }
 
+    /**
+     * Checks the input allele string is a symbolic allele where symbolic includes structural variants of the form <DEL>,
+     * <INS> or uses breakend notation e.g. A[1:12345[ or A. or .A
+     * @param alt an alt allele string
+     * @return the input alt allele
+     * @throws IllegalArgumentException for an incorrect alt allele string
+     */
     public static String requireSymbolic(String alt) {
-        if (alt == null || !isLargeSymbolic(alt)) {
-            throw new IllegalArgumentException("Illegal non-symbolic or breakend alt allele " + alt);
+        if (alt == null || !isSymbolic(alt)) {
+            throw new IllegalArgumentException("Illegal non-symbolic alt allele '" + alt + "'");
         }
         return alt;
     }
 
     public static String requireBreakend(String alt) {
         if (alt == null || !isBreakend(alt)) {
-            throw new IllegalArgumentException("Illegal non-breakend alt allele " + alt);
+            throw new IllegalArgumentException("Illegal non-breakend alt allele '" + alt + "'");
         }
         return alt;
     }
 
     public static String requireNonBreakend(String alt) {
         if (alt == null || VariantType.isBreakend(alt)) {
-            throw new IllegalArgumentException("Illegal breakend allele " + alt);
+            throw new IllegalArgumentException("Illegal breakend allele '" + alt + "'");
         }
         return alt;
     }
