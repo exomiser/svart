@@ -115,14 +115,14 @@ public class DefaultGenomicVariantTest {
         }
 
         @Test
-        public void mnv() {
-            GenomicVariant mnv = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "AT", "TG");
+        public void delins() {
+            GenomicVariant delins = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "AT", "TGC");
 
-            assertThat(mnv.start(), equalTo(1));
-            assertThat(mnv.start(), equalTo(1));
-            assertThat(mnv.end(), equalTo(2));
-            assertThat(mnv.variantType(), equalTo(VariantType.MNV));
-            assertThat(mnv.length(), equalTo(2));
+            assertThat(delins.start(), equalTo(1));
+            assertThat(delins.start(), equalTo(1));
+            assertThat(delins.end(), equalTo(2));
+            assertThat(delins.variantType(), equalTo(VariantType.DELINS));
+            assertThat(delins.length(), equalTo(2));
         }
 
         @Test

@@ -3,6 +3,12 @@ package org.monarchinitiative.svart;
 import java.util.Objects;
 
 /**
+ * VariantType follows the VCF types for structural variants or child terms of
+ * <a href="http://www.sequenceontology.org/browser/current_svn/term/SO:0001059">sequence_alteration</a> from the
+ * Sequence Ontology (SO), when not specified in VCF. These mostly match-up well, however there are a few terms
+ * for sequence variants (i.e. those with a known sequence) which do not have a VCF-specified type e.g. SNV, MNV, DELINS.
+ * In these cases the SO definition is followed.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public enum VariantType {
@@ -17,9 +23,9 @@ public enum VariantType {
     // >150 (HTSJDK VariantContext.MAX_ALLELE_SIZE_FOR_NON_SV)
     // >=1000 (Jannovar VariantAnnotator)
     SNV,
-    MNV,    // a multi-nucleotide variation
-    // start, end, length
-    // pos
+    MNV,
+    // DELINS is equivalent to an HGVS delins
+    DELINS,
 
     SYMBOLIC,
     // VCF standard reserved values for structural variants
@@ -95,16 +101,16 @@ public enum VariantType {
         }
         String stripped = trimAngleBrackets(Objects.requireNonNull(alt));
         switch (stripped) {
-            case "SNP":
-            case "SNV":
+            case "SNP", "SNV":
                 return SNV;
-            case "MNP":
-            case "MNV":
+            case "MNP",  "MNV":
                 return MNV;
             case "DEL":
                 return DEL;
             case "INS":
                 return INS;
+            case "DELINS":
+                return DELINS;
             case "DUP":
                 return DUP;
             case "INV":
@@ -198,8 +204,22 @@ public enum VariantType {
 
     /**
      * Returns the {@link VariantType} for the given ref/alt alleles. This method will determine whether the alleles
-     * indicate small sequence variations such as SNP/MNV or INS/DEL or if they indicate a large symbolic or breakend
-     * allele. It is required that the input alleles conform to the VCF specification.
+     * indicate small sequence variations such as SNP, MNV, INS, DEL or DELINS or if they indicate a large symbolic or
+     * breakend allele. It is required that the input alleles conform to the VCF specification, although this method will
+     * also handle fully-trimmed alleles where an INS or DEL contain an empty ref or alt allele. For small sequence variants,
+     * this method will assign a DELINS type to variants which can be described as a deletion, followed by an insertion
+     * event. For example A>GC is a deletion of the reference A followed by an insertion of a GC (a DELINS), whereas
+     * A>AGC is an INS of bases GC and AGC>A is a DEL of bases GC.
+     *
+     * <p>Note that, balanced substitutions such as TG>CA or TGA>CGC are typed as MNV following the Sequence Ontology
+     * definition <a href="http://www.sequenceontology.org/browser/current_svn/term/SO:0001013">SO:0001013</a>
+     * "A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT".
+     * Similarly, DELINS also follows the <a href="http://www.sequenceontology.org/browser/current_svn/term/SO:1000032">SO:1000032</a>
+     * definition "A sequence alteration which included an insertion and a deletion, affecting 2 or more bases".
+     * The <a href="https://varnomen.hgvs.org/recommendations/DNA/variant/delins/">HGVS</a> definition of
+     * DELINS - "changes involving two or more consecutive nucleotides are described as deletion/insertion (delins)
+     * variants", would also include the MNV type.
+     * </p>
      *
      * @param ref reference allele string e.g. [ATGCN]+
      * @param alt alternate allele string e.g. a symbolic allele, or a breakend replacement string, or match the regular
@@ -210,13 +230,29 @@ public enum VariantType {
         if (isSymbolic(ref, alt)) {
             return parseType(alt);
         }
-        if (ref.length() == alt.length()) {
-            if (alt.length() == 1) {
-                return VariantType.SNV;
-            }
+        // SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
+        if (ref.length() == alt.length() && ref.length() == 1) {
+            return VariantType.SNV;
+        }
+        // SO:0001013 - A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT.
+        if (ref.length() == alt.length() && ref.length() > 1) {
             return VariantType.MNV;
         }
-        return ref.length() < alt.length() ? VariantType.INS : VariantType.DEL;
+        // SO:0000159 - The point at which one or more contiguous nucleotides were excised.
+        // ATC>AT, AT>A or A> == DEL - handle untrimmed cases too
+        // check start and end of ref in case of flipping to opposite strands e.g. AG>A becomes CT>T
+        if (alt.length() < ref.length() && (ref.startsWith(alt) || ref.endsWith(alt))) {
+            return DEL;
+        }
+        // SO:0000667 - The sequence of one or more nucleotides added between two adjacent nucleotides in the sequence.
+        // >A or A>AT, AT>ATC == INS - handle untrimmed cases too
+        // check start and end of alt in case of flipping to opposite strands e.g. A>AG becomes T>CT
+        if (ref.length() < alt.length() && (alt.startsWith(ref) || alt.endsWith(ref))) {
+            return INS;
+        }
+        // SO:1000032 - A sequence alteration which included an insertion and a deletion, affecting 2 or more bases.
+        //  ATG>TC, AT>TCA  == DELINS (i.e. a deletion followed by an insertion)
+        return DELINS;
     }
 
     public static boolean isSymbolic(String ref, String alt) {

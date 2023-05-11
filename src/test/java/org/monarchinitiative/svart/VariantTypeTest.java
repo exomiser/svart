@@ -3,6 +3,7 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.util.Seq;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -31,9 +32,33 @@ public class VariantTypeTest {
     @ParameterizedTest
     @CsvSource({
             "A, T,    SNV",
-            "ATG, TCA,    MNV",
-            "TC, A,    DEL",
-            "A, TC,    INS",
+            "CGAT, CGGT, MNV", // this is actually an untrimmed A>G SNV
+            "AT, TC,  MNV", // note this is two adjacent SNVs
+            "ATG, TTC,  MNV", // note this is two SNVs (A>T, G>C) separated by a T
+            "ATG, TCA,  MNV",
+            "ATG, TC,  DELINS",
+            "AT, TCA,  DELINS",
+            "GTGTGAT, GTGT,  DEL", // untrimmed DEL
+            "ATC, AT,  DEL",  // untrimmed DEL (fwd strand)
+            "CTA, TA,  DEL",  // untrimmed DEL (rev strand)
+            "TC, T,   DEL", // VCF trimmed DEL
+            "AG, A,   DEL", // VCF trimmed DEL (fwd strand)
+            "CT, C,   DEL", // VCF trimmed DEL (rev strand)
+            "C, '',   DEL", // fully-trimmed DEL
+            "CGAT, CGT,  DELINS",  // this is an untrimmed DEL A
+            "AT, ATC,    INS",  // untrimmed INS (fwd strand)
+            "AT, GAT,    INS",  // untrimmed INS (rev strand)
+            "T, TC,   INS",  // VCF trimmed INS
+            "A, AG,   INS",  // VCF trimmed INS (fwd strand)
+            "T, CT,   INS",  // VCF trimmed INS (rev strand)
+            "'', C,   INS", // fully-trimmed INS
+            "CGAT, CGTAT, DELINS",  // this is an untrimmed INS T
+            "ATC, AG,    DELINS",
+            "TC, G,    DELINS",
+            "AG, ATC,   DELINS",
+            "G, TC,    DELINS",
+            "ACG, TC,    DELINS",
+            "TC, ACG,    DELINS",
             "N, <DEL>,    DEL",
             "N, <INS>,    INS",
             "N, <INS:ME>,    INS_ME",
@@ -209,6 +234,7 @@ public class VariantTypeTest {
         Exception actual = assertThrows(IllegalArgumentException.class, () -> VariantType.requireSymbolic(allele));
         assertThat(actual.getMessage(), equalTo("Illegal non-symbolic alt allele '" + allele + "'"));
     }
+
 
     @Test
     public void isSymbolicEmptyStringReturnsFalse() {
