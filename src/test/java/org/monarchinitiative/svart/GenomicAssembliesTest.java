@@ -38,6 +38,14 @@ public class GenomicAssembliesTest {
     }
 
     @Test
+    public void T2T_CHM13v2() {
+        GenomicAssembly t2t_chm13 = GenomicAssemblies.T2T_CHM13v2_0();
+        assertThat(t2t_chm13.refSeqAccession(), equalTo("GCF_009914755.1"));
+        assertThat(t2t_chm13.genBankAccession(), equalTo("GCA_009914755.4"));
+        assertSame(t2t_chm13, GenomicAssemblies.T2T_CHM13v2_0());
+    }
+
+    @Test
     public void GRCm38p6() {
         GenomicAssembly grcm38p6 = GenomicAssemblies.GRCm38p6();
         assertThat(grcm38p6.refSeqAccession(), equalTo("GCF_000001635.26"));
@@ -91,17 +99,40 @@ public class GenomicAssembliesTest {
             GenomicAssembly genomicAssembly = GenomicAssembly.readAssembly(downloaded);
             assertThat(genomicAssembly.name(), equalTo("GRCh37.p13"));
         }
+
+        /**
+         * Need a new assembly report for GenomicAssemblies to load from resources? This method is what you want. Just
+         * update the assemblyToAdd and assemblyName variables from
+         * <a href="https://www.ncbi.nlm.nih.gov/datasets/genome/">NCBI Genome resources</a>, then update the
+         * {@link GenomicAssemblies} implementation to load the file.
+         *
+         * @throws IOException
+         */
+        @Disabled("Helper method for updating assembly report resources")
+        @Test
+        void downloadNewAssemblyToResources() throws IOException {
+            String assemblyToAdd = "GCF_009914755.1";
+            String assemblyName = "T2T-CHM13v2.0";
+
+            Path resourcePath = Path.of("src/main/resources/org/monarchinitiative/svart/assemblies");
+            Path downloaded = GenomicAssemblies.downloadAssembly(assemblyToAdd, resourcePath);
+            assertTrue(Files.exists(downloaded));
+            assertThat(Files.size(downloaded), greaterThan(0L));
+            GenomicAssembly genomicAssembly = GenomicAssembly.readAssembly(downloaded);
+            assertThat(genomicAssembly.name(), equalTo(assemblyName));
+        }
     }
 
 
     @Test
     void testListAssemblies() {
         assertThat(GenomicAssemblies.listAssemblies(), equalTo(
-                Set.of("GCA_000001405.14", "GCF_000001405.25",
-                "GCA_000001405.28", "GCF_000001405.39",
-                "GCA_000001635.8", "GCF_000001635.26",
-                "GCA_000001635.9", "GCF_000001635.27")))
-        ;
+                Set.of("GCA_000001405.14", "GCF_000001405.25", // GRCh37
+                        "GCA_000001405.28", "GCF_000001405.39", // GRCh38
+                        "GCA_009914755.4", "GCF_009914755.1", // T2T-CHM13
+                        "GCA_000001635.8", "GCF_000001635.26", // GRCm38
+                        "GCA_000001635.9", "GCF_000001635.27") // GRCm39
+                ));
     }
 
     @ParameterizedTest
@@ -111,6 +142,8 @@ public class GenomicAssembliesTest {
             "GCA_000001405.14, true",
             "GCF_000001405.39, true",
             "GCA_000001405.28, true",
+            "GCA_009914755.4, true",
+            "GCF_009914755.1, true",
             "GCA_000001405.29, false"
     })
     void testContainsAssembly(String assemblyAccession, boolean expected) {

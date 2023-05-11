@@ -7,6 +7,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -18,27 +20,90 @@ import java.util.regex.Pattern;
  */
 public class GenomicAssemblies {
 
-    private static final String ASSEMBLY_RESOURCE_PATH = "org/monarchinitiative/svart/assemblies/";
-    private static final Pattern ACCESSION_PATTERN = Pattern.compile("(?<prefix>GC[A,F])_(?<accession>[\\d]{9})\\.(?<version>[\\d]+)");
-    private static final Set<String> ASSEMBLIES = Set.of("GCA_000001405.14", "GCF_000001405.25",
-            "GCA_000001405.28", "GCF_000001405.39",
-            "GCA_000001635.8", "GCF_000001635.26",
-            "GCA_000001635.9", "GCF_000001635.27");
+    private enum Assembly {
+        GRCH37_P13("GCA_000001405.14", "GCF_000001405.25", "GCF_000001405.25_GRCh37.p13_assembly_report.txt"),
+        GRCH38_P13("GCA_000001405.28", "GCF_000001405.39", "GCF_000001405.39_GRCh38.p13_assembly_report.txt"),
+        T2T_CHM13_V2_0("GCA_009914755.4", "GCF_009914755.1", "GCF_009914755.1_T2T-CHM13v2.0_assembly_report.txt"),
+        GRCM38_P6("GCA_000001635.8", "GCF_000001635.26", "GCF_000001635.26_GRCm38.p6_assembly_report.txt"),
+        GRCM39("GCA_000001635.9", "GCF_000001635.27", "GCF_000001635.27_GRCm39_assembly_report.txt");
 
-    private static volatile GenomicAssembly GRCh37p13 = null;
-    private static volatile GenomicAssembly GRCh38p13 = null;
-    private static volatile GenomicAssembly GRCm38p6 = null;
-    private static volatile GenomicAssembly GRCm39 = null;
+        private static final String ASSEMBLY_RESOURCE_PATH = "org/monarchinitiative/svart/assemblies/";
+
+        private final String genBankAccession;
+        private final String refSeqAccession;
+        private final String assemblyResourceFilename;
+
+        /**
+         * Do **NOT** access directly as this will be null - use the accessor method
+         */
+        private volatile GenomicAssembly genomicAssembly = null;
+
+        Assembly(String genBankAccession, String refSeqAccession, String assemblyResourceFilename) {
+            this.genBankAccession = genBankAccession;
+            this.refSeqAccession = refSeqAccession;
+            this.assemblyResourceFilename = assemblyResourceFilename;
+        }
+
+        GenomicAssembly genomicAssembly() {
+            if (genomicAssembly == null) {
+                synchronized (Assembly.class) {
+                    if (genomicAssembly == null) {
+                        genomicAssembly = readAssemblyResource(assemblyResourceFilename);
+                    }
+                }
+            }
+            return genomicAssembly;
+        }
+
+        private static GenomicAssembly readAssemblyResource(String resourceFileName) {
+            InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + resourceFileName);
+            return GenomicAssembly.readAssembly(inputStream);
+        }
+
+        private static InputStream getResourceAsStream(String path) {
+            InputStream localResourceStream = GenomicAssemblies.class.getClassLoader().getResourceAsStream(path);
+            if (localResourceStream != null) {
+                return localResourceStream;
+            }
+            localResourceStream = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
+            if (localResourceStream != null) {
+                return localResourceStream;
+            }
+            // load from the module path
+            Optional<Module> svartModuleOptional = ModuleLayer.boot().findModule("org.monarchinitiative.svart");
+            if (svartModuleOptional.isPresent()) {
+                Module svartModule = svartModuleOptional.get();
+                try {
+                    return svartModule.getResourceAsStream(path);
+                } catch (IOException e) {
+                    // swallow and fall through
+                }
+            }
+            throw new IllegalStateException("Unable to load resource " + path);
+        }
+    }
+
+    private static final Pattern ACCESSION_PATTERN = Pattern.compile("(?<prefix>GC[A,F])_(?<accession>[\\d]{9})\\.(?<version>[\\d]+)");
+    private static final Map<String, Assembly> ASSEMBLIES;
+
+    static {
+        var temp = new HashMap<String, Assembly>();
+        for (Assembly assembly : Assembly.values()) {
+            temp.put(assembly.genBankAccession, assembly);
+            temp.put(assembly.refSeqAccession, assembly);
+        }
+        ASSEMBLIES = Map.copyOf(temp);
+    }
 
     private GenomicAssemblies() {
     }
 
     public static Set<String> listAssemblies() {
-        return ASSEMBLIES;
+        return ASSEMBLIES.keySet();
     }
 
     public static boolean containsAssembly(String accession) {
-        return ASSEMBLIES.contains(accession);
+        return ASSEMBLIES.containsKey(accession);
     }
 
     /**
@@ -52,46 +117,35 @@ public class GenomicAssemblies {
         if (!ACCESSION_PATTERN.matcher(accession).matches()) {
             throw new IllegalArgumentException("Invalid GenBank/RefSeq assembly accession " + accession);
         }
-        // these aren't a map as we only want to load them when asked for.
-        return switch (accession) {
-            case "GCA_000001405.14", "GCF_000001405.25" -> GRCh37p13();
-            case "GCA_000001405.28", "GCF_000001405.39" -> GRCh38p13();
-            case "GCA_000001635.8", "GCF_000001635.26" -> GRCm38p6();
-            case "GCA_000001635.9", "GCF_000001635.27" -> GRCm39();
-            default -> null;
-        };
+        Assembly assembly = ASSEMBLIES.get(accession);
+        return assembly == null ? null : assembly.genomicAssembly();
     }
 
     /**
      * Parses the file 'GCF_000001405.25_GRCh37.p13_assembly_report.txt' and returns a {@link GenomicAssembly} instance.
      *
-     * @return The human GRCh37.p13 {@link GenomicAssembly} also know as b37, hg19
+     * @return The human GRCh37.p13 {@link GenomicAssembly} also known as b37, hg19
      */
     public static GenomicAssembly GRCh37p13() {
-        if (GRCh37p13 == null) {
-            synchronized (GenomicAssemblies.class) {
-                if (GRCh37p13 == null) {
-                    GRCh37p13 = readAssemblyResource("GCF_000001405.25_GRCh37.p13_assembly_report.txt");
-                }
-            }
-        }
-        return GRCh37p13;
+        return Assembly.GRCH37_P13.genomicAssembly();
     }
 
     /**
      * Parses the file 'GCF_000001405.39_GRCh38.p13_assembly_report.txt' and returns a {@link GenomicAssembly} instance.
      *
-     * @return The human GRCh38.p13 {@link GenomicAssembly} also know as b38, hg38
+     * @return The human GRCh38.p13 {@link GenomicAssembly} also known as b38, hg38
      */
     public static GenomicAssembly GRCh38p13() {
-        if (GRCh38p13 == null) {
-            synchronized (GenomicAssemblies.class) {
-                if (GRCh38p13 == null) {
-                    GRCh38p13 = readAssemblyResource("GCF_000001405.39_GRCh38.p13_assembly_report.txt");
-                }
-            }
-        }
-        return GRCh38p13;
+        return Assembly.GRCH38_P13.genomicAssembly();
+    }
+
+    /**
+     * Parses the file 'GCF_009914755.1_T2T-CHM13v2.0_assembly_report.txt' and returns a {@link GenomicAssembly} instance.
+     *
+     * @return The human T2T-CHM13v2.0 {@link GenomicAssembly}
+     */
+    public static GenomicAssembly T2T_CHM13v2_0() {
+        return Assembly.T2T_CHM13_V2_0.genomicAssembly();
     }
 
     /**
@@ -100,57 +154,16 @@ public class GenomicAssemblies {
      * @return The mouse GRCm38.p6 {@link GenomicAssembly}
      */
     public static GenomicAssembly GRCm38p6() {
-        if (GRCm38p6 == null) {
-            synchronized (GenomicAssemblies.class) {
-                if (GRCm38p6 == null) {
-                    GRCm38p6 = readAssemblyResource("GCF_000001635.26_GRCm38.p6_assembly_report.txt");
-                }
-            }
-        }
-        return GRCm38p6;
+        return Assembly.GRCM38_P6.genomicAssembly();
     }
 
     /**
-     * Parses the file 'GCF_000001635.26_GRCm38.p6_assembly_report.txt' and returns a {@link GenomicAssembly} instance.
+     * Parses the file 'GCF_000001635.27_GRCm39_assembly_report.txt' and returns a {@link GenomicAssembly} instance.
      *
-     * @return The mouse GRCm38.p6 {@link GenomicAssembly}
+     * @return The mouse GRCm39 {@link GenomicAssembly}
      */
     public static GenomicAssembly GRCm39() {
-        if (GRCm39 == null) {
-            synchronized (GenomicAssemblies.class) {
-                if (GRCm39 == null) {
-                    GRCm39 = readAssemblyResource("GCF_000001635.27_GRCm39_assembly_report.txt");
-                }
-            }
-        }
-        return GRCm39;
-    }
-
-    private static GenomicAssembly readAssemblyResource(String resourceFileName) {
-        InputStream inputStream = getResourceAsStream(ASSEMBLY_RESOURCE_PATH + resourceFileName);
-        return GenomicAssembly.readAssembly(inputStream);
-    }
-
-    private static InputStream getResourceAsStream(String path) {
-        InputStream localResourceStream = GenomicAssemblies.class.getClassLoader().getResourceAsStream(path);
-        if (localResourceStream != null) {
-            return localResourceStream;
-        }
-        localResourceStream = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
-        if (localResourceStream != null) {
-            return localResourceStream;
-        }
-        // load from the module path
-        Optional<Module> svartModuleOptional = ModuleLayer.boot().findModule("org.monarchinitiative.svart");
-        if (svartModuleOptional.isPresent()) {
-            Module svartModule = svartModuleOptional.get();
-            try {
-                return svartModule.getResourceAsStream(path);
-            } catch (IOException e) {
-                // swallow and fall through
-            }
-        }
-        throw new IllegalStateException("Unable to load resource " + path);
+        return Assembly.GRCM39.genomicAssembly();
     }
 
     /**
