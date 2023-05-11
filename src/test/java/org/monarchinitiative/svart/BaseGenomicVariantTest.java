@@ -93,6 +93,15 @@ public class BaseGenomicVariantTest {
     }
 
     @Test
+    void testSymbolicAllelesWithoutLengthThrowsInformativeException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder()
+                .with(chr1, ".", Strand.POSITIVE, Coordinates.oneBased(1, 200), "N", "<DEL>")
+                .build()
+        );
+        assertThat(exception.getMessage(), equalTo("Missing changeLength for symbolic alt allele <DEL>"));
+    }
+
+    @Test
     public void buildSymbolicDeletion() {
         //2    321682 .    T    <DEL>   6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62
         Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, 321_682, ConfidenceInterval.of(-56, 20), 321_887, ConfidenceInterval.of(-10, 62));

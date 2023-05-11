@@ -64,6 +64,13 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         return alt.length() - ref.length();
     }
 
+    protected static String requireLengthIfSymbolic(String alt) {
+        if (VariantType.isSymbolic(alt)) {
+            throw new IllegalArgumentException("Missing changeLength for symbolic alt allele " + alt);
+        }
+        return alt;
+    }
+
     /**
      * Calculates the end position of the reference allele in the coordinate system provided.
      */
@@ -220,17 +227,18 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         }
 
         public T with(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt) {
-            return with(contig, id, strand, coordinates, ref, alt, calculateChangeLength(ref, alt), mateId, eventId);
+            return with(contig, id, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt), mateId, eventId);
         }
 
         public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+            requireLengthIfSymbolic(alt);
             int end = calculateEnd(start, coordinateSystem, ref, alt);
             Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
             return with(contig, id, strand, coordinates, ref, alt);
         }
 
         public T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
-            return with(contig, id, strand, coordinates, ref, alt, calculateChangeLength(ref, alt), mateId, eventId);
+            return with(contig, id, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt), mateId, eventId);
         }
 
         public T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {

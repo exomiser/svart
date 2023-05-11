@@ -24,6 +24,7 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
 
     // sequence variants
     public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        requireLengthIfSymbolic(alt);
         int end = calculateEnd(start, coordinateSystem, ref, alt);
         int changeLength = calculateChangeLength(ref, alt);
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
@@ -31,6 +32,7 @@ public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenom
     }
 
     public static DefaultGenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
+        requireLengthIfSymbolic(alt);
         int changeLength = calculateChangeLength(ref, alt);
         return of(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
     }
