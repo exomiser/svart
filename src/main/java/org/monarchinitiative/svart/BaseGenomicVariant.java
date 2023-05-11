@@ -165,7 +165,7 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
 
     @Override
     public String toString() {
-        return "Variant{" +
+        return "GenomicVariant{" +
                "contig=" + contigId() +
                ", id='" + id + '\'' +
                ", strand=" + strand() +
