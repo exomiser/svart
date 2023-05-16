@@ -1,5 +1,7 @@
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.util.Seq;
+
 import java.util.Objects;
 
 /**
@@ -230,29 +232,62 @@ public enum VariantType {
         if (isSymbolic(ref, alt)) {
             return parseType(alt);
         }
-        // SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
+        // SNV SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
         if (ref.length() == alt.length() && ref.length() == 1) {
             return VariantType.SNV;
         }
-        // SO:0001013 - A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT.
+        // MNV SO:0001013 - A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT.
         if (ref.length() == alt.length() && ref.length() > 1) {
+            // INV SO:1000036 - A continuous nucleotide sequence is inverted in the same position.
+            if (isInversion(ref, alt)) {
+                return VariantType.INV;
+            }
             return VariantType.MNV;
         }
-        // SO:0000159 - The point at which one or more contiguous nucleotides were excised.
+        // DEL SO:0000159 - The point at which one or more contiguous nucleotides were excised.
         // ATC>AT, AT>A or A> == DEL - handle untrimmed cases too
         // check start and end of ref in case of flipping to opposite strands e.g. AG>A becomes CT>T
         if (alt.length() < ref.length() && (ref.startsWith(alt) || ref.endsWith(alt))) {
             return DEL;
         }
-        // SO:0000667 - The sequence of one or more nucleotides added between two adjacent nucleotides in the sequence.
+        // INS SO:0000667 - The sequence of one or more nucleotides added between two adjacent nucleotides in the sequence.
         // >A or A>AT, AT>ATC == INS - handle untrimmed cases too
         // check start and end of alt in case of flipping to opposite strands e.g. A>AG becomes T>CT
         if (ref.length() < alt.length() && (alt.startsWith(ref) || alt.endsWith(ref))) {
             return INS;
         }
-        // SO:1000032 - A sequence alteration which included an insertion and a deletion, affecting 2 or more bases.
+        // DELINS SO:1000032 - A sequence alteration which included an insertion and a deletion, affecting 2 or more bases.
         //  ATG>TC, AT>TCA  == DELINS (i.e. a deletion followed by an insertion)
         return DELINS;
+    }
+
+    /**
+     * Requires both ref and alt are <b>of equal length</b>
+     * @param ref
+     * @param alt
+     * @return
+     */
+    private static boolean isInversion(String ref, String alt) {
+        // check first and last bases are rev complement before checking the entire sequence
+        if (isReverseComplement(ref.charAt(0), alt.charAt(alt.length() -1)) && isReverseComplement(ref.charAt(ref.length() -1), alt.charAt(0))) {
+            if (ref.length() == 2) {
+                // Already checked the sequences are reverse complemented, although here AT -> AT, GC -> GC, so these are actually not variations!
+                // Other dinucleotide combinations are true inversions GA -> TC, CT -> AG
+                return true;
+            }
+            return Seq.reverseComplement(ref).equals(alt);
+        }
+        return false;
+    }
+
+    private static boolean isReverseComplement(char c, char c1) {
+        if (c == 'A' && c1 == 'T') {
+            return true;
+        } else if (c == 'T' && c1 == 'A') {
+            return true;
+        } else if (c == 'G' && c1 == 'C') {
+            return true;
+        } else return c == 'C' && c1 == 'G';
     }
 
     public static boolean isSymbolic(String ref, String alt) {

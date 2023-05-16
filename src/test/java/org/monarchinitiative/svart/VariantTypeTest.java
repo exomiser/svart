@@ -36,6 +36,10 @@ public class VariantTypeTest {
             "AT, TC,  MNV", // note this is two adjacent SNVs
             "ATG, TTC,  MNV", // note this is two SNVs (A>T, G>C) separated by a T
             "ATG, TCA,  MNV",
+            "AT, AT,  INV",
+            "GA, TC,  INV",
+            "ATG, CAT,  INV",
+            "TCAG, CTGA,  INV",
             "ATG, TC,  DELINS",
             "AT, TCA,  DELINS",
             "GTGTGAT, GTGT,  DEL", // untrimmed DEL
