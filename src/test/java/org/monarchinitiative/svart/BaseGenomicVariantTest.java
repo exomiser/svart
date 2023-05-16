@@ -18,7 +18,7 @@ public class BaseGenomicVariantTest {
 
     @Test
     public void buildPreciseInsertion() {
-        GenomicVariant instance = GenomicVariant.builder().with(chr1, "rs1234567", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").build();
+        GenomicVariant instance = GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").id("rs1234567").build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("rs1234567"));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
@@ -69,7 +69,7 @@ public class BaseGenomicVariantTest {
             "ZERO_BASED,    5, G, AT,    6",
     })
     public void builderAddsMissingEndAndLength(CoordinateSystem coordinateSystem, int start, String ref, String alt, int expectEnd) {
-        GenomicVariant instance = GenomicVariant.builder().with(chr1, "", Strand.POSITIVE, coordinateSystem, start, ref, alt).build();
+        GenomicVariant instance = GenomicVariant.builder().with(chr1, Strand.POSITIVE, coordinateSystem, start, ref, alt).build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo(""));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
@@ -84,21 +84,39 @@ public class BaseGenomicVariantTest {
 
     @Test
     public void buildIllegalSymbolicInsertion() {
-        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "<INS>").build());
+        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "<INS>").build());
     }
 
     @Test
     public void buildThrowsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "A[1:2]").build());
+        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "A[1:2]").build());
     }
 
     @Test
     void testSymbolicAllelesWithoutLengthThrowsInformativeException() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder()
-                .with(chr1, ".", Strand.POSITIVE, Coordinates.oneBased(1, 200), "N", "<DEL>")
+                .with(chr1, Strand.POSITIVE, Coordinates.oneBased(1, 200), "N", "<DEL>")
                 .build()
         );
         assertThat(exception.getMessage(), equalTo("Missing changeLength for symbolic alt allele <DEL>"));
+    }
+
+    @Test
+    void testIncorrectCoordinatesLengthThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(1, 200), "AT", "A")
+
+        );
+        assertThat(exception.getMessage(), equalTo("Ref allele length of 2 inconsistent with Coordinates{coordinateSystem=ONE_BASED, start=1, end=200} (length 200) ref=AT, alt=A"));
+    }
+
+    @Test
+    void testAlleleChangeLengthMismatchThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(100, 101), "AT", "A", -2)
+
+        );
+        assertThat(exception.getMessage(), equalTo("Given changeLength of -2 inconsistent with expected changeLength of -1 for variant 1:100-101 AT>A"));
     }
 
     @Test
@@ -110,7 +128,8 @@ public class BaseGenomicVariantTest {
         int changeLength = -205;
 
         GenomicVariant instance = GenomicVariant.builder()
-                .with(chr1, ".", Strand.POSITIVE, coordinates, ref, alt, changeLength)
+                .with(chr1, Strand.POSITIVE, coordinates, ref, alt, changeLength)
+                .id(".")
                 .build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("."));
@@ -152,7 +171,7 @@ public class BaseGenomicVariantTest {
         GenomicVariant symbolicFromStaticConstructor = GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200);
         assertEquals(symbolicFromBuilder, symbolicFromStaticConstructor);
 
-        GenomicVariant bndFromBuilder = GenomicVariant.builder().with(chr1, "bnd_U", Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).mateId("bnd_V").eventId("tra2").build();
+        GenomicVariant bndFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).id("bnd_U").mateId("bnd_V").eventId("tra2").build();
         GenomicVariant bndFromStaticConstructor = GenomicVariant.of(chr1, "bnd_U", Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0, "bnd_V", "tra2");
         assertEquals(bndFromBuilder, bndFromStaticConstructor);
     }

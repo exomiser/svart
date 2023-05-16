@@ -37,7 +37,7 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
 
     private int checkChangeLength(Coordinates coordinates, int changeLength, VariantType variantType) {
         if (variantType.baseType() == VariantType.DEL && changeLength >= 0) {
-            throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Should be < 0 given coordinates  " + changeCoordinates());
+            throw new IllegalArgumentException("Illegal DEL changeLength:" + changeLength + ". Should be < 0 given coordinates " + changeCoordinates());
         }
         if (variantType.baseType() == VariantType.INS && changeLength <= 0) {
             throw new IllegalArgumentException("Illegal INS changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
@@ -45,12 +45,14 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         if (variantType.baseType() == VariantType.DUP && changeLength <= 0) {
             throw new IllegalArgumentException("Illegal DUP!changeLength:" + changeLength + ". Should be > 0 given coordinates " + changeCoordinates());
         }
-        if (variantType.baseType() == VariantType.INV && changeLength != 0 && !isSymbolic()) {
-            // symbolic alleles may not be precise, so this can cause failures
-            throw new IllegalArgumentException("Illegal INV! changeLength:" + changeLength + ". Should be 0 given coordinates " + changeCoordinates());
-        }
-        if (ref.length() != coordinates.length() && !isSymbolic()) {
-            throw new IllegalArgumentException(coordinates + " (length " + coordinates.length() + ") ref=" + ref + ", alt=" + alt + " inconsistent with allele change length of " + changeLength);
+        if (!isSymbolic()) {
+            if (ref.length() != coordinates.length()) {
+                throw new IllegalArgumentException("Ref allele length of " + ref.length() + " inconsistent with " + coordinates + " (length " + coordinates.length() + ") ref=" + ref + ", alt=" + alt);
+            }
+            int expectedChangeLength = alt().length() - ref().length();
+            if (changeLength != expectedChangeLength) {
+                throw new IllegalArgumentException("Given changeLength of " + changeLength + " inconsistent with expected changeLength of " + expectedChangeLength + " for variant " + changeCoordinates());
+            }
         }
         return changeLength;
     }
@@ -227,29 +229,22 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         }
 
         public T with(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt) {
-            return with(contig, id, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt), mateId, eventId);
+            return with(contig, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt));
         }
 
-        public T with(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        public T with(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
             requireLengthIfSymbolic(alt);
             int end = calculateEnd(start, coordinateSystem, ref, alt);
             Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-            return with(contig, id, strand, coordinates, ref, alt);
-        }
-
-        public T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
-            return with(contig, id, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt), mateId, eventId);
-        }
-
-        public T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
-            return with(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
+            return with(contig, strand, coordinates, ref, alt, calculateChangeLength(ref, alt));
         }
 
         public T with(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
             return with(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
         }
 
-        public T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        // keep this private to prevent excessive scoping of this method as that would basically nullify the point of having a builder.
+        private T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
             super.with(contig, strand, coordinates);
             this.id = Objects.requireNonNull(id);
             this.ref = Objects.requireNonNull(ref);

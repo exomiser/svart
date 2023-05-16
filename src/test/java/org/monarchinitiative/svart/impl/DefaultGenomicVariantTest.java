@@ -323,7 +323,7 @@ public class DefaultGenomicVariantTest {
         @Test
         public void throwsIllegalArgumentWithNonSymbolicAllele() {
             // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
-            DefaultGenomicVariant instance = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "T", 1);
+            GenomicVariant instance = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "T", 0);
             assertThat(instance.contig(), equalTo(chr1));
             assertThat(instance.start(), equalTo(1));
             assertThat(instance.end(), equalTo(1));
@@ -331,7 +331,7 @@ public class DefaultGenomicVariantTest {
             assertThat(instance.length(), equalTo(1));
             assertThat(instance.ref(), equalTo("A"));
             assertThat(instance.alt(), equalTo("T"));
-            assertThat(instance.changeLength(), equalTo(1));
+            assertThat(instance.changeLength(), equalTo(0));
         }
 
         @Test
