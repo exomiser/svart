@@ -5,7 +5,6 @@ import org.monarchinitiative.svart.impl.DefaultGenomicVariant;
 
 import java.util.Comparator;
 
-import static org.monarchinitiative.svart.BaseGenomicVariant.requireLengthIfSymbolic;
 import static org.monarchinitiative.svart.GenomicComparators.*;
 
 /**
@@ -98,19 +97,19 @@ public interface GenomicVariant extends GenomicRegion {
     }
 
     static GenomicVariant of(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt) {
-        return DefaultGenomicVariant.of(contig, "", strand, coordinates, ref, requireLengthIfSymbolic(alt));
+        return of(contig, "", strand, coordinates, ref, alt);
     }
 
     static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt) {
-        return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, requireLengthIfSymbolic(alt));
+        return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, alt);
     }
 
     static GenomicVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
-        return DefaultGenomicVariant.of(contig, id, strand, coordinateSystem, start, ref, requireLengthIfSymbolic(alt));
+        return DefaultGenomicVariant.of(contig, id, strand, coordinateSystem, start, ref, alt);
     }
 
     static GenomicVariant of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
-        return DefaultGenomicVariant.of(contig, "", strand, coordinateSystem, start, ref, requireLengthIfSymbolic(alt));
+        return DefaultGenomicVariant.of(contig, "", strand, coordinateSystem, start, ref, alt);
     }
 
     static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
