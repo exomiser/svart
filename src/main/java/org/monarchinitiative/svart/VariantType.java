@@ -229,7 +229,7 @@ public enum VariantType {
      * @return the {@link VariantType} calculated from the REF and ALT allele.
      */
     public static VariantType parseType(String ref, String alt) {
-        if (isSymbolic(ref, alt)) {
+        if (isSymbolic(alt)) {
             return parseType(alt);
         }
         // SNV SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
@@ -275,25 +275,20 @@ public enum VariantType {
                 // Other dinucleotide combinations are true inversions GA -> TC, CT -> AG
                 return true;
             }
-            return Seq.reverseComplement(ref).equals(alt);
+            return Seq.reverseComplement(ref).equalsIgnoreCase(alt);
         }
         return false;
     }
 
     private static boolean isReverseComplement(char c, char c1) {
-        if (c == 'A' && c1 == 'T') {
-            return true;
-        } else if (c == 'T' && c1 == 'A') {
-            return true;
-        } else if (c == 'G' && c1 == 'C') {
-            return true;
-        } else return c == 'C' && c1 == 'G';
-    }
-
-    public static boolean isSymbolic(String ref, String alt) {
-        // The VCF spec only mentions alt alleles as having symbolic characters, so check these first then check the ref
-        // just in case.
-        return isSymbolic(alt) || isSymbolic(ref);
+        return switch (c) {
+            case 'A', 'a' -> c1 == 'T' || c1 == 't';
+            case 'T', 't' -> c1 == 'A' || c1 == 'a';
+            case 'C', 'c' -> c1 == 'G' || c1 == 'g';
+            case 'G', 'g' -> c1 == 'C' || c1 == 'c';
+            case 'N', 'n' -> c1 == 'N' || c1 == 'n';
+            default -> false;
+        };
     }
 
     public static boolean isSymbolic(String allele) {
@@ -305,7 +300,7 @@ public enum VariantType {
     }
 
     public static boolean isLargeSymbolic(String allele) {
-        return allele.length() > 1 && (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>');
+        return allele.length() > 1 && (allele.charAt(0) == '<' && allele.charAt(allele.length() - 1) == '>');
     }
 
     public static boolean isSingleBreakend(String allele) {

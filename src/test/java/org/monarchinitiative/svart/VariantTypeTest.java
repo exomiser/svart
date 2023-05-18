@@ -40,6 +40,8 @@ public class VariantTypeTest {
             "GA, TC,  INV",
             "ATG, CAT,  INV",
             "TCAG, CTGA,  INV",
+            "TCAG, ctga,  INV", // technically VCF is case-insensitive. Monsterous.
+            "tcag, CTGA,  INV", // technically VCF is case-insensitive. Monsterous.
             "ATG, TC,  DELINS",
             "AT, TCA,  DELINS",
             "GTGTGAT, GTGT,  DEL", // untrimmed DEL
