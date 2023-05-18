@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,7 +37,7 @@ public class PerformanceTests {
         for (int i = 0; i < 50; i++) {
             List<VariantContext> variants = new VcfVariantContextReader()
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
-                    .collect(Collectors.toList());
+                    .toList();
             allVariants.addAll(variants);
             Thread.sleep(500);
             totalRead += variants.size();
@@ -51,7 +50,7 @@ public class PerformanceTests {
 
         List<VariantContext> variants = new VcfVariantContextReader()
                 .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
-                .collect(Collectors.toList());
+                .toList();
 
         Instant end = Instant.now();
 
@@ -65,16 +64,14 @@ public class PerformanceTests {
         // warm-up
         int totalRead = 0;
         for (int i = 0; i < 50; i++) {
-            List<VariantContext> variants = readVariantContexts(Path.of("src/test/resources/pfeiffer.vcf"))
-                    .collect(Collectors.toList());
+            List<VariantContext> variants = readVariantContexts(Path.of("src/test/resources/pfeiffer.vcf")).toList();
             totalRead += variants.size();
         }
         System.out.println("Read " + totalRead + " variants to warm-up");
 
         Instant start = Instant.now();
 
-        List<VariantContext> variants = readVariantContexts(Path.of("src/test/resources/pfeiffer.vcf"))
-                .collect(Collectors.toList());
+        List<VariantContext> variants = readVariantContexts(Path.of("src/test/resources/pfeiffer.vcf")).toList();
 
         Instant end = Instant.now();
 
@@ -93,7 +90,7 @@ public class PerformanceTests {
         for (int i = 0; i < 50; i++) {
             List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
-                    .collect(Collectors.toList());
+                    .toList();
             Thread.sleep(500);
             allVariants.addAll(variants);
             totalRead += variants.size();
@@ -105,7 +102,7 @@ public class PerformanceTests {
 
         List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                 .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
-                .collect(Collectors.toList());
+                .toList();
 
         Instant end = Instant.now();
 
