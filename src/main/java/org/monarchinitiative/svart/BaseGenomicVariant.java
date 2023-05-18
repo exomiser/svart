@@ -2,7 +2,6 @@ package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.util.Seq;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -23,8 +22,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
     protected BaseGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
         super(contig, strand, coordinates);
         this.id = IdCache.cacheId(id);
-        this.ref = AlleleCache.cacheAllele(VariantType.requireNonSymbolic(ref));
-        this.alt = AlleleCache.cacheAllele(alt);
+        this.ref = AlleleCache.cacheAllele(validateRefAllele(ref));
+        this.alt = AlleleCache.cacheAllele(validateAltAllele(alt));
         this.mateId = Objects.requireNonNullElse(mateId, "");
         this.eventId = Objects.requireNonNullElse(eventId, "");
         this.variantType = VariantType.parseType(ref, alt);
@@ -33,6 +32,42 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
 
     protected BaseGenomicVariant(Builder<?> builder) {
         this(builder.contig, builder.id, builder.strand, builder.coordinates, builder.ref, builder.alt, builder.changeLength, builder.mateId, builder.eventId);
+    }
+
+    private String validateRefAllele(String ref) {
+        return validateAllele(ref, true);
+    }
+
+    private String validateAltAllele(String alt) {
+        if (alt.length() == 1 && (alt.charAt(0) == '*' || alt.charAt(0) == '.')) {
+            // Sonar complains this is a blocker issue:
+            // "When a method is designed to return an invariant value, it may be poor design, but it shouldn’t
+            // adversely affect the outcome of your program. However, when it happens on all paths through the logic,
+            // it is surely a bug.
+            // This rule raises an issue when a method contains several return statements that all return the same value."
+            //
+            // In this case we're running multiple checks and if they pass we want to return the input early, otherwise
+            // an error will be thrown by the final test in validateAllele. The return value _should_ always be the input
+            // value, in this case!
+            return alt;
+        }
+        return VariantType.isSymbolic(alt) ? alt : validateAllele(alt, false);
+    }
+
+    private String validateAllele(String allele, boolean isRef) {
+        for (int i = 0; i < allele.length(); i++) {
+            if (!validAlleleChar(allele.charAt(i))) {
+                throw new IllegalArgumentException("Illegal " + (isRef ? "ref" : "alt") + " allele: " + allele);
+            }
+        }
+        return allele;
+    }
+
+    private boolean validAlleleChar(char c) {
+        return switch (c) {
+            case 'A', 'a', 'T', 't', 'C', 'c', 'G', 'g', 'N', 'n' -> true;
+            default -> false;
+        };
     }
 
     private int checkChangeLength(Coordinates coordinates, int changeLength, VariantType variantType) {
@@ -324,26 +359,18 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         }
         
         private static String getCachedBase(String alt) {
-            byte base = alt.getBytes(StandardCharsets.UTF_8)[0];
-                switch (base) {
-                    case 'A':
-                        return A;
-                    case 'T':
-                        return T;
-                    case 'G':
-                        return G;
-                    case 'C':
-                        return C;
-                    case '.':
-                        return NO_CALL;
-                    case '*':
-                        return SPAN_DEL;
-                    case 'N':
-                        return N;
-                    default:
-                        return alt;
-                }
-            }
+            char base = alt.charAt(0);
+            return switch (base) {
+                case 'A' -> A;
+                case 'T' -> T;
+                case 'G' -> G;
+                case 'C' -> C;
+                case '.' -> NO_CALL;
+                case '*' -> SPAN_DEL;
+                case 'N' -> N;
+                default -> alt;
+            };
+        }
     }
 
     private static class IdCache {

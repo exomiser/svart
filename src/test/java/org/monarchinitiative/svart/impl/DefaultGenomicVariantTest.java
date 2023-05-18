@@ -3,15 +3,15 @@ package org.monarchinitiative.svart.impl;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DefaultGenomicVariantTest {
@@ -144,7 +144,8 @@ public class DefaultGenomicVariantTest {
             assertThat(del.end(), equalTo(2));
             assertThat(del.variantType(), equalTo(VariantType.DEL));
             assertThat(del.length(), equalTo(2));
-            assertThat(del.changeLength(), equalTo(-1));       }
+            assertThat(del.changeLength(), equalTo(-1));
+        }
 
         @Test
         public void delZeroBased() {
@@ -305,7 +306,7 @@ public class DefaultGenomicVariantTest {
 
         @Test
         public void DefaultVariantContainsSnv() {
-            GenomicVariant largeIns = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1,100, "T", "<INS>", 100);
+            GenomicVariant largeIns = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "T", "<INS>", 100);
             assertTrue(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "T")));
             assertTrue(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 0, "A", "T")));
             assertFalse(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 200, "C", "A")));
@@ -539,8 +540,35 @@ public class DefaultGenomicVariantTest {
             Contig chr2 = TestContig.of(2, 2000);
             GenomicVariant fourth = DefaultGenomicVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "T");
 
-            List<GenomicVariant> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
+            List<GenomicVariant> sorted = Stream.of(second, first, fourth, third).sorted().toList();
             assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "<>, A, ref",
+            "A, WIBBLE>, alt",
+            "N, <WIBBLE, alt",
+            "., AT, ref",
+            "*, AT, ref",
+            "., ., ref",
+            "*, *, ref",
+            "<INS>, AT, ref",
+            "A, ART, alt",
+            "A, 'A TT', alt",
+            "'', W, alt",
+            "a, R, alt",
+            "R, a, ref",
+            "A, ?, alt",
+            "?, ?, ref", // both illegal, but ref is checked first
+    })
+    void nonsenseInputTests(String ref, String alt, Allele illegalAllele) {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2, ref, alt, 2));
+        assertThat(exception.getMessage(), equalTo("Illegal " + illegalAllele + " allele: " + (illegalAllele == Allele.ref? ref : alt)));
+    }
+
+    private enum Allele {
+        ref, alt
     }
 }
