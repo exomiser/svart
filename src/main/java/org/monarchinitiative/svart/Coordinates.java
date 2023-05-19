@@ -16,12 +16,10 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Coordinates extends CoordinateSystemed<Coordinates> {
-
-    Coordinates EMPTY = PreciseCoordinates.of(ZERO_BASED, 0, 0);
+public sealed interface Coordinates extends CoordinateSystemed<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
     default Coordinates empty() {
-        return EMPTY;
+        return PreciseCoordinates.EMPTY;
     }
 
     CoordinateSystem coordinateSystem();

@@ -6,7 +6,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,7 +38,7 @@ public class CoordinatesTest {
         assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.oneBased(), 1, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise())));
     }
 
-        @Test
+    @Test
     public void testStartTypes() {
         Coordinates oneBasedCoords = Coordinates.oneBased(1, 10);
         Coordinates zeroBasedCoords = Coordinates.zeroBased(0, 10);
@@ -345,7 +344,7 @@ public class CoordinatesTest {
         Coordinates second = Coordinates.of(CoordinateSystem.oneBased(), 2, 5);
         Coordinates third = Coordinates.of(CoordinateSystem.zeroBased(), 2, 4);
 
-        List<Coordinates> sorted = Stream.of(second, first, third).sorted(Coordinates.naturalOrder()).collect(Collectors.toUnmodifiableList());
+        List<Coordinates> sorted = Stream.of(second, first, third).sorted(Coordinates.naturalOrder()).toList();
         assertThat(sorted, equalTo(List.of(first, second, third)));
     }
 
@@ -355,7 +354,7 @@ public class CoordinatesTest {
         Coordinates second = Coordinates.of(CoordinateSystem.oneBased(), 2, 5);
         Coordinates third = Coordinates.of(CoordinateSystem.zeroBased(), 2, 4);
 
-        List<Coordinates> sorted = Stream.of(second, first, third).sorted().collect(Collectors.toUnmodifiableList());
+        List<Coordinates> sorted = Stream.of(second, first, third).sorted().toList();
         assertThat(sorted, equalTo(List.of(first, second, third)));
     }
 }
