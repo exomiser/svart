@@ -162,25 +162,25 @@ public class CoordinatesTest {
         @ParameterizedTest
         @CsvSource({
                 // empty intervals on immediate boundaries
-                "ONE_BASED,   1, 0,  ONE_BASED,   1, 1,    true",
-                "ONE_BASED,   2, 1,  ONE_BASED,   1, 1,    true",
-                "ONE_BASED,   1, 0,  ZERO_BASED,  0, 1,    true",
-                "ONE_BASED,   2, 1,  ZERO_BASED,  0, 1,    true",
+                "ONE_BASED,   1, 0,  ONE_BASED,   1, 1,    false",
+                "ONE_BASED,   2, 1,  ONE_BASED,   1, 1,    false",
+                "ONE_BASED,   1, 0,  ZERO_BASED,  0, 1,    false",
+                "ONE_BASED,   2, 1,  ZERO_BASED,  0, 1,    false",
 
-                "ZERO_BASED,  0, 0,  ONE_BASED,   1, 1,    true",
-                "ZERO_BASED,  1, 1,  ONE_BASED,   1, 1,    true",
-                "ZERO_BASED,  0, 0,  ZERO_BASED,  0, 1,    true",
-                "ZERO_BASED,  1, 1,  ZERO_BASED,  0, 1,    true",
+                "ZERO_BASED,  0, 0,  ONE_BASED,   1, 1,    false",
+                "ZERO_BASED,  1, 1,  ONE_BASED,   1, 1,    false",
+                "ZERO_BASED,  0, 0,  ZERO_BASED,  0, 1,    false",
+                "ZERO_BASED,  1, 1,  ZERO_BASED,  0, 1,    false",
         })
-        public void overlap_includesEmptyIntervalsOnBoundaries(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
+        public void overlap_excludesEmptyIntervalsOnBoundaries(CoordinateSystem x, int xStart, int xEnd, CoordinateSystem y, int yStart, int yEnd, boolean expected) {
             assertThat(Coordinates.overlap(x, xStart, xEnd, y, yStart, yEnd), equalTo(expected));
         }
 
         @ParameterizedTest
         @CsvSource({
                 // empty
-                "ZERO_BASED,  0, 0,  ZERO_BASED,  0, 1,    true",
-                "ZERO_BASED,  0, 1,  ZERO_BASED,  0, 0,    true",
+                "ZERO_BASED,  0, 0,  ZERO_BASED,  0, 1,    false",
+                "ZERO_BASED,  0, 1,  ZERO_BASED,  0, 0,    false",
 
                 // full
                 "ZERO_BASED,  0, 5,  ZERO_BASED,  3, 8,    true",

@@ -134,7 +134,8 @@ public sealed interface Coordinates extends CoordinateSystemed<Coordinates> perm
 
     /**
      * Determines whether two regions overlap, returning true if they do and false if they do not. Empty intervals are
-     * considered as overlapping if they are at the boundaries of the other interval. This method is transitive such
+     * NOT considered as overlapping if they are at the boundaries of the other interval. However, two empty intervals
+     * with the same start and end coordinates are considered as overlapping. This method is transitive such
      * that overlap(a, b) = overlap(b, a). The input {@link CoordinateSystem} are not required to match.
      *
      * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
@@ -146,12 +147,8 @@ public sealed interface Coordinates extends CoordinateSystemed<Coordinates> perm
      * @return true indicating intervals a and b overlap or false if they do not.
      */
     public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
-        if (isEmpty(aSystem, aStart, aEnd)) {
-            return aContainsB(bSystem, bStart, bEnd, aSystem, aStart, aEnd);
-        }
-        if (isEmpty(bSystem, bStart, bEnd)) {
-            return aContainsB(aSystem, aStart, aEnd, bSystem, bStart, bEnd);
+        if (isEmpty(aSystem, aStart, aEnd) && isEmpty(bSystem, bStart, bEnd)) {
+            return zeroBasedStart(aSystem, aStart) == bEnd && zeroBasedStart(bSystem, bStart) == aEnd;
         }
         return zeroBasedStart(aSystem, aStart) < bEnd && zeroBasedStart(bSystem, bStart) < aEnd;
     }
