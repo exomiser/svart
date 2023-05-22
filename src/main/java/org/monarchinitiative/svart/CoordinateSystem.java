@@ -4,7 +4,7 @@ package org.monarchinitiative.svart;
  * Here we model the two coordinate systems used in bioinformatics, the 'one-based' and 'zero-based' systems. Much has
  * been written about these e.g. http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
  * (and also the resources linked from there), but for completeness we describe them here.
- *
+ * <p>
  * Given we have the sequence ATGC with positions 1-4 using a human friendly 1-start, fully closed system [1,4] (as most
  * people would count using their fingers). A 0-start, fully-closed system would be [0,3], however most systems calculating
  * with intervals use a 'half-open' system where the open end is denoted with a '(' or ')' e.g. [0,3) or (2,4]. The 'open'
@@ -12,11 +12,11 @@ package org.monarchinitiative.svart;
  * a ONE-start, LEFT-open interval e.g. (1,3] is numerically equivalent to a ZERO-start, RIGHT-open interval e.g [1,3).
  * Zero-based coordinates are also numerically equivalent to 'interbase' coordinates which can be thought of as the
  * coordinates referring to zero-start slices in between the bases.
- *
+ * <p>
  * A 0-start, right open is preferable to zero-start, left-open as the first base in a left-open system would be -1, hence
  * zero-start, right-open systems being the preferred system for things like array slices in programming languages e.g.
  * C, C++, Rust, Java, Python where the first element is 0.
- *
+ * <p>
  * This is not however a universal truth. Given this, we attempt to bridge the rift between these two camps by providing
  * transparent automatic correction when required, so that a developer need not concern themselves about these other than
  * to be cognisant of the coordinate system of the input coordinates. The library will allow regions of mixed coordinate
