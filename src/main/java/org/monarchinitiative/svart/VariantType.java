@@ -24,13 +24,27 @@ public enum VariantType {
     //   A structural variation reference for medical and population genetics https://www.nature.com/articles/s41586-020-2287-8)
     // >150 (HTSJDK VariantContext.MAX_ALLELE_SIZE_FOR_NON_SV)
     // >=1000 (Jannovar VariantAnnotator)
+
+    /**
+     * SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
+     */
     SNV,
+
+    /**
+     * SO:0001013 - A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT.
+     */
     MNV,
-    // DELINS is equivalent to an HGVS delins
+
+    /**
+     * SO:1000032 - A sequence alteration which included an insertion and a deletion, affecting 2 or more bases.
+     */
     DELINS,
 
     SYMBOLIC,
     // VCF standard reserved values for structural variants
+    /**
+     * SO:0000159 - The point at which one or more contiguous nucleotides were excised.
+     */
     DEL,
     //DEL:ME
     DEL_ME(DEL),
@@ -40,6 +54,9 @@ public enum VariantType {
     DEL_ME_SVA(DEL, DEL_ME),
     DEL_ME_HERV(DEL, DEL_ME),
 
+    /**
+     * SO:0000667 - The sequence of one or more nucleotides added between two adjacent nucleotides in the sequence.
+     */
     INS,
     INS_ME(INS),
     INS_ME_ALU(INS, INS_ME),
@@ -98,10 +115,11 @@ public enum VariantType {
      * @return
      */
     public static VariantType parseType(String alt) {
+        Objects.requireNonNull(alt);
         if (alt.isEmpty()) {
             return UNKNOWN;
         }
-        String stripped = trimAngleBrackets(Objects.requireNonNull(alt));
+        String stripped = trimAngleBrackets(alt);
         switch (stripped) {
             case "SNP", "SNV":
                 return SNV;
