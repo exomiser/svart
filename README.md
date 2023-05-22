@@ -60,21 +60,29 @@ Coordinates
 
  `Coordinates` -has_end-> `int`
 
-Region
+Interval
 -
- `Region` -has_some-> `Coordinates`
+ `Interval` -has_some-> `Coordinates`
 
 Strand
 -
  `POSITIVE` or `NEGATIVE`
 
+GenomicInterval
+-
+ `GenomicInterval` -is_a-> `Interval`
+
+ `GenomicInterval` -has_a-> `Contig`
+
+ `GenomicInterval` -has_a-> `Strand`
+
 GenomicRegion
 -
- `GenomicRegion` -is_a-> `Region`
+ `GenomicRegion` -is_a-> `GenomicInterval`
 
- `GenomicRegion` -has_a-> `Contig`
+ `GenomicRegion` -is-> `Transposable`
 
- `GenomicRegion` -has_a-> `Strand`
+ `GenomicRegion` -is-> `Convertible`
 
 GenomicVariant
 -
@@ -97,7 +105,14 @@ With this model, it is possible to express variation, using zero or one-based co
 given genome assembly in any coordinate system and easily manipulate and compare them without having to worry about what
 strand or which coordinate system another `GenomicRegion` uses. Svart will do all this for you eliminating off-by-one
 errors and providing an extensible model to plug into your code, so you can focus on the task at hand. It will ensure a
-region can be placed on a contig and will validate the input sequence to conform to VCF standards. 
+region can be placed on a contig and will validate the input sequence to conform to VCF standards.
+
+With the v2.0 API a new interface `GenomicInterval` has been added as the parent to `GenomicRegion`. The `GenomicInterval`
+is untyped to ease implementation by other classes and in particular it omits the `Convertible` and `Transposable` traits
+whilst implementing helper methods such as `overlapsWith(GenomicInterval other)` or `startOnStrandWithCoordinateSystem()`.
+Consequently, for developers wondering which interface to implement, in general they should decide based on whether their
+class will benefit from being `Convertible` or `Transposable`. Methods accepting a `GenomicX` should therefore prefer 
+the `GenomicInterval` type for the widest utility.
 
 Example
 ==
