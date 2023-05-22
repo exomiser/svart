@@ -58,7 +58,7 @@ public final class DefaultGenomicBreakend extends BaseGenomicRegion<DefaultGenom
 
     @Override
     public String toString() {
-        return "Breakend{" +
+        return "GenomicBreakend{" +
                 "contig=" + contigId() +
                 ", id='" + id + '\'' +
                 ", strand=" + strand() +

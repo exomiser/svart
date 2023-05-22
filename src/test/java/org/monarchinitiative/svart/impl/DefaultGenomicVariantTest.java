@@ -3,15 +3,15 @@ package org.monarchinitiative.svart.impl;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DefaultGenomicVariantTest {
@@ -110,19 +110,19 @@ public class DefaultGenomicVariantTest {
             assertThat(snvStaticCons.changeLength(), equalTo(0));
             assertThat(snvStaticCons.isZeroBased(), equalTo(true));
 
-            MatcherAssert.assertThat(GenomicRegion.compare(snvStaticCons, snv), equalTo(0));
+            MatcherAssert.assertThat(GenomicVariant.compare(snvStaticCons, snv), equalTo(0));
             assertThat(snvStaticCons, equalTo(snv));
         }
 
         @Test
-        public void mnv() {
-            GenomicVariant mnv = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "AT", "TG");
+        public void delins() {
+            GenomicVariant delins = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "AT", "TGC");
 
-            assertThat(mnv.start(), equalTo(1));
-            assertThat(mnv.start(), equalTo(1));
-            assertThat(mnv.end(), equalTo(2));
-            assertThat(mnv.variantType(), equalTo(VariantType.MNV));
-            assertThat(mnv.length(), equalTo(2));
+            assertThat(delins.start(), equalTo(1));
+            assertThat(delins.start(), equalTo(1));
+            assertThat(delins.end(), equalTo(2));
+            assertThat(delins.variantType(), equalTo(VariantType.DELINS));
+            assertThat(delins.length(), equalTo(2));
         }
 
         @Test
@@ -144,7 +144,8 @@ public class DefaultGenomicVariantTest {
             assertThat(del.end(), equalTo(2));
             assertThat(del.variantType(), equalTo(VariantType.DEL));
             assertThat(del.length(), equalTo(2));
-            assertThat(del.changeLength(), equalTo(-1));       }
+            assertThat(del.changeLength(), equalTo(-1));
+        }
 
         @Test
         public void delZeroBased() {
@@ -305,7 +306,7 @@ public class DefaultGenomicVariantTest {
 
         @Test
         public void DefaultVariantContainsSnv() {
-            GenomicVariant largeIns = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1,100, "T", "<INS>", 100);
+            GenomicVariant largeIns = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "T", "<INS>", 100);
             assertTrue(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "T")));
             assertTrue(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 0, "A", "T")));
             assertFalse(largeIns.contains(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 200, "C", "A")));
@@ -321,14 +322,9 @@ public class DefaultGenomicVariantTest {
         }
 
         @Test
-        public void symbolicThrowsIllegalArgumentWithBreakendAllele() {
-            assertThrows(IllegalArgumentException.class, () -> DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "A[1:2]", 1));
-        }
-
-        @Test
         public void throwsIllegalArgumentWithNonSymbolicAllele() {
             // this ought to be legal, but maybe only when called on the interface using Variant.of(...) which defers to the correct implementation
-            DefaultGenomicVariant instance = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "T", 1);
+            GenomicVariant instance = DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "T", 0);
             assertThat(instance.contig(), equalTo(chr1));
             assertThat(instance.start(), equalTo(1));
             assertThat(instance.end(), equalTo(1));
@@ -336,7 +332,7 @@ public class DefaultGenomicVariantTest {
             assertThat(instance.length(), equalTo(1));
             assertThat(instance.ref(), equalTo("A"));
             assertThat(instance.alt(), equalTo("T"));
-            assertThat(instance.changeLength(), equalTo(1));
+            assertThat(instance.changeLength(), equalTo(0));
         }
 
         @Test
@@ -513,10 +509,27 @@ public class DefaultGenomicVariantTest {
         }
 
         @Test
+        public void canCreateSymbolicBreakendAllele() {
+            GenomicVariant instance = DefaultGenomicVariant.of(chr1, "bnd_u", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "G]2:123456]", 0, "bnd_v", "event_1");
+            assertThat(instance.contig(), equalTo(chr1));
+            assertThat(instance.strand(), equalTo(Strand.POSITIVE));
+            assertThat(instance.start(), equalTo(1));
+            assertThat(instance.end(), equalTo(1));
+            assertThat(instance.ref(), equalTo("A"));
+            assertThat(instance.alt(), equalTo("G]2:123456]"));
+            assertThat(instance.variantType(), equalTo(VariantType.BND));
+            assertThat(instance.length(), equalTo(1));
+            assertThat(instance.changeLength(), equalTo(0));
+            assertThat(instance.mateId(), equalTo("bnd_v"));
+            assertThat(instance.eventId(), equalTo("event_1"));
+        }
+
+        @Test
         public void isSymbolic() {
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").isSymbolic(), is(false));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 100, "A", "<DEL>", -99).isSymbolic(), is(true));
             assertThat(DefaultGenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<BND>", 0).isSymbolic(), is(true));
+            assertThat(DefaultGenomicVariant.of(chr1, "bnd_u", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "G]2:123456]", 0).isSymbolic(), is(true));
         }
 
         @Test
@@ -527,8 +540,35 @@ public class DefaultGenomicVariantTest {
             Contig chr2 = TestContig.of(2, 2000);
             GenomicVariant fourth = DefaultGenomicVariant.of(chr2, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "T");
 
-            List<GenomicVariant> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
+            List<GenomicVariant> sorted = Stream.of(second, first, fourth, third).sorted().toList();
             assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "<>, A, ref",
+            "A, WIBBLE>, alt",
+            "N, <WIBBLE, alt",
+            "., AT, ref",
+            "*, AT, ref",
+            "., ., ref",
+            "*, *, ref",
+            "<INS>, AT, ref",
+            "A, ART, alt",
+            "A, 'A TT', alt",
+            "'', W, alt",
+            "a, R, alt",
+            "R, a, ref",
+            "A, ?, alt",
+            "?, ?, ref", // both illegal, but ref is checked first
+    })
+    void nonsenseInputTests(String ref, String alt, Allele illegalAllele) {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2, ref, alt, 2));
+        assertThat(exception.getMessage(), equalTo("Illegal " + illegalAllele + " allele: " + (illegalAllele == Allele.ref? ref : alt)));
+    }
+
+    private enum Allele {
+        ref, alt
     }
 }

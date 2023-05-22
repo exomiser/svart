@@ -2,7 +2,11 @@ package org.monarchinitiative.svart;
 
 import java.util.Comparator;
 
-public interface Region<T> extends CoordinateSystemed<T> {
+/**
+ * Compositional interface implementing behaviour for classes with {@link Coordinates}. For example, a region on a
+ * sequence nucleic acid or protein sequence.
+ */
+public interface Interval extends CoordinateSystemed {
 
     Coordinates coordinates();
 
@@ -10,9 +14,6 @@ public interface Region<T> extends CoordinateSystemed<T> {
     default CoordinateSystem coordinateSystem() {
         return coordinates().coordinateSystem();
     }
-
-    @Override
-    T withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
      * @return start coordinate of the region
@@ -60,11 +61,15 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return endConfidenceInterval().maxPos(end());
     }
 
+    default int length() {
+        return coordinates().length();
+    }
+
     /**
      * @param other chromosomal region
      * @return true if the <code>other</code> region is fully contained within this region
      */
-    default boolean contains(Region<?> other) {
+    default boolean contains(Interval other) {
         return coordinates().contains(other.coordinates());
     }
 
@@ -72,11 +77,11 @@ public interface Region<T> extends CoordinateSystemed<T> {
         return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
-    default boolean overlapsWith(Region<?> other) {
+    default boolean overlapsWith(Interval other) {
         return coordinates().overlaps(other.coordinates());
     }
 
-    default int overlapLength(Region<?> other) {
+    default int overlapLength(Interval other) {
         return coordinates().overlapLength(other.coordinates());
     }
 
@@ -91,19 +96,15 @@ public interface Region<T> extends CoordinateSystemed<T> {
      * @param other region
      * @return distance from <code>this</code> region to the <code>other</code> region
      */
-    default int distanceTo(Region<?> other) {
+    default int distanceTo(Interval other) {
         return coordinates().distanceTo(other.coordinates());
     }
 
-    default int length() {
-        return coordinates().length();
+    static Comparator<Interval> naturalOrder() {
+        return GenomicComparators.IntervalNaturalOrderComparator.INSTANCE;
     }
 
-    static Comparator<Region<?>> naturalOrder() {
-        return GenomicComparators.RegionNaturalOrderComparator.INSTANCE;
-    }
-
-    static int compare(Region<?> x, Region<?> y) {
+    static int compare(Interval x, Interval y) {
         return Coordinates.compare(x.coordinates(), y.coordinates());
     }
 }

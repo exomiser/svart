@@ -2,21 +2,13 @@ package org.monarchinitiative.svart;
 
 import java.util.Objects;
 
-class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
+record ImpreciseCoordinates(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) implements Coordinates, Comparable<Coordinates> {
 
-    private final CoordinateSystem coordinateSystem;
-    private final int start;
-    private final ConfidenceInterval startCi;
-    private final int end;
-    private final ConfidenceInterval endCi;
-
-    private ImpreciseCoordinates(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
-        this.coordinateSystem = Objects.requireNonNull(coordinateSystem);
-        this.start = start;
-        this.startCi = Objects.requireNonNull(startCi);
-        this.end = end;
-        this.endCi = Objects.requireNonNull(endCi);
-        Coordinates.validateCoordinates(this.coordinateSystem, this.start, this.end);
+    ImpreciseCoordinates {
+        Objects.requireNonNull(coordinateSystem);
+        Objects.requireNonNull(startCi);
+        Objects.requireNonNull(endCi);
+        Coordinates.validateCoordinates(coordinateSystem, start, end);
     }
 
     static ImpreciseCoordinates of(CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
@@ -24,23 +16,8 @@ class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
     }
 
     @Override
-    public CoordinateSystem coordinateSystem() {
-        return coordinateSystem;
-    }
-
-    @Override
-    public int start() {
-        return start;
-    }
-
-    @Override
     public ConfidenceInterval startConfidenceInterval() {
         return startCi;
-    }
-
-    @Override
-    public int end() {
-        return end;
     }
 
     @Override
@@ -58,7 +35,7 @@ class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
 
     @Override
     public Coordinates asPrecise() {
-        return new PreciseCoordinates(this.coordinateSystem, this.start, this.end);
+        return new PreciseCoordinates(coordinateSystem, start, end);
     }
 
     @Override
@@ -67,7 +44,7 @@ class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
     }
 
     @Override
-    public Coordinates withPadding(int upstream, int downstream) {
+    public Coordinates extend(int upstream, int downstream) {
         if (upstream == 0 && downstream == 0) {
             return this;
         }
@@ -77,19 +54,6 @@ class ImpreciseCoordinates implements Coordinates, Comparable<Coordinates> {
     @Override
     public int compareTo(Coordinates o) {
         return Coordinates.compare(this, o);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ImpreciseCoordinates that = (ImpreciseCoordinates) o;
-        return start == that.start && end == that.end && coordinateSystem == that.coordinateSystem && startCi.equals(that.startCi) && endCi.equals(that.endCi);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(coordinateSystem, start, startCi, end, endCi);
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class GenomicRegionIndexTest {
+public class GenomicIntervalIndexTest {
 
     private final Contig chr1 = TestContig.of(1, 500);
     private final Contig chr2 = TestContig.of(2, 200);
@@ -25,7 +25,7 @@ public class GenomicRegionIndexTest {
 
     private final List<GenomicRegion> exons = List.of(region1, region2, region3, region4);
 
-    private final GenomicRegionIndex<GenomicRegion> instance = GenomicRegionIndex.of(exons);
+    private final GenomicIntervalIndex<GenomicRegion> instance = GenomicIntervalIndex.of(exons);
 
     @Test
     public void size() {
@@ -34,12 +34,12 @@ public class GenomicRegionIndexTest {
 
     @Test
     public void empty() {
-        assertThat(GenomicRegionIndex.empty().size(), equalTo(0));
+        assertThat(GenomicIntervalIndex.empty().size(), equalTo(0));
     }
 
     @Test
     public void empty_noOverlap() {
-        assertThat(GenomicRegionIndex.empty().regionsOverlapping(region1), equalTo(IntervalOverlaps.empty()));
+        assertThat(GenomicIntervalIndex.empty().regionsOverlapping(region1), equalTo(IntervalOverlaps.empty()));
     }
 
     @Test

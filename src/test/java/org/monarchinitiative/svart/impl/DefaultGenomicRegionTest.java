@@ -109,7 +109,6 @@ public class DefaultGenomicRegionTest {
         GenomicRegion fourth = GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2);
 
         List<GenomicRegion> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
-        sorted.forEach(System.out::println);
         assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
     }
 }

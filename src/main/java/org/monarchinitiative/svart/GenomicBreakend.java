@@ -48,7 +48,6 @@ public interface GenomicBreakend extends GenomicRegion {
         return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }
 
-        // TODO - should we have Breakend.left() and Breakend.right() constructors as this will enable direct input of the VCF coordinates.
     static GenomicBreakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
         return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }

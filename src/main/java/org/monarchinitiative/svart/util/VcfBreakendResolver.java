@@ -44,6 +44,20 @@ public class VcfBreakendResolver {
         this.genomicAssembly = genomicAssembly;
     }
 
+    public GenomicBreakendVariant resolveBreakend(GenomicVariant variant) {
+        if (!VariantType.isBreakend(variant.alt())) {
+            throw new IllegalArgumentException("Unable to resolve non-breakend variant!");
+        }
+        return resolve(variant.eventId(), variant.id(), variant.mateId(),
+                variant.contig(),
+                variant.startOnStrandWithCoordinateSystem(VCF_STRAND, VCF_COORDINATE_SYSTEM),
+                variant.startConfidenceInterval(),
+                variant.startConfidenceInterval(),
+                variant.ref(),
+                variant.alt()
+        );
+    }
+
     public GenomicBreakendVariant resolve(String eventId, String id, String mateId, Contig contig, int position, ConfidenceInterval ciPos, ConfidenceInterval ciEnd, String ref, String alt) {
         if (ref.length() > 1) {
             throw new IllegalArgumentException("Invalid breakend! Ref allele '" + ref + "' must be single base");
@@ -114,8 +128,6 @@ public class VcfBreakendResolver {
     private static GenomicBreakend createBreakend(Contig contig, String id, Strand strand, Coordinates coordinates) {
         // VCF coordinates are always given in 1-based coordinates on the POS strand, so we need to check the position
         // and *then* create the breakend on the to the strand indicated - do not be tempted to inline the strand part prematurely!
-//        Position breakStart = strand == VCF_STRAND ? start : end.invert(VCF_COORDINATE_SYSTEM, contig);
-//        Position breakEnd = strand == VCF_STRAND ? end : start.invert(VCF_COORDINATE_SYSTEM, contig);
         Coordinates coord = strand == VCF_STRAND ? coordinates : coordinates.invert(contig);
         return GenomicBreakend.of(contig, id, strand, coord);
     }
