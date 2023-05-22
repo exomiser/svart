@@ -44,7 +44,7 @@ record ImpreciseCoordinates(CoordinateSystem coordinateSystem, int start, Confid
     }
 
     @Override
-    public Coordinates withPadding(int upstream, int downstream) {
+    public Coordinates extend(int upstream, int downstream) {
         if (upstream == 0 && downstream == 0) {
             return this;
         }

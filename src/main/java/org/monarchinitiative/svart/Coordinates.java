@@ -98,7 +98,7 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
         return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
     }
 
-    Coordinates withPadding(int upstream, int downstream);
+    Coordinates extend(int upstream, int downstream);
 
     /**
      * Returns the length of a region, in bases

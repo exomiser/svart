@@ -36,7 +36,7 @@ record PreciseCoordinates(CoordinateSystem coordinateSystem, int start, int end)
     }
 
     @Override
-    public Coordinates withPadding(int upstream, int downstream) {
+    public Coordinates extend(int upstream, int downstream) {
         if (upstream == 0 && downstream == 0) {
             return this;
         }
