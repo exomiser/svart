@@ -3,7 +3,7 @@ package org.monarchinitiative.svart.interval;
 import java.util.Objects;
 
 /**
- * Mutable half-open interval, for incremental building of {@link Interval} objects.
+ * Mutable half-open interval, for incremental building of {@link IntervalTreeNode} objects.
  *
  * Taken from Jannovar, with minor alterations.
  *
