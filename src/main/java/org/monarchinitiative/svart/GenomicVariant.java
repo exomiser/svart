@@ -83,7 +83,7 @@ public interface GenomicVariant extends GenomicRegion {
     }
 
     static int compare(GenomicVariant x, GenomicVariant y) {
-        int result = GenomicRegion.compare(x, y);
+        int result = GenomicInterval.compare(x, y);
         if (result == 0) {
             result = x.ref().compareTo(y.ref());
         }
