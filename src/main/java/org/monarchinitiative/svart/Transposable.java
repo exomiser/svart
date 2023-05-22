@@ -1,6 +1,11 @@
 package org.monarchinitiative.svart;
 
-interface Transposable<T> extends Stranded {
+/**
+ * Indicates that a class has a {@link Strand} and can be transposed onto the opposite strand.
+ *
+ * @param <T>
+ */
+public interface Transposable<T> extends Stranded {
 
     T withStrand(Strand other);
 
