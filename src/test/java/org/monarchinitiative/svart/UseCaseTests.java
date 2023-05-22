@@ -3,19 +3,208 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.util.*;
 import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
-import org.monarchinitiative.svart.util.VcfBreakendFormatter;
-import org.monarchinitiative.svart.util.VcfBreakendResolver;
-import org.monarchinitiative.svart.util.VcfConverter;
 
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UseCaseTests {
+
+    @Test
+    void buildSimpleSnp() {
+        GenomicVariant snpFromBuilder = GenomicVariant.builder()
+                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "T")
+                .build();
+        GenomicVariant snpFromStaticFactoryMethod = GenomicVariant.of(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "T");
+        assertEquals(snpFromBuilder, snpFromStaticFactoryMethod);
+    }
+
+    @Test
+    void buildSymbolicVariant() {
+        GenomicVariant symbolicDel = GenomicVariant.builder()
+                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 100), "N", "<DEL>", -90)
+                .build();
+        GenomicVariant symbolicDelFromStaticFactoryMethod = GenomicVariant.of(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 100), "N", "<DEL>", -90);
+        assertThat(symbolicDel.isSymbolic(), equalTo(true));
+        assertEquals(symbolicDel, symbolicDelFromStaticFactoryMethod);
+    }
+
+    @Test
+    void buildSymbolicBreakendVariant() {
+        GenomicVariant breakend = GenomicVariant.builder()
+                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(101, 100), "N", "C[2:321682[", 0)
+                .id("bnd_U")
+                .mateId("bnd_v")
+                .build();
+        assertThat(breakend.isSymbolic(), equalTo(true));
+        assertThat(breakend.isBreakend(), equalTo(true));
+
+        GenomicVariant breakendFromStaticFactoryMethod = GenomicVariant.of(TestContig.of(1, 1000), "bnd_U", Strand.POSITIVE, Coordinates.oneBased(101, 100), "N", "C[2:321682[", 0, "bnd_v","");
+        assertEquals(breakend, breakendFromStaticFactoryMethod);
+    }
+
+    @Test
+    void defineNewGenomicFeatureClassUsingComposition() {
+
+        // Yep, a fully-fledged java class with all the benefits of implementing the GenomicInterval.
+        record Exon(Contig contig, Strand strand, Coordinates coordinates, int exonNumber) implements GenomicInterval {
+        }
+
+        Exon exonOne = new Exon(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 200), 1);
+        Exon exonTwo = new Exon(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(300, 400), 2);
+        // Exon cannot be transposed to the opposite strand as GenomicInterval doesn't implement Transposable. Neither
+        // can the coordinate system be changed, because the GenomicInterval doesn't implement Convertible
+        // won't compile
+//        Exon onOtherStrand = exonOne.toOppositeStrand();
+//        Exon zeroBasedExon = exonOne.toZeroBased();
+
+        // but all the GenomicInterval-like behaviour is implemented by default.
+        assertThat(exonOne.distanceTo(exonTwo), equalTo(99));
+        assertThat(exonOne.overlapsWith(exonTwo), is(false));
+        assertThat(exonOne.startOnStrandWithCoordinateSystem(Strand.NEGATIVE, CoordinateSystem.ZERO_BASED), equalTo(800));
+        assertThat(exonOne.startWithCoordinateSystem(CoordinateSystem.ZERO_BASED), equalTo(exonOne.start() - 1));
+
+        // Here we're making a more complicated class which is also Convertible and Transposable
+        record TransposableFeature(Contig contig, Strand strand, Coordinates coordinates,  String id,
+                                   String sequence) implements GenomicInterval, Convertible<TransposableFeature>, Transposable<TransposableFeature>  {
+
+            @Override
+            public TransposableFeature withStrand(Strand other) {
+                if (this.strand() == other) {
+                    return this;
+                }
+                return new TransposableFeature(contig, other, coordinates.invert(contig), id, Seq.reverseComplement(sequence));
+            }
+
+            @Override
+            public TransposableFeature withCoordinateSystem(CoordinateSystem other) {
+                if (this.coordinateSystem() == other) {
+                    return this;
+                }
+                return new TransposableFeature(contig, strand, coordinates.withCoordinateSystem(other), id, sequence);
+            }
+        }
+
+        // note that Exons and TransposableFeatures are still interoperable
+        TransposableFeature featureOne = new TransposableFeature(exonOne.contig, exonOne.strand, exonOne.coordinates, "1", "ATGC");
+        TransposableFeature featureOneTransposed = featureOne.toOppositeStrand();
+        assertThat(featureOne.strand(), not(equalTo(featureOneTransposed.strand())));
+        assertThat(featureOne, equalTo(featureOneTransposed.withStrand(featureOne.strand())));
+        assertThat(featureOne.overlapLength(exonOne), equalTo(featureOne.length()));
+    }
+
+    @Test
+    void implementingGenomicRegion() {
+
+        interface SequenceFeature extends GenomicRegion {
+            String id();
+            String sequence();
+        }
+
+        /*
+          This GenomicFeature implements the {@link GenomicRegion} interface. The API has been designed to work extremely
+           nicely with Java records.
+        */
+        record GenomicFeature(Contig contig, Strand strand, Coordinates coordinates, String id, String sequence) implements SequenceFeature {
+
+            @Override
+            public GenomicFeature withCoordinateSystem(CoordinateSystem coordinateSystem) {
+                // we do want to be able to change the coordinate system...
+                if (this.coordinateSystem() == coordinateSystem) {
+                    return this;
+                }
+                return new GenomicFeature(contig, strand, coordinates.withCoordinateSystem(coordinateSystem), id, sequence);
+            }
+
+            @Override
+            public GenomicFeature withStrand(Strand other) {
+                // ... but in this case we don't want to be able to change the strand
+                // this is equivalent to a GenomicInterval extends Convertible<GenomicFeature>
+                return this;
+            }
+        }
+
+        /*
+          This InheritanceBasedGenomicRegion extends the {@link BaseGenomicRegion} class
+         */
+        class InheritanceBasedGenomicRegion extends BaseGenomicRegion<InheritanceBasedGenomicRegion> implements SequenceFeature {
+
+            private final String id;
+            private final String sequence;
+
+            protected InheritanceBasedGenomicRegion(Contig contig, Strand strand, Coordinates coordinates, String id, String sequence) {
+                super(contig, strand, coordinates);
+                this.id = id;
+                this.sequence = sequence;
+            }
+            // notice here how there is no need to implement the withCoordinateSystem and withStrand methods as the base
+            // class implements this by calling the newRegionInstance method. In this particular case it might be
+            // advisable to override the withStrand method should the sequence also need to be reverse complemented.
+            @Override
+            protected InheritanceBasedGenomicRegion newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+                return new InheritanceBasedGenomicRegion(contig, strand, coordinates, id, sequence);
+            }
+
+            @Override
+            public String id() {
+                return id;
+            }
+
+            @Override
+            public String sequence() {
+                return sequence;
+            }
+        }
+
+        Contig contig = TestContig.of(1, 2000);
+        Strand strand = Strand.POSITIVE;
+        Coordinates coordinates = Coordinates.oneBased(100, 111);
+        String id = "ID:123456";
+        String sequence = "AAATTTGGGCCC";
+
+        SequenceFeature compositionalSeqFeat = new GenomicFeature(contig, strand, coordinates, id, sequence);
+        SequenceFeature inheritanceSeqFeat = new InheritanceBasedGenomicRegion(contig, strand, coordinates, id, sequence);
+        // Once built, the API for each is identical.
+        assertThat(compositionalSeqFeat.contig(), equalTo(inheritanceSeqFeat.contig()));
+        assertThat(compositionalSeqFeat.strand(), equalTo(inheritanceSeqFeat.strand()));
+        assertThat(compositionalSeqFeat.coordinates(), equalTo(inheritanceSeqFeat.coordinates()));
+        assertThat(compositionalSeqFeat.id(), equalTo(inheritanceSeqFeat.id()));
+        assertThat(compositionalSeqFeat.sequence(), equalTo(inheritanceSeqFeat.sequence()));
+        assertThat(compositionalSeqFeat.overlapLength(inheritanceSeqFeat), equalTo(compositionalSeqFeat.length()));
+    }
+
+    @Test
+    void measureDistances() {
+        TestContig chr1 = TestContig.of(1, 1000);
+        // homomorphic sites
+        GenomicVariant ten = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "A");
+        GenomicVariant eleven = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(11, 11), "T", "T");
+        GenomicVariant elevenZeroBased = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.zeroBased(10, 11), "T", "T");
+        GenomicVariant twelve = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(12, 12), "G", "G");
+
+        // do they overlap?
+        assertThat(ten.overlapsWith(ten), equalTo(true));
+        assertThat(ten.overlapsWith(eleven), equalTo(false));
+        assertThat(ten.overlapsWith(elevenZeroBased), equalTo(false));
+        // doesn't matter if the regions are zero or one-based
+        assertThat(eleven.overlapsWith(eleven), equalTo(true));
+        assertThat(eleven.overlapsWith(elevenZeroBased), equalTo(true));
+
+        // Measure the base interval distance between regions/variants
+        //  10 | 11 | 12
+        //  A  | T  | G
+        assertThat(ten.distanceTo(ten), equalTo(0));
+        // region 9-10 is adjacent to region 10-11 (zero bases between the intervals)
+        assertThat(ten.distanceTo(eleven), equalTo(0));
+        assertThat(ten.distanceTo(elevenZeroBased), equalTo(0));
+        // region 9-10 has distance 1 to region 11-12 (one base between the intervals)
+        assertThat(ten.distanceTo(twelve), equalTo(1));
+        assertThat(twelve.distanceTo(ten), equalTo(-1));
+    }
 
     @Test
     public void createDonorAcceptorRegionFromExon() {
@@ -45,30 +234,11 @@ public class UseCaseTests {
     @Test
     public void symbolicVariantContainsSnv() {
         Contig chr1 = TestContig.of(1, 1000);
-        GenomicVariant largeIns = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
-        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
-        assertTrue(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, "A", "T")));
-        assertFalse(largeIns.contains(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 2, "C", "A")));
+        GenomicVariant largeIns = GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
+        assertTrue(largeIns.contains(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, "A", "T")));
+        assertFalse(largeIns.contains(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 2, "C", "A")));
         assertTrue(largeIns.contains(GenomicBreakend.of(chr1, "bnd_A", Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0)));
-    }
-
-    @Test
-    public void trimMultiAllelicSite() {
-        // Given the VCF record:
-        // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
-        Contig chr1 = TestContig.of(1, 249_250_621);
-        VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
-
-        GenomicVariant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
-        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
-
-        GenomicVariant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
-        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
-    }
-
-    private GenomicVariant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
-        VariantPosition trimmed = variantTrimmer.trim(strand, start, ref, alt);
-        return GenomicVariant.of(contig, id, strand, coordinateSystem, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
     @Test
@@ -100,6 +270,39 @@ public class UseCaseTests {
         assertThat(oneBasedEmpty.toZeroBased(), equalTo(zeroBasedEmpty));
         // convert coordinate systems using specific systems
         assertThat(oneBasedEmpty.withCoordinateSystem(CoordinateSystem.zeroBased()), equalTo(zeroBasedEmpty));
+    }
+    @Test
+    public void trimMultiAllelicSite() {
+        // Given the VCF record:
+        // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
+        Contig chr1 = TestContig.of(1, 249_250_621);
+        VariantTrimmer leftShiftingTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
+
+        GenomicVariant firstAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C");
+        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
+
+        GenomicVariant secondAllele = trim(leftShiftingTrimmer, chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "CT");
+        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
+    }
+
+    private GenomicVariant trim(VariantTrimmer variantTrimmer, Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        VariantPosition trimmed = variantTrimmer.trim(strand, start, ref, alt);
+        return GenomicVariant.of(contig, id, strand, coordinateSystem, trimmed.start(), trimmed.ref(), trimmed.alt());
+    }
+
+    @Test
+    void convertVcfRecord() {
+        GenomicAssembly grCh37p13 = GenomicAssemblies.GRCh37p13();
+        VcfConverter vcfConverter = new VcfConverter(grCh37p13, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+        // Given the VCF record:
+        // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
+        Contig chr1 = grCh37p13.contigByName("1");
+
+        GenomicVariant firstAllele = vcfConverter.convert(chr1, "",225_725_424, "CTT", "C");
+        assertThat(firstAllele, equalTo(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CTT", "C")));
+
+        GenomicVariant secondAllele = vcfConverter.convert(chr1, "", 225_725_424, "CTT", "CT");
+        assertThat(secondAllele, equalTo(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 225_725_424, "CT", "C")));
     }
 
     @Test
