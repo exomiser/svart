@@ -110,7 +110,7 @@ public class DefaultGenomicVariantTest {
             assertThat(snvStaticCons.changeLength(), equalTo(0));
             assertThat(snvStaticCons.isZeroBased(), equalTo(true));
 
-            MatcherAssert.assertThat(GenomicRegion.compare(snvStaticCons, snv), equalTo(0));
+            MatcherAssert.assertThat(GenomicVariant.compare(snvStaticCons, snv), equalTo(0));
             assertThat(snvStaticCons, equalTo(snv));
         }
 
