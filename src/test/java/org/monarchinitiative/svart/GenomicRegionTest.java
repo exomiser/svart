@@ -5,7 +5,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -80,14 +81,14 @@ public class GenomicRegionTest {
     @CsvSource({
             // region            pos
             // region before pos 2
-            "ZERO_BASED,    0, 1,   2,   false",
-            "ONE_BASED, 1, 1,   2,   false",
+            "ZERO_BASED, 0, 1,   2,   false",
+            "ONE_BASED,  1, 1,   2,   false",
             // region containing pos 2
-            "ZERO_BASED,    1, 2,   2,   true",
-            "ONE_BASED, 2, 2,   2,   true",
+            "ZERO_BASED, 1, 2,   2,   true",
+            "ONE_BASED,  2, 2,   2,   true",
             // region after pos 2
-            "ZERO_BASED,    2, 3,   2,   false",
-            "ONE_BASED, 3, 3,   2,   false",
+            "ZERO_BASED, 2, 3,   2,   false",
+            "ONE_BASED,  3, 3,   2,   false",
     })
     public void containsPosition(CoordinateSystem coordinateSystem, int start, int end,
                                  int position,
@@ -134,8 +135,8 @@ public class GenomicRegionTest {
             "POSITIVE, ZERO_BASED, 1, 3,   NEGATIVE, ZERO_BASED, 2, 4,   true",
     })
     public void GenomigRegionOverlapsOther(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
-                                              Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
-                                              boolean expected) {
+                                           Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
+                                           boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, thisStrand, thisCoordinateSystem, thisStart, thisEnd);
         GenomicRegion other = GenomicRegion.of(chr1, otherStrand, otherCoordinateSystem, otherStart, otherEnd);
 
@@ -178,7 +179,7 @@ public class GenomicRegionTest {
     })
     public void zeroBasedRegionContainsRegion(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
                                               Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
-                               boolean expected) {
+                                              boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, thisStrand, thisCoordinateSystem, thisStart, thisEnd);
         GenomicRegion other = GenomicRegion.of(chr1, otherStrand, otherCoordinateSystem, otherStart, otherEnd);
 
@@ -219,8 +220,8 @@ public class GenomicRegionTest {
             "ONE_BASED, 2, 4,   ONE_BASED,  3, 5,   false",
     })
     public void oneBasedRegionContainsRegion(CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
-                                               CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
-                                               boolean expected) {
+                                             CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
+                                             boolean expected) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, thisCoordinateSystem, thisStart, thisEnd);
         GenomicRegion other = GenomicRegion.of(chr1, Strand.POSITIVE, otherCoordinateSystem, otherStart, otherEnd);
 
@@ -336,9 +337,9 @@ public class GenomicRegionTest {
             "ONE_BASED,  2, 3,   1, 0,   1, 3",
     })
     public void testWithPadding_upDownPadding(CoordinateSystem coordinateSystem,
-                                          int start, int end,
-                                          int upPadding, int downPadding,
-                                          int expectedStart, int expectedEnd) {
+                                              int start, int end,
+                                              int upPadding, int downPadding,
+                                              int expectedStart, int expectedEnd) {
         GenomicRegion actual = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, start, end).withPadding(upPadding, downPadding);
         GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, coordinateSystem, expectedStart, expectedEnd);
         assertThat(actual, equalTo(expected));
@@ -410,7 +411,7 @@ public class GenomicRegionTest {
             "ONE_BASED, 2, 3,   ONE_BASED, 2, 3",
     })
     public void testWithCoordinateSystem(CoordinateSystem source, int start, int end,
-                                     CoordinateSystem target, int targetStart, int targetEnd) {
+                                         CoordinateSystem target, int targetStart, int targetEnd) {
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, source, start, end);
         GenomicRegion expected = GenomicRegion.of(chr1, Strand.POSITIVE, target, targetStart, targetEnd);
         assertThat(region.withCoordinateSystem(target), equalTo(expected));
@@ -431,8 +432,8 @@ public class GenomicRegionTest {
             "POSITIVE, ZERO_BASED, 3, 4,   NEGATIVE, ZERO_BASED, 3, 4,   0",
     })
     public void testOverlapLength(Strand thisStrand, CoordinateSystem thisCoordinateSystem, int thisStart, int thisEnd,
-                              Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
-                              int expected) {
+                                  Strand otherStrand, CoordinateSystem otherCoordinateSystem, int otherStart, int otherEnd,
+                                  int expected) {
         GenomicRegion region = GenomicRegion.of(chr1, thisStrand, thisCoordinateSystem, thisStart, thisEnd);
         GenomicRegion other = GenomicRegion.of(chr1, otherStrand, otherCoordinateSystem, otherStart, otherEnd);
 
