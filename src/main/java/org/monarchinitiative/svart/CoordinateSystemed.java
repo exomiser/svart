@@ -1,13 +1,15 @@
 package org.monarchinitiative.svart;
 
 /**
+ * Marker interface to indicate that a class has a {@link CoordinateSystem}. If a class requires converting between one
+ * {@link CoordinateSystem} and another implementing the {@link Convertible} interface will enable the library to convert
+ * a set of {@link Coordinates} between the zero and one-based coordinate systems commonly used in bioinformatics.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface CoordinateSystemed<T> {
+public interface CoordinateSystemed {
 
     CoordinateSystem coordinateSystem();
-
-    T withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     /**
      * @return <code>true</code> if the region is represented using {@link CoordinateSystem#ZERO_BASED}, where a region
@@ -23,14 +25,6 @@ public interface CoordinateSystemed<T> {
      */
     default boolean isOneBased() {
         return coordinateSystem().isOneBased();
-    }
-
-    default T toZeroBased() {
-        return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
-    }
-
-    default T toOneBased() {
-        return withCoordinateSystem(CoordinateSystem.ONE_BASED);
     }
 
 }
