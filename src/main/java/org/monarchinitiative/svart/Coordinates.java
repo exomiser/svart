@@ -16,7 +16,7 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public sealed interface Coordinates extends CoordinateSystemed<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
+public sealed interface Coordinates extends Convertible<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
     default Coordinates empty() {
         return PreciseCoordinates.EMPTY;
