@@ -60,13 +60,19 @@ public interface GenomicRegion extends GenomicInterval, Convertible<GenomicRegio
         return of(contig, strand, Coordinates.of(coordinateSystem, start, end));
     }
 
+    /**
+     * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code> with
+     * imprecise start and end coordinates
+     *
+     * @return a genomic region
+     */
     static GenomicRegion of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, startCi, end, endCi);
         return DefaultGenomicRegion.of(contig, strand, coordinates);
     }
 
     /**
-     * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code>.
+     * Create genomic region on <code>contig</code> and <code>strand</code> using <code>coordinates</code>.
      *
      * @return a genomic position
      */

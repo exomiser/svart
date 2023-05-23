@@ -16,7 +16,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.contig = Objects.requireNonNull(contig, "contig must not be null");
         this.strand = Objects.requireNonNull(strand, "strand must not be null");
         this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
-        GenomicInterval.validateCoordinatesOnContig(coordinates, contig);
+        GenomicInterval.validateCoordinatesOnContig(contig, coordinates);
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {

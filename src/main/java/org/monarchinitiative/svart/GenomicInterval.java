@@ -1,5 +1,7 @@
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.impl.DefaultGenomicInterval;
+
 import java.util.Comparator;
 
 /**
@@ -35,11 +37,11 @@ public interface GenomicInterval extends Stranded, Interval {
      * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
      * implementing {@link GenomicInterval} use this method to validate their inputs.
      *
-     * @param coordinates {@link Coordinates} of the interval.
      * @param contig {@link Contig} on which the interval is located
+     * @param coordinates {@link Coordinates} of the interval.
      * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
      */
-    static void validateCoordinatesOnContig(Coordinates coordinates, Contig contig) {
+    static void validateCoordinatesOnContig(Contig contig, Coordinates coordinates) {
         CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
         int start = coordinates.start();
         int end = coordinates.end();
@@ -175,4 +177,35 @@ public interface GenomicInterval extends Stranded, Interval {
     int hashCode();
 
     boolean equals(Object o);
+
+
+    /**
+     * Create genomic interval on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code> with
+     * precise start and end coordinates
+     *
+     * @return a genomic interval
+     */
+    static GenomicInterval of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
+        return of(contig, strand, Coordinates.of(coordinateSystem, start, end));
+    }
+
+    /**
+     * Create genomic interval on <code>contig</code> and <code>strand</code> using <code>coordinateSystem</code> with
+     * imprecise start and end coordinates
+     *
+     * @return a genomic interval
+     */
+    static GenomicInterval of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi) {
+        Coordinates coordinates = Coordinates.of(coordinateSystem, start, startCi, end, endCi);
+        return of(contig, strand, coordinates);
+    }
+
+    /**
+     * Create genomic interval on <code>contig</code> and <code>strand</code> with <code>coordinates</code>.
+     *
+     * @return a genomic interval
+     */
+    static GenomicInterval of(Contig contig, Strand strand, Coordinates coordinates) {
+        return DefaultGenomicInterval.of(contig, strand, coordinates);
+    }
 }
