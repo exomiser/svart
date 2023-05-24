@@ -18,7 +18,7 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
  */
 public sealed interface Coordinates extends Convertible<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
-    default Coordinates empty() {
+    static Coordinates empty() {
         return PreciseCoordinates.EMPTY;
     }
 

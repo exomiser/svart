@@ -15,15 +15,22 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CoordinatesTest {
 
     @Test
+    void emptyCoordinates() {
+        assertThat(Coordinates.empty(), equalTo(Coordinates.zeroBased(0, 0)));
+    }
+
+    @Test
     public void zeroBasedConstructorPrecise() {
         Coordinates instance = Coordinates.zeroBased(0, 10);
         assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.zeroBased(), 0, ConfidenceInterval.precise(), 10, ConfidenceInterval.precise())));
+        assertThat(instance.isPrecise(), is(true));
     }
 
     @Test
     public void zeroBasedConstructorImprecise() {
         Coordinates instance = Coordinates.zeroBased(0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise());
         assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.zeroBased(), 0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise())));
+        assertThat(instance.isPrecise(), is(false));
     }
 
     @Test
