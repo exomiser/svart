@@ -6,6 +6,32 @@ import org.monarchinitiative.svart.VariantType;
 import java.util.Objects;
 
 /**
+ * Utility class for trimming/minimising variants. There are multiple ways a variant can be trimmed, depending on the
+ * source and use case. Svart is agnostic to which, if any trimming is applied, however it is generally recommended to
+ * apply at least one type in order to correctly ascertain the {@link VariantType}.
+ * <p>
+ * VCF requires that the variant is "left-shifted" and retains the common prefix/suffix, whereas HGVS requires
+ * that they be "right-shifted" and any common bases removed aka the <a href="https://varnomen.hgvs.org/recommendations/general/">3' rule</a> with any
+ * common base being removed. These requirements are clearly at odds with each other. It is also the case that these
+ * algorithms are "over-precise" for variants occurring in a repeated region which can lead to multiple representations
+ * of the same variant. The NCBI's VOCA (see below) solves this by left-shifting and removing the common base (contrary
+ * to both VCF and HGVS) before expanding the variant into the repeated region. This leads to a longer, but unambiguous
+ * sequence change.
+ * <p>
+ * For more information of the reasons to trim and various methods of trimming, see these resources:
+ * <p>
+ * Multi-allelic sites <a href="https://macarthurlab.org/2014/04/28/converting-genetic-variants-to-their-minimal-representation"/>converting-genetic-variants-to-their-minimal-representation</a>
+ * <p>
+ * Normalisation
+ * <p>
+ * Normalisation is related to trimming, but is currently not supported by this library.
+ * <p>
+ * <a href="https://genome.sph.umich.edu/wiki/Variant_Normalization">VT Normalise</a> published as
+ * <a href="https://doi.org/10.1093/bioinformatics/btv112">Unified representation of genetic variants</a> VCF-specific left-shifted algorithm
+ * <p>
+ * <href <a href="https://doi.org/10.1093/bioinformatics/btz856">SPDI: data model for variants and applications at NCBI</a> Variant OverCorrection Algorithm (VOCA) described in supplementary material
+ * <p>
+ * <href <a href="https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html">GA4GH Variation Representation Specification - Normalisation</a> published as <href <a href="https://doi.org/10.1016/j.xgen.2021.100027">The GA4GH Variation Representation Specification (VRS): a computational framework for variation representation and federated identification.</a>
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class VariantTrimmer {
@@ -23,6 +49,16 @@ public abstract class VariantTrimmer {
 
     public abstract VariantPosition trim(Strand strand, int start, String ref, String alt);
 
+    /**
+     * Returns an instance of a {@link VariantTrimmer} which will "left-shift" any input variants. This should be used
+     * on any multi-alleleic sites from a VCF along with {@link #retainingCommonBase()}. Variants to be further
+     * processed by the VOCA should also use this method but choose {@link #removingCommonBase()} such that pure
+     * insertions or deletions will have an empty ref/alt base once fully trimmed.
+     *
+     * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
+     *                             ALT allele, once trimmed.
+     * @return an instance of the trimmer which will "left-shift" any variants.
+     */
     public static VariantTrimmer leftShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
         return new LeftShiftingTrimmer(baseRetentionStrategy);
     }
@@ -35,6 +71,16 @@ public abstract class VariantTrimmer {
             this.baseRetentionStrategy = baseRetentionStrategy;
         }
 
+        /**
+         * This method will "left-shift" any input variants. It should be used on any multi-alleleic sites from a VCF along
+         * with {@link #retainingCommonBase()}. Variants to be further processed by the VOCA should also use this method but
+         * choose {@link #removingCommonBase()} such that pure insertions or deletions will have an empty ref/alt base once
+         * fully trimmed.
+         * <p>
+         * This method will safely handle variants provided on either strand.
+         *
+         * @return a left-shifted trimmed variant according to the {@link BaseRetentionStrategy} of the {@link VariantTrimmer}.
+         */
         @Override
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? leftShift(start, ref, alt, baseRetentionStrategy) : rightShift(start, ref, alt, baseRetentionStrategy);
@@ -68,6 +114,14 @@ public abstract class VariantTrimmer {
         }
     }
 
+    /**
+     * Returns an instance of a {@link VariantTrimmer} which will "right-shift" any input variants. This should be used
+     * for variants to be reported in HGVS along with {@link #removingCommonBase()}.
+     *
+     * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
+     *                             ALT allele, once trimmed.
+     * @return an instance of the trimmer which will "right-shift" any variants.
+     */
     public static VariantTrimmer rightShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
         return new RightShiftingTrimmer(baseRetentionStrategy);
     }
@@ -80,6 +134,14 @@ public abstract class VariantTrimmer {
             this.baseRetentionStrategy = baseRetentionStrategy;
         }
 
+        /**
+         * This method will "right-shift" any input variants. It should be used for variants to be reported in HGVS along
+         * with {@link #removingCommonBase()}.
+         * <p>
+         * This method will safely handle variants provided on either strand.
+         *
+         * @return a right-shifted trimmed variant according to the {@link BaseRetentionStrategy} of the {@link VariantTrimmer}.
+         */
         @Override
         public VariantPosition trim(Strand strand, int start, String ref, String alt) {
             return strand == Strand.POSITIVE ? rightShift(start, ref, alt, baseRetentionStrategy) : leftShift(start, ref, alt, baseRetentionStrategy);
@@ -113,6 +175,19 @@ public abstract class VariantTrimmer {
         }
     }
 
+    /**
+     * This method will "left-shift" any input variants. It should be used on any multi-alleleic sites from a VCF along
+     * with {@link #retainingCommonBase()}. Variants to be further processed by the VOCA should also use this method but
+     * choose {@link #removingCommonBase()} such that pure insertions or deletions will have an empty ref/alt base once
+     * fully trimmed.
+     * <p>
+     * <b>WARNING!! STRAND IS IMPORTANT! IT IS ASSUMED VARIANTS ARE PROVIDED ON THE POSITIVE STRAND.</b> The
+     * {@link LeftShiftingTrimmer#trim} method will safely handle strandedness.
+     *
+     * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
+     *                             ALT allele, once trimmed.
+     * @return a left-shifted trimmed variant.
+     */
     static VariantPosition leftShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
@@ -152,6 +227,17 @@ public abstract class VariantTrimmer {
         return new VariantPosition(trimStart, trimRef, trimAlt);
     }
 
+    /**
+     * This method will "right-shift" any input variants. It should be used for variants to be reported in HGVS along
+     * with {@link #removingCommonBase()}.
+     * <p>
+     * <b>WARNING!! STRAND IS IMPORTANT! IT IS ASSUMED VARIANTS ARE PROVIDED ON THE POSITIVE STRAND.</b> The
+     * {@link RightShiftingTrimmer#trim} method will safely handle strandedness.
+     *
+     * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
+     *                             ALT allele, once trimmed.
+     * @return a right-shifted trimmed variant.
+     */
     static VariantPosition rightShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
         // copy these here in order not to change input params
         int trimStart = start;
@@ -306,16 +392,12 @@ public abstract class VariantTrimmer {
      *
      * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
      */
-    public static class VariantPosition {
+    public record VariantPosition(int start, String ref, String alt) {
 
-        private final int start;
-        private final String ref;
-        private final String alt;
-
-        private VariantPosition(int start, String ref, String alt) {
+        public VariantPosition(int start, String ref, String alt) {
             this.start = start;
-            this.ref = ref;
-            this.alt = alt;
+            this.ref = Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
+            this.alt = Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
         }
 
         /**
@@ -327,36 +409,7 @@ public abstract class VariantTrimmer {
          * @return an exact representation of the input coordinates and sequence.
          */
         public static VariantPosition of(int start, String ref, String alt) {
-            Objects.requireNonNull(ref, REF_STRING_CANNOT_BE_NULL);
-            Objects.requireNonNull(alt, ALT_STRING_CANNOT_BE_NULL);
             return new VariantPosition(start, ref, alt);
-        }
-
-        public int start() {
-            return start;
-        }
-
-        public String ref() {
-            return ref;
-        }
-
-        public String alt() {
-            return alt;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof VariantPosition)) return false;
-            VariantPosition that = (VariantPosition) o;
-            return start == that.start &&
-                    ref.equals(that.ref) &&
-                    alt.equals(that.alt);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(start, ref, alt);
         }
 
         @Override
