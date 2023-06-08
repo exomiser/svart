@@ -7,7 +7,7 @@ Svart is a small library for representing genomic variants and regions. It attem
 
 - First-class genomic assemblies
 - Coordinate system off-by-one errors
-- Representation of VCF small, structural and breakend variants with a consistent API
+- Representation of VCF sequence, symbolic and breakend variants with a consistent API
 - Different variant trimming strategies 
 
 The library provides a consistent API for creating, manipulating and comparing variation of different types by providing
@@ -27,7 +27,7 @@ variation such as [Exomiser](https://github.com/exomiser/Exomiser/),
 These projects are inter-dependent to some extent and all require some level of ability to represent and manipulate 
 genomic variation.
 
-Given the inter-dependency there is substantial copying/re-implementation in the code-bases of these projects of various 
+Given their interdependency there is substantial copying/re-implementation in the code-bases of these projects of various 
 core concepts surrounding genomic variation. This library aims to provide a common set of interfaces and implementations 
 which can be used to fulfill their collective use-cases and so reduce code duplication, bugs, and GC pressure due to 
 object conversion between common types.
@@ -108,7 +108,7 @@ errors and providing an extensible model to plug into your code, so you can focu
 region can be placed on a contig and will validate the input sequence to conform to VCF standards.
 
 With the v2.0 API a new interface `GenomicInterval` has been added as the parent to `GenomicRegion`. The `GenomicInterval`
-is untyped to ease implementation by other classes and in particular it omits the `Convertible` and `Transposable` traits
+is not a generic type to ease implementation by other classes and in particular it omits the `Convertible` and `Transposable` traits
 whilst implementing helper methods such as `overlapsWith(GenomicInterval other)` or `startOnStrandWithCoordinateSystem()`.
 Consequently, for developers wondering which interface to implement, in general they should decide based on whether their
 class will benefit from being `Convertible` or `Transposable`. Methods accepting a `GenomicX` should therefore prefer 
@@ -131,7 +131,7 @@ gene.
 
 ```java
 class SnpAndGeneTest {
-
+    @Test
     public void checkGeneContainsVariant() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
@@ -144,7 +144,7 @@ class SnpAndGeneTest {
         Contig chr10b37 = b37.contigByName("10");
         GenomicRegion fgfr2Gene = GenomicRegion.of(chr10b37, Strand.POSITIVE, CoordinateSystem.oneBased(), 123_237_848, 123_357_972);
         // 10	123256215	.	T	G  - a pathogenic missense variant (GRCh37 VCF coordinates - 1-based, positive strand)
-        GenomicVariant snv = GenomicVariant.of(chr10b37, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
+        GenomicVariant snv = GenomicVariant.of(chr10b37, Strand.POSITIVE, CoordinateSystem.oneBased(), 123_256_215, "T", "G");
         // Because svart knows about coordinate systems and strands it is possible to...
         // keep the gene on the positive strand:
         // GenomicRegion{contig=10, strand=+, coordinateSystem=ONE_BASED, startPosition=123237848, endPosition=123357972}
