@@ -65,6 +65,10 @@ public interface Interval extends CoordinateSystemed {
         return coordinates().length();
     }
 
+    default boolean isPrecise() {
+        return coordinates().isPrecise();
+    }
+
     /**
      * @param other chromosomal region
      * @return true if the <code>other</code> region is fully contained within this region
