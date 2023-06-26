@@ -46,7 +46,7 @@ public class DefaultGenomicBreakendVariantTest {
         assertThat(variant.isSymbolic(), equalTo(true));
         assertThat(variant.variantType(), equalTo(VariantType.BND));
         assertThat(variant.id(), equalTo("bnd_U"));
-        assertThat(variant.right().mateId(), equalTo("bnd_V"));
+        assertThat(variant.mateId(), equalTo("bnd_V"));
         assertThat(variant.eventId(), equalTo("tra2"));
     }
 
@@ -64,5 +64,22 @@ public class DefaultGenomicBreakendVariantTest {
         GenomicBreakend right = GenomicBreakend.of(chr2, "right", Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 321_681, 321_681);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> DefaultGenomicBreakendVariant.of("", left, right, "", ""));
         assertThat(exception.getMessage(), equalTo("Left breakend cannot be unresolved."));
+    }
+
+    @Test
+    void builderTests() {
+        GenomicBreakend bnd_U = GenomicBreakend.of(chr13, "bnd_U", Strand.POSITIVE, CoordinateSystem.oneBased(), 123_457, 123_456);
+        GenomicBreakend bnd_V = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.oneBased(), 321_682, 321_681);
+
+        GenomicBreakendVariant oneBasedPositive = DefaultGenomicBreakendVariant.builder()
+                .breakendVariant("tra2", bnd_U, bnd_V, "C", "")
+                .build().toOppositeStrand();
+
+        GenomicBreakendVariant zeroBasedNegative = DefaultGenomicBreakendVariant.builder()
+                .breakendVariant(oneBasedPositive)
+                .asOneBased()
+                .asZeroBased()
+                .build();
+        assertThat(oneBasedPositive, equalTo(zeroBasedNegative.toOneBased().toPositiveStrand()));
     }
 }

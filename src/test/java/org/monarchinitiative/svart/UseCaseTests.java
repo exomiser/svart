@@ -17,7 +17,7 @@ public class UseCaseTests {
     @Test
     void buildSimpleSnp() {
         GenomicVariant snpFromBuilder = GenomicVariant.builder()
-                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "T")
+                .variant(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "T")
                 .build();
         GenomicVariant snpFromStaticFactoryMethod = GenomicVariant.of(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 10), "A", "T");
         assertEquals(snpFromBuilder, snpFromStaticFactoryMethod);
@@ -26,7 +26,7 @@ public class UseCaseTests {
     @Test
     void buildSymbolicVariant() {
         GenomicVariant symbolicDel = GenomicVariant.builder()
-                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 100), "N", "<DEL>", -90)
+                .variant(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 100), "N", "<DEL>", -90)
                 .build();
         GenomicVariant symbolicDelFromStaticFactoryMethod = GenomicVariant.of(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(10, 100), "N", "<DEL>", -90);
         assertThat(symbolicDel.isSymbolic(), equalTo(true));
@@ -36,7 +36,7 @@ public class UseCaseTests {
     @Test
     void buildSymbolicBreakendVariant() {
         GenomicVariant breakend = GenomicVariant.builder()
-                .with(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(101, 100), "N", "C[2:321682[", 0)
+                .variant(TestContig.of(1, 1000), Strand.POSITIVE, Coordinates.oneBased(101, 100), "N", "C[2:321682[", 0)
                 .id("bnd_U")
                 .mateId("bnd_v")
                 .build();
@@ -370,6 +370,11 @@ public class UseCaseTests {
         assertThat(bnd.isBreakend(), equalTo(true));
         assertThat(bnd.ref(), equalTo("C"));
         assertThat(bnd.alt(), equalTo("C[2:321682["));
+
+        assertThat(bndb.isSymbolic(), equalTo(true));
+        assertThat(bndb.isBreakend(), equalTo(true));
+        assertThat(bndb.ref(), equalTo("C"));
+        assertThat(bndb.alt(), equalTo(""));
 
         // breakends cannot be flipped from one strand to the other
         assertSame(bndb, bndb.toOppositeStrand());

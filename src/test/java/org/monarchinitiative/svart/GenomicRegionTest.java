@@ -3,6 +3,7 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.impl.DefaultGenomicRegion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -458,5 +459,55 @@ public class GenomicRegionTest {
 
         assertThat(imprecise.endMin(), equalTo(1900));
         assertThat(imprecise.endMax(), equalTo(2200));
+    }
+
+    @Test
+    void builderTests() {
+        GenomicRegion oneBasedPositive = TestGenomicRegion.builder()
+                .region(chr1, Strand.POSITIVE, Coordinates.oneBased(1, 5))
+                .build();
+
+        GenomicRegion zeroBasedNegative = TestGenomicRegion.builder()
+                .region(oneBasedPositive)
+                .asOneBased()
+                .asZeroBased()
+                .onPositiveStrand()
+                .onNegativeStrand()
+                .build();
+        assertThat(oneBasedPositive, equalTo(zeroBasedNegative.toOneBased().toPositiveStrand()));
+    }
+
+    private static class TestGenomicRegion extends BaseGenomicRegion<TestGenomicRegion> {
+
+
+        public TestGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) {
+            super(contig, strand, coordinates);
+        }
+
+        public TestGenomicRegion(Builder builder) {
+            super(builder);
+        }
+
+        @Override
+        protected TestGenomicRegion newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+            return new TestGenomicRegion(contig, strand, coordinates);
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        static class Builder extends BaseGenomicRegion.Builder<Builder> {
+
+            @Override
+            protected TestGenomicRegion build() {
+                return new TestGenomicRegion(this);
+            }
+
+            @Override
+            protected Builder self() {
+                return this;
+            }
+        }
     }
 }

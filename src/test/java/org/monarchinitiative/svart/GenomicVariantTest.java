@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
-import org.monarchinitiative.svart.util.VariantTrimmer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -31,30 +30,30 @@ class GenomicVariantTest {
         if (expected.isSymbolic() || expected.isBreakend()) {
             assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt));
             assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt));
-            assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt).build());
+            assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt).build());
 
             assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt));
             assertThrows(IllegalArgumentException.class, () -> GenomicVariant.of(chr1, "", Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt));
-            assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt).build());
+            assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt).build());
         } else {
             assertThat(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt), equalTo(expected));
             assertThat(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt), equalTo(expected));
-            assertThat(GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt).build(), equalTo(expected));
+            assertThat(GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, ref, alt).build(), equalTo(expected));
 
             assertThat(GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt), equalTo(expected));
             assertThat(GenomicVariant.of(chr1, "", Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt), equalTo(expected));
-            assertThat(GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt).build(), equalTo(expected));
+            assertThat(GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt).build(), equalTo(expected));
         }
 
         assertThat(GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength), equalTo(expected));
         assertThat(GenomicVariant.of(chr1, "", Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength), equalTo(expected));
-        assertThat(GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength).build(), equalTo(expected));
+        assertThat(GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength).build(), equalTo(expected));
 
         assertThat(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, end, ref, alt, changeLength), equalTo(expected));
         assertThat(GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, end, ref, alt, changeLength), equalTo(expected));
 
         assertThat(GenomicVariant.of(chr1, "", Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength, "", ""), equalTo(expected));
-        assertThat(GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength)
+        assertThat(GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength)
                 .id("")
                 .mateId("")
                 .eventId("")

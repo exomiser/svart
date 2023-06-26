@@ -343,6 +343,19 @@ public class DefaultGenomicVariantTest {
             assertThat(onNegative, equalTo(DefaultGenomicVariant.of(chr1, "", Strand.NEGATIVE, CoordinateSystem.ONE_BASED, 5, "A", "*")));
         }
 
+        @Test
+        void builderTests() {
+            DefaultGenomicVariant oneBasedPositive = DefaultGenomicVariant.builder()
+                    .variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "AT", "TGC")
+                    .build();
+
+            DefaultGenomicVariant zeroBasedNegative = DefaultGenomicVariant.builder()
+                    .variant(oneBasedPositive)
+                    .asZeroBased()
+                    .onNegativeStrand()
+                    .build();
+            assertThat(oneBasedPositive, equalTo(zeroBasedNegative.toOneBased().toPositiveStrand()));
+        }
     }
 
     @Nested

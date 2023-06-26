@@ -64,7 +64,7 @@ public class VcfConverter {
     public <T extends BaseGenomicVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
         Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref());
-        return builder.with(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt()).id(id);
+        return builder.variant(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt()).id(id);
     }
 
     private VariantPosition checkAndTrimNonSymbolic(int pos, String ref, String alt) {
@@ -103,7 +103,7 @@ public class VcfConverter {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
         Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
-        return builder.with(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen).id(id);
+        return builder.variant(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen).id(id);
     }
 
     public GenomicBreakendVariant convertBreakend(Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
@@ -113,7 +113,7 @@ public class VcfConverter {
 
     public <T extends BaseGenomicBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
         GenomicBreakendVariant breakendVariant = convertBreakend(contig, id, position, ciPos, ref, alt, ciEnd, mateId, eventId);
-        return builder.with(breakendVariant);
+        return builder.breakendVariant(breakendVariant);
     }
 
     @Override

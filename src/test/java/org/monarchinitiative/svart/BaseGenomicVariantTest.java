@@ -18,7 +18,7 @@ public class BaseGenomicVariantTest {
 
     @Test
     public void buildPreciseInsertion() {
-        GenomicVariant instance = GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").id("rs1234567").build();
+        GenomicVariant instance = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").id("rs1234567").build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo("rs1234567"));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
@@ -33,7 +33,7 @@ public class BaseGenomicVariantTest {
     @Test
     public void buildWithVariant() {
         GenomicVariant oneBasedVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
-        GenomicVariant instance = GenomicVariant.builder().with(oneBasedVariant).build();
+        GenomicVariant instance = GenomicVariant.builder().variant(oneBasedVariant).build();
         assertThat(instance.contig(), equalTo(oneBasedVariant.contig()));
         assertThat(instance.id(), equalTo(oneBasedVariant.id()));
         assertThat(instance.strand(), equalTo(oneBasedVariant.strand()));
@@ -48,7 +48,7 @@ public class BaseGenomicVariantTest {
     @Test
     public void buildWithVariantToCoordinateSystemAndStrand() {
         GenomicVariant oneBasedVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA");
-        GenomicVariant.Builder instance = GenomicVariant.builder().with(oneBasedVariant);
+        GenomicVariant.Builder instance = GenomicVariant.builder().variant(oneBasedVariant);
         GenomicVariant oneBased = instance.build();
         assertThat(instance.asOneBased().build(), equalTo(oneBased));
         assertThat(instance.asZeroBased().build(), equalTo(oneBased.toZeroBased()));
@@ -69,7 +69,7 @@ public class BaseGenomicVariantTest {
             "ZERO_BASED,    5, G, AT,    6",
     })
     public void builderAddsMissingEndAndLength(CoordinateSystem coordinateSystem, int start, String ref, String alt, int expectEnd) {
-        GenomicVariant instance = GenomicVariant.builder().with(chr1, Strand.POSITIVE, coordinateSystem, start, ref, alt).build();
+        GenomicVariant instance = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, coordinateSystem, start, ref, alt).build();
         assertThat(instance.contig(), equalTo(chr1));
         assertThat(instance.id(), equalTo(""));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
@@ -84,18 +84,18 @@ public class BaseGenomicVariantTest {
 
     @Test
     public void buildIllegalSymbolicInsertion() {
-        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "<INS>").build());
+        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "<INS>").build());
     }
 
     @Test
     public void buildThrowsIllegalArgumentWithBreakendAllele() {
-        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().with(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "A[1:2]").build());
+        assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "A[1:2]").build());
     }
 
     @Test
     void testSymbolicAllelesWithoutLengthThrowsInformativeException() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> GenomicVariant.builder()
-                .with(chr1, Strand.POSITIVE, Coordinates.oneBased(1, 200), "N", "<DEL>")
+                .variant(chr1, Strand.POSITIVE, Coordinates.oneBased(1, 200), "N", "<DEL>")
                 .build()
         );
         assertThat(exception.getMessage(), equalTo("Missing changeLength for symbolic alt allele <DEL>"));
@@ -128,7 +128,7 @@ public class BaseGenomicVariantTest {
         int changeLength = -205;
 
         GenomicVariant instance = GenomicVariant.builder()
-                .with(chr1, Strand.POSITIVE, coordinates, ref, alt, changeLength)
+                .variant(chr1, Strand.POSITIVE, coordinates, ref, alt, changeLength)
                 .id(".")
                 .build();
         assertThat(instance.contig(), equalTo(chr1));
@@ -164,37 +164,46 @@ public class BaseGenomicVariantTest {
 
     @Test
     void testBuilderMethods() {
-        GenomicVariant sequenceVariantFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T").id("rs123456").build();
+        GenomicVariant sequenceVariantFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T").id("rs123456").build();
         GenomicVariant sequenceVariantFromStaticConstructor = GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T");
         assertEquals(sequenceVariantFromBuilder, sequenceVariantFromStaticConstructor);
 
-        GenomicVariant symbolicFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200).id("rs123456").build();
+        GenomicVariant symbolicFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200).id("rs123456").build();
         GenomicVariant symbolicFromStaticConstructor = GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200);
         assertEquals(symbolicFromBuilder, symbolicFromStaticConstructor);
 
-        GenomicVariant bndFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).id("bnd_U").mateId("bnd_V").eventId("tra2").build();
+        GenomicVariant bndFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).id("bnd_U").mateId("bnd_V").eventId("tra2").build();
         GenomicVariant bndFromStaticConstructor = GenomicVariant.of(chr1, "bnd_U", Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0, "bnd_V", "tra2");
         assertEquals(bndFromBuilder, bndFromStaticConstructor);
     }
 
     @Test
     void testConstructorsWithoutId() {
-        GenomicVariant sequenceVariantFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T").build();
+        GenomicVariant sequenceVariantFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T").build();
         GenomicVariant sequenceVariantFromStaticConstructor = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T");
         assertEquals(sequenceVariantFromBuilder, sequenceVariantFromStaticConstructor);
         assertEquals("", sequenceVariantFromBuilder.eventId());
         assertEquals("", sequenceVariantFromBuilder.mateId());
 
-        GenomicVariant symbolicFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200).build();
+        GenomicVariant symbolicFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200).build();
         GenomicVariant symbolicFromStaticConstructor = GenomicVariant.of(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12544), "C", "<DEL>", -200);
         assertEquals(symbolicFromBuilder, symbolicFromStaticConstructor);
         assertEquals("", symbolicFromBuilder.eventId());
         assertEquals("", symbolicFromBuilder.mateId());
 
-        GenomicVariant bndFromBuilder = GenomicVariant.builder().with(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).mateId("bnd_V").id("bnd_U").eventId("tra2").build();
+        GenomicVariant bndFromBuilder = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0).mateId("bnd_V").id("bnd_U").eventId("tra2").build();
         GenomicVariant bndFromStaticConstructor = GenomicVariant.of(chr1, "bnd_U", Strand.POSITIVE, Coordinates.oneBased(12345, 12345), "C", "C[2:321682[", 0, "bnd_V", "tra2");
         assertEquals(bndFromBuilder, bndFromStaticConstructor);
         assertEquals("bnd_V", bndFromStaticConstructor.mateId());
         assertEquals("tra2", bndFromStaticConstructor.eventId());
+    }
+
+    @Test
+    void testChangeLengthInBuilderCannotBeIncorrectlySet() {
+        Exception exception = assertThrows(IllegalArgumentException.class , () -> GenomicVariant.builder()
+                .variant(chr1, Strand.POSITIVE, Coordinates.oneBased(12345, 12346), "CA", "T")
+                .changeLength(200)
+                .build());
+        assertThat(exception.getMessage(), equalTo("Given changeLength of 200 inconsistent with expected changeLength of -1 for variant 1:12345-12346 CA>T"));
     }
 }

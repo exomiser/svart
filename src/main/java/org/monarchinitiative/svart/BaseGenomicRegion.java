@@ -124,20 +124,15 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
         // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
         // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
-        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
-        // to maintain the correct state when finally built.
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters to
+        // maintain the correct state when finally built.
 
-        public T with(GenomicRegion genomicRegion) {
+        public T region(GenomicRegion genomicRegion) {
             Objects.requireNonNull(genomicRegion, "genomicRegion cannot be null");
-            return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
+            return region(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
         }
 
-        public T with(GenomicVariant genomicVariant) {
-            Objects.requireNonNull(genomicVariant, "variant cannot be null");
-            return with(genomicVariant.contig(), genomicVariant.strand(), genomicVariant.coordinates());
-        }
-
-        public T with(Contig contig, Strand strand, Coordinates coordinates) {
+        public T region(Contig contig, Strand strand, Coordinates coordinates) {
             this.contig = Objects.requireNonNull(contig, "contig must not be null");
             this.strand = Objects.requireNonNull(strand, "strand must not be null");
             this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
@@ -174,7 +169,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
             return self();
         }
 
-        protected abstract BaseGenomicRegion<?> build();
+        protected abstract GenomicRegion build();
 
         protected abstract T self();
     }

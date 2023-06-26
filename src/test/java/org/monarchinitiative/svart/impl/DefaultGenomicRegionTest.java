@@ -6,7 +6,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -108,7 +107,7 @@ public class DefaultGenomicRegionTest {
         Contig chr2 = TestContig.of(2, 2000);
         GenomicRegion fourth = GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 2);
 
-        List<GenomicRegion> sorted = Stream.of(second, first, fourth, third).sorted().collect(Collectors.toUnmodifiableList());
+        List<GenomicRegion> sorted = Stream.of(second, first, fourth, third).sorted().toList();
         assertThat(sorted, equalTo(List.of(first, second, third, fourth)));
     }
 }

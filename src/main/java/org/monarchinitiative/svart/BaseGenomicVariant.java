@@ -210,18 +210,18 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
     @Override
     public String toString() {
         return "GenomicVariant{" +
-               "contig=" + contigId() +
-               ", id='" + id + '\'' +
-               ", strand=" + strand() +
-               ", " + formatCoordinates() +
-               ", ref='" + ref + '\'' +
-               ", alt='" + alt + '\'' +
-               ", variantType=" + variantType +
-               ", length=" + length() +
-               ", changeLength=" + changeLength +
-               mateIdStr() +
-               eventIdStr() +
-               '}';
+                "contig=" + contigId() +
+                ", id='" + id + '\'' +
+                ", strand=" + strand() +
+                ", " + formatCoordinates() +
+                ", ref='" + ref + '\'' +
+                ", alt='" + alt + '\'' +
+                ", variantType=" + variantType +
+                ", length=" + length() +
+                ", changeLength=" + changeLength +
+                mateIdStr() +
+                eventIdStr() +
+                '}';
     }
 
     private String mateIdStr() {
@@ -232,8 +232,19 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         return eventId.isEmpty() ? "" : ", eventId=" + eventId;
     }
 
-    public abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
+    public abstract static class Builder<T extends Builder<T>> {
 
+        private static final Coordinates DEFAULT_COORDINATES = Coordinates.of(CoordinateSystem.ONE_BASED, 1, 1);
+
+        protected Contig contig;
+        // we're primarily interested in VCF coordinates, so we're defaulting to 1-based coordinates on the + strand
+        protected Strand strand = Strand.POSITIVE;
+        protected Coordinates coordinates = DEFAULT_COORDINATES;
+
+        // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
+        // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters to
+        // maintain the correct state when finally built.
         protected String id = "";
         protected String ref = "";
         protected String alt = "";
@@ -249,44 +260,37 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
         // to maintain the correct state when finally built.
 
-        @Override
-        public T with(GenomicVariant genomicVariant) {
+        public T variant(GenomicVariant genomicVariant) {
             Objects.requireNonNull(genomicVariant, "variant cannot be null");
-            return with(genomicVariant.contig(),
-                    genomicVariant.id(),
+            return variant(genomicVariant.contig(),
                     genomicVariant.strand(),
                     genomicVariant.coordinates(),
                     genomicVariant.ref(),
                     genomicVariant.alt(),
-                    genomicVariant.changeLength(),
-                    genomicVariant.mateId(),
-                    genomicVariant.eventId());
+                    genomicVariant.changeLength())
+                    .id(genomicVariant.id())
+                    .mateId(genomicVariant.mateId())
+                    .eventId(genomicVariant.eventId());
         }
 
-        public T with(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt) {
-            return with(contig, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt));
+        public T variant(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt) {
+            return variant(contig, strand, coordinates, ref, requireLengthIfSymbolic(alt), calculateChangeLength(ref, alt));
         }
 
-        public T with(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
+        public T variant(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
             requireLengthIfSymbolic(alt);
             int end = calculateEnd(start, coordinateSystem, ref, alt);
             Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-            return with(contig, strand, coordinates, ref, alt, calculateChangeLength(ref, alt));
+            return variant(contig, strand, coordinates, ref, alt, calculateChangeLength(ref, alt));
         }
 
-        public T with(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
-            return with(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
-        }
-
-        // keep this private to prevent excessive scoping of this method as that would basically nullify the point of having a builder.
-        private T with(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
-            super.with(contig, strand, coordinates);
-            this.id = Objects.requireNonNull(id);
+        public T variant(Contig contig, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+            this.contig = Objects.requireNonNull(contig, "contig must not be null");
+            this.strand = Objects.requireNonNull(strand, "strand must not be null");
+            this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
             this.ref = Objects.requireNonNull(ref);
             this.alt = Objects.requireNonNull(alt);
             this.changeLength = changeLength;
-            this.mateId = Objects.requireNonNullElse(mateId, this.mateId);
-            this.eventId = Objects.requireNonNullElse(eventId, this.eventId);
             return self();
         }
 
@@ -324,7 +328,27 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             return self();
         }
 
-        @Override
+        public T asZeroBased() {
+            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        }
+
+        public T asOneBased() {
+            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        }
+
+        public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
+            this.coordinates = coordinates.withCoordinateSystem(coordinateSystem);
+            return self();
+        }
+
+        public T onPositiveStrand() {
+            return withStrand(Strand.POSITIVE);
+        }
+
+        public T onNegativeStrand() {
+            return withStrand(Strand.NEGATIVE);
+        }
+
         public T withStrand(Strand strand) {
             if (this.strand == strand) {
                 return self();
@@ -336,13 +360,13 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             return self();
         }
 
-        protected abstract BaseGenomicVariant<?> build();
+        protected abstract GenomicVariant build();
 
         protected abstract T self();
     }
 
     private static class AlleleCache {
-        
+
         private static final String A = "A";
         private static final String T = "T";
         private static final String G = "G";
@@ -357,7 +381,7 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         private static String cacheAllele(String alt) {
             return alt.length() == 1 ? getCachedBase(alt) : alt;
         }
-        
+
         private static String getCachedBase(String alt) {
             char base = alt.charAt(0);
             return switch (base) {
@@ -385,8 +409,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
          * Returns a cached empty ("") or missing value (".") instance. Nulls will return an empty value. Other
          * identifiers are returned as input.
          *
-         * @param id   An identifier string.
-         * @return     A cached "" or "." instance or the original input value
+         * @param id An identifier string.
+         * @return A cached "" or "." instance or the original input value
          */
         private static String cacheId(String id) {
             if (id == null || id.isEmpty()) {

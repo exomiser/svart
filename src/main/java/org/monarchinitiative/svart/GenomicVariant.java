@@ -145,7 +145,7 @@ public interface GenomicVariant extends GenomicRegion {
     class Builder extends BaseGenomicVariant.Builder<Builder> {
 
         @Override
-        public BaseGenomicVariant<?> build() {
+        public GenomicVariant build() {
             return new DefaultGenomicVariant(selfWithEndIfMissing());
         }
 
