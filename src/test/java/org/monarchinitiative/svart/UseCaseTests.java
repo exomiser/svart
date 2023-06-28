@@ -401,7 +401,7 @@ public class UseCaseTests {
         // 1	166448783	gnomAD-SV_v2.1_BND_1_4095	N	<BND>	892	UNRESOLVED	END=166448784;SVTYPE=BND;SVLEN=-1;CHR2=6;POS2=166448783;END2=166448784;ALGORITHMS=manta;EVIDENCE=PE;UNRESOLVED_TYPE=SINGLE_ENDER_+-;
         GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 166448784, 166448783);
         GenomicBreakend right = GenomicBreakend.unresolved(CoordinateSystem.oneBased());
-        GenomicVariant bnd = GenomicVariant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
+        GenomicBreakendVariant bnd = GenomicBreakendVariant.of("gnomAD-SV_v2.1_BND_1_4095", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(166448783));
@@ -418,7 +418,7 @@ public class UseCaseTests {
         GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 797317, 797316));
         // CHR2=8;END=245650;STRANDS=++;
         GenomicBreakend right = GenomicBreakend.of(b37.contigById(8), "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 245651, 245650));
-        GenomicVariant bnd = GenomicVariant.of("TRA0029399SUR", left, right, "N", "");
+        GenomicBreakendVariant bnd = GenomicBreakendVariant.of("TRA0029399SUR", left, right, "N", "");
         assertThat(bnd.ref(), equalTo("N"));
         assertThat(bnd.alt(), equalTo(""));
         assertThat(bnd.start(), equalTo(797316));

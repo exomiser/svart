@@ -139,7 +139,7 @@ public class VcfConverterTest {
 
             GenomicBreakend left = GenomicBreakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
             GenomicBreakend right = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
-            assertThat(bnd, equalTo(GenomicVariant.of("tra2", left, right, "C", "")));
+            assertThat(bnd, equalTo(GenomicBreakendVariant.of("tra2", left, right, "C", "")));
         }
 
         @Test
@@ -150,7 +150,7 @@ public class VcfConverterTest {
             GenomicVariant bnd = builder.build();
             GenomicBreakend left = GenomicBreakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
             GenomicBreakend right = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
-            assertThat(bnd, equalTo(GenomicVariant.of("tra2", left, right, "C", "")));
+            assertThat(bnd, equalTo(GenomicBreakendVariant.of("tra2", left, right, "C", "")));
         }
 
         @Test

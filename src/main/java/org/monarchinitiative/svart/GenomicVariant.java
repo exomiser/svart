@@ -1,6 +1,5 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultGenomicBreakendVariant;
 import org.monarchinitiative.svart.impl.DefaultGenomicVariant;
 
 import java.util.Comparator;
@@ -169,10 +168,6 @@ public interface GenomicVariant extends GenomicRegion {
 
     static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
         return DefaultGenomicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
-    }
-
-    static GenomicVariant of(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
-        return DefaultGenomicBreakendVariant.of(eventId, left, right, ref, alt);
     }
 
     static Builder builder() {
