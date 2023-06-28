@@ -35,6 +35,8 @@ public class VcfBreakendFormatterTest {
         GenomicBreakend left = makeBreakend(leftStrand, leftChr, leftStart, leftEnd, assembly);
         GenomicBreakend right = makeBreakend(rightStrand, rightChr, rightStart, rightEnd, assembly);
         GenomicBreakendVariant variant = GenomicBreakendVariant.of("", left, right, ref, inserted);
+        assertThat(VcfBreakendFormatter.makePosVcfField(variant), equalTo(leftStart));
+        assertThat(VcfBreakendFormatter.makeRefVcfField(variant), equalTo(left.strand() == Strand.POSITIVE ? ref : Seq.reverseComplement(ref)));
         assertThat(VcfBreakendFormatter.makeAltVcfField(variant), equalTo(expected));
     }
 

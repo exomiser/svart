@@ -169,9 +169,23 @@ public class VcfBreakendResolverTest {
         void resolveVariant() {
             VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
             //"event1, bndA, bndB, chr1, 3, C, C[chr2:8[,       chr2, POSITIVE, 8, 7",
+            Contig chr1 = assembly.contigByName("chr1");
+            Contig chr2 = assembly.contigByName("chr2");
+            GenomicVariant genomicVariant = GenomicVariant.of(chr1, "bndA", Strand.POSITIVE, Coordinates.oneBased(3, 3), "C", "C[chr2:8[", 0, "bndB", "event1");
+            GenomicBreakendVariant resolvedFromVariant = instance.resolveBreakend(genomicVariant);
+            GenomicBreakendVariant expected = instance.resolve("event1", "bndA", "bndB", chr1, 3, ConfidenceInterval.precise(), ConfidenceInterval.precise(), "C", "C[chr2:8[");
+            assertThat(resolvedFromVariant, equalTo(expected));
+            assertThat(resolvedFromVariant.left(), equalTo(GenomicBreakend.of(chr1, "bndA", Strand.POSITIVE, Coordinates.oneBased(4, 3))));
+            assertThat(resolvedFromVariant.right(), equalTo(GenomicBreakend.of(chr2, "bndB", Strand.POSITIVE, Coordinates.oneBased(8, 7))));
+        }
+
+        @Test
+        void resolveVariantWithoutConfidenceIntervals() {
+            VcfBreakendResolver instance = new VcfBreakendResolver(assembly);
+            //"event1, bndA, bndB, chr1, 3, C, C[chr2:8[,       chr2, POSITIVE, 8, 7",
             GenomicVariant genomicVariant = GenomicVariant.of(assembly.contigByName("chr1"), "bndA", Strand.POSITIVE, Coordinates.oneBased(3, 3), "C", "C[chr2:8[", 0, "bndB", "event1");
             GenomicBreakendVariant resolvedFromVariant = instance.resolveBreakend(genomicVariant);
-            GenomicVariant expected = instance.resolve("event1", "bndA", "bndB", assembly.contigByName("chr1"), 3, ConfidenceInterval.precise(), ConfidenceInterval.precise(), "C", "C[chr2:8[");
+            GenomicVariant expected = instance.resolve("event1", "bndA", "bndB", assembly.contigByName("chr1"), 3,"C", "C[chr2:8[");
             assertThat(resolvedFromVariant, equalTo(expected));
         }
 

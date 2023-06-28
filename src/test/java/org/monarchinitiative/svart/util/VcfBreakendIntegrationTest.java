@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class VcfBreakendIntegrationTest {
+class VcfBreakendIntegrationTest {
 
     private final GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
     private final VcfConverter vcfConverter = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
@@ -27,15 +27,31 @@ public class VcfBreakendIntegrationTest {
             "17, 198983, bndZ, C, C., '', event4",
             "17, 198983, bndZ, C, .C, '', event5",
     })
-    public void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
-        GenomicBreakendVariant variant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
-        assertThat(VcfBreakendFormatter.makeAltVcfField(variant), equalTo(alt));
+    void roundTrip(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
+        GenomicBreakendVariant breakendVariant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+        GenomicVariant expected = GenomicVariant.builder()
+                .variant(vcfConverter.parseContig(chr), Strand.POSITIVE, Coordinates.oneBased(pos, pos), ref, alt, 0)
+                .id(id)
+                .mateId(mateId)
+                .eventId(eventId)
+                .build();
+        assertThat(breakendVariant.toSymbolicGenomicVariant(), equalTo(expected));
     }
 
-    // schema:
-    // table: genome assembly
-    // table: contigs
-    // standard genomic coordinates or the indicated strand?
-    // contig, start, end, strand
-    // 1, 1, 5, +
+    @ParameterizedTest
+    @CsvSource({
+            //#CHROM  POS ID   REF  ALT         MATEID EVENTID
+            "2,  321682, bndV, T, ]13:123456]AGTNNNNNCAT, bndU, event2",
+            "13, 123456, bndU, C, CAGTNNNNNCA[2:321682[,  bndV, event2",
+    })
+    void roundTripWithInsertedSequence(String chr, int pos, String id, String ref, String alt, String mateId, String eventId) {
+        GenomicBreakendVariant breakendVariant = vcfConverter.convertBreakend(vcfConverter.parseContig(chr), id, pos, ref, alt, mateId, eventId);
+        GenomicVariant genomicVariant = GenomicVariant.builder()
+                .variant(vcfConverter.parseContig(chr), Strand.POSITIVE, Coordinates.oneBased(pos, pos), ref, alt, 0)
+                .id(id)
+                .mateId(mateId)
+                .eventId(eventId)
+                .build();
+        assertThat(breakendVariant.toSymbolicGenomicVariant(), equalTo(genomicVariant));
+    }
 }

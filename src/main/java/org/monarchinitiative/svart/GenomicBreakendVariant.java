@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.impl.DefaultGenomicBreakendVariant;
+import org.monarchinitiative.svart.util.VcfBreakendFormatter;
 
 /**
  * A {@link GenomicBreakendVariant} is a specialised type of {@link GenomicVariant} for representing pairs of
@@ -77,5 +78,25 @@ public interface GenomicBreakendVariant extends GenomicVariant {
      */
     static GenomicBreakendVariant of(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
         return DefaultGenomicBreakendVariant.of(eventId, left, right, ref, alt);
+    }
+
+    /**
+     * Returns a new symbolic {@link GenomicVariant} instance created from the current {@link GenomicBreakendVariant}.
+     * The returned {@link GenomicVariant} coordinates, ref and alt allele values will match the original input VCF
+     * values supplied to the {@link org.monarchinitiative.svart.util.VcfBreakendResolver}.
+     *
+     * @return A {@link GenomicVariant} containing the original VCF values for POS, REF and ALT
+     */
+    default GenomicVariant toSymbolicGenomicVariant() {
+        int pos = VcfBreakendFormatter.makePosVcfField(this);
+        Coordinates coordinates = Coordinates.oneBased(pos, this.startConfidenceInterval(), pos, this.endConfidenceInterval());
+        String ref = VcfBreakendFormatter.makeRefVcfField(this);
+        String alt = VcfBreakendFormatter.makeAltVcfField(this);
+        return GenomicVariant.builder()
+                .variant(left().contig(), Strand.POSITIVE, coordinates, ref, alt, 0)
+                .id(this.id())
+                .eventId(this.eventId())
+                .mateId(this.mateId())
+                .build();
     }
 }

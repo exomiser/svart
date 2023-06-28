@@ -18,7 +18,27 @@ public class VcfBreakendFormatter {
     }
 
     /**
-     * Create <em>alt</em> allele representation for <code>variant</code>.
+     * Create VCF <em>pos</em> value for the <code>variant</code>.
+     *
+     * @param variant breakend variant
+     * @return int POS value for use in VCF files
+     */
+    public static int makePosVcfField(GenomicBreakendVariant variant) {
+        return variant.left().startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ONE_BASED) - 1;
+    }
+
+    /**
+     * Create <em>ref</em> allele representation for the <code>variant</code>.
+     *
+     * @param variant breakend variant
+     * @return string with breakend <em>ref</em> allele representation in VCF format
+     */
+    public static String makeRefVcfField(GenomicBreakendVariant variant) {
+        return toPositiveStrand(variant.strand(), variant.ref());
+    }
+
+    /**
+     * Create <em>alt</em> allele representation for the <code>variant</code>.
      *
      * @param variant breakend variant
      * @return string with breakend <em>alt</em> allele representation in VCF format

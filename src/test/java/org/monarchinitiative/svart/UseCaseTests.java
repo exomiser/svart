@@ -392,6 +392,9 @@ public class UseCaseTests {
             assertThat(bnd.alt(), equalTo(breakendAltValue));
             assertThat(bnd.mateId(), equalTo(breakendVariant.mateId()));
             assertThat(bnd.eventId(), equalTo(breakendVariant.eventId()));
+            // or back to a symbolic genomic variant again
+            GenomicVariant symbolicBreakend = breakendVariant.toSymbolicGenomicVariant();
+            assertThat(bnd, equalTo(symbolicBreakend));
         }
     }
 

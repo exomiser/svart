@@ -99,6 +99,10 @@ public class VcfBreakendResolver {
         );
     }
 
+    public GenomicBreakendVariant resolve(String eventId, String id, String mateId, Contig contig, int position, String ref, String alt) {
+        return resolve(eventId, id, mateId, contig, position, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
+    }
+
     public GenomicBreakendVariant resolve(String eventId, String id, String mateId, Contig contig, int position, ConfidenceInterval ciPos, ConfidenceInterval ciEnd, String ref, String alt) {
         if (ref.length() > 1) {
             throw new IllegalArgumentException("Invalid breakend! Ref allele '" + ref + "' must be single base");
@@ -118,7 +122,7 @@ public class VcfBreakendResolver {
             int rightStart = Integer.parseInt(altMatcher.group("pos"));
             // The right breakend position needs to be shifted by -1 because the fully-closed empty region will place the
             // break to the right of the input position but this needs to be to the left because the VCF always includes the
-            // reference base but indicates the break is to the left of this. Hence 'left' and 'right' breakends.
+            // reference base but indicates the break is to the left of this. Hence, 'left' and 'right' breakends.
             Coordinates coordinates = Coordinates.of(VCF_COORDINATE_SYSTEM, rightStart, ciEnd, rightStart - 1, ciEnd);
             right = parseRightBreakend(mateId, altMatcher.group("contig"), rightStrand, coordinates);
             leftStrand = determineLeftStrand(ref, alt, head, tail);
