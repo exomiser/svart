@@ -30,6 +30,9 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
+ * A genomic assembly based on the NCBI assembly_report.txt. This interface provides methods for retrieving genomic
+ * reference sequence {@link Contig} instances by name or numerical identifier.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */

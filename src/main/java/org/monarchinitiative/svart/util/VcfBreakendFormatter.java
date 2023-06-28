@@ -6,6 +6,8 @@ import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
 
 /**
+ * Utility class for converting {@link GenomicBreakendVariant} back into their VCF representation.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */

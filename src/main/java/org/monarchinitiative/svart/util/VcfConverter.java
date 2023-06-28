@@ -56,11 +56,38 @@ public class VcfConverter {
         return genomicAssembly.contigByName(chr);
     }
 
+
+    /**
+     * Creates a {@link GenomicVariant} from the input VCF values. This method will only accept precise sequence variants,
+     * i.e. those with known REF and ALT allele sequences.
+     * <p>
+     * All input values should be provided exactly as seen in the VCF record, apart from multi allelic sites which should
+     * be split by alt allele and input separately. This class will handle the trimming of variants using the {@link VariantTrimmer}
+     * provided in the class constructor.
+     * <p>
+     * For symbolic variants it is necessary to use one of the  {@linkplain #convertSymbolic} methods as those variants
+     * require more information to be provided, which cannot be computed due to the input sequence being missing.
+     *
+     * @throws IllegalArgumentException if provided with a symbolic or multi-alleleic alt allele.
+     */
     public GenomicVariant convert(Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
         return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref(), trimmed.alt());
     }
 
+    /**
+     * Creates a {@link BaseGenomicVariant.Builder} from the input VCF values. This method will only accept precise sequence variants,
+     * i.e. those with known REF and ALT allele sequences.
+     * <p>
+     * All input values should be provided exactly as seen in the VCF record, apart from multi allelic sites which should
+     * be split by alt allele and input separately. This class will handle the trimming of variants using the {@link VariantTrimmer}
+     * provided in the class constructor.
+     * <p>
+     * For symbolic variants it is necessary to use one of the  {@linkplain #convertSymbolic} methods as those variants
+     * require more information to be provided, which cannot be computed due to the input sequence being missing.
+     *
+     * @throws IllegalArgumentException if provided with a symbolic or multi-alleleic alt allele.
+     */
     public <T extends BaseGenomicVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
         Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref());
@@ -72,12 +99,32 @@ public class VcfConverter {
         return variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicVariant} created from the VCF input value arguments for
+     * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
+     * <p>
+     * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
+     * <p>
+     * Multi-allelic (e.g. CTT,CCT) ALT alleles are not supported and will throw an {@link IllegalArgumentException}
+     *
+     * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
+     */
     public GenomicVariant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
         return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.ONE_BASED, trimmed.start(), end, trimmed.ref(), trimmed.alt(), svlen);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicVariant} created from the VCF input value arguments for
+     * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
+     * <p>
+     * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
+     * <p>
+     * Multi-allelic (e.g. CTT,CCT) ALT alleles are not supported and will throw an {@link IllegalArgumentException}
+     *
+     * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
+     */
     public GenomicVariant convertSymbolic(Contig contig, String id, int pos, int end, String ref, String alt, int svlen, String mateId, String eventId) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, pos, ref, alt);
@@ -85,6 +132,16 @@ public class VcfConverter {
         return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen, mateId, eventId);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicVariant} created from the VCF input value arguments for
+     * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
+     * <p>
+     * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
+     * <p>
+     * Multi-allelic (e.g. CTT,CCT) ALT alleles are not supported and will throw an {@link IllegalArgumentException}
+     *
+     * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
+     */
     public GenomicVariant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
@@ -92,6 +149,16 @@ public class VcfConverter {
         return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicVariant} created from the VCF input value arguments for
+     * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
+     * <p>
+     * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
+     * <p>
+     * Multi-allelic (e.g. CTT,CCT) ALT alleles are not supported and will throw an {@link IllegalArgumentException}
+     *
+     * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
+     */
     public GenomicVariant convertSymbolic(Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen, String mateId, String eventId) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
@@ -99,6 +166,16 @@ public class VcfConverter {
         return GenomicVariant.of(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen, mateId, eventId);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.BaseGenomicVariant.Builder} created from the VCF input value arguments for
+     * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
+     * <p>
+     * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
+     * <p>
+     * Multi-allelic (e.g. CTT,CCT) ALT alleles are not supported and will throw an {@link IllegalArgumentException}
+     *
+     * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
+     */
     public <T extends BaseGenomicVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
@@ -106,11 +183,52 @@ public class VcfConverter {
         return builder.variant(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen).id(id);
     }
 
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicBreakendVariant} created from the VCF input value arguments.
+     * <p>
+     * Given the specialised type of the {@link GenomicBreakendVariant} having very different return values for the
+     * coordinates, ref and alt alleles to their unresolved symbolic {@link GenomicVariant} representations, it is
+     * recommended to prefer the use of a {@linkplain #convertSymbolic} method over the {@linkplain #convertBreakend} methods
+     */
+    public GenomicBreakendVariant convertBreakend(Contig contig, String id, int position, String ref, String alt, String mateId, String eventId) {
+        VariantType.requireBreakend(alt);
+        return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
+    }
+
+    /**
+     * Returns a {@link org.monarchinitiative.svart.GenomicBreakendVariant} created from the VCF input value arguments.
+     * <p>
+     * Given the specialised type of the {@link GenomicBreakendVariant} having very different return values for the
+     * coordinates, ref and alt alleles to their unresolved symbolic {@link GenomicVariant} representations, it is
+     * recommended to prefer the use of a {@linkplain #convertSymbolic} method over the {@linkplain #convertBreakend} methods
+     */
     public GenomicBreakendVariant convertBreakend(Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
         VariantType.requireBreakend(alt);
         return vcfBreakendResolver.resolve(eventId, id, mateId, contig, position, ciPos, ciEnd, ref, alt);
     }
 
+
+    /**
+     * Returns a {@link org.monarchinitiative.svart.BaseGenomicBreakendVariant.Builder} created from the VCF input
+     * value arguments.
+     * <p>
+     * Given the specialised type of the {@link GenomicBreakendVariant} having very different return values for the
+     * coordinates, ref and alt alleles to their unresolved symbolic {@link GenomicVariant} representations, it is
+     * recommended to prefer the use of a {@linkplain #convertSymbolic} method over the {@linkplain #convertBreakend} methods.
+     */
+    public <T extends BaseGenomicBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, int position, String ref, String alt, String mateId, String eventId) {
+        GenomicBreakendVariant breakendVariant = convertBreakend(contig, id, position, ConfidenceInterval.precise(), ref, alt, ConfidenceInterval.precise(), mateId, eventId);
+        return builder.breakendVariant(breakendVariant);
+    }
+
+    /**
+     * Returns a {@link org.monarchinitiative.svart.BaseGenomicBreakendVariant.Builder} created from the VCF input
+     * value arguments.
+     * <p>
+     * Given the specialised type of the {@link GenomicBreakendVariant} having very different return values for the
+     * coordinates, ref and alt alleles to their unresolved symbolic {@link GenomicVariant} representations, it is
+     * recommended to prefer the use of a {@linkplain #convertSymbolic} method over the {@linkplain #convertBreakend} methods.
+     */
     public <T extends BaseGenomicBreakendVariant.Builder<T>> T convertBreakend(T builder, Contig contig, String id, int position, ConfidenceInterval ciPos, String ref, String alt, ConfidenceInterval ciEnd, String mateId, String eventId) {
         GenomicBreakendVariant breakendVariant = convertBreakend(contig, id, position, ciPos, ref, alt, ciEnd, mateId, eventId);
         return builder.breakendVariant(breakendVariant);

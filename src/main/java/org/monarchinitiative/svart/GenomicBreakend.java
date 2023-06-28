@@ -3,6 +3,8 @@ package org.monarchinitiative.svart;
 import org.monarchinitiative.svart.impl.DefaultGenomicBreakend;
 
 /**
+ * A broken end of a {@link Contig} used as a component of a {@link GenomicBreakendVariant}.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */

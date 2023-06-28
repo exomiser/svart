@@ -8,7 +8,48 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class resolves a {@link GenomicBreakendVariant} from primitive VCF inputs.
+ * This class resolves a {@link GenomicBreakendVariant} from primitive VCF inputs based on the VCF 4.2 specifications:
+ * <p>
+ * 5.4 Specifying complex rearrangements with breakends
+ * <p>
+ * An arbitrary rearrangement event can be summarized as a set of novel adjacencies. Each adjacency ties together
+ * 2 breakends. The two breakends at either end of a novel adjacency are called mates.
+ * There is one line of VCF (i.e. one record) for each of the two breakends in a novel adjacency. A breakend record is
+ * identified with the tag “SVTYPE=BND” in the INFO field. The REF field of a breakend record indicates a base or
+ * sequence s of bases beginning at position POS, as in all VCF records. The ALT field of a breakend record indicates
+ * a replacement for s. This “breakend replacement” has three parts:
+ * <p>
+ * 1. The string t that replaces places s. The string t may be an extended version of s if some novel bases are inserted
+ * during the formation of the novel adjacency.
+ * <p>
+ * 2. The position p of the mate breakend, indicated by a string of the form “chr:pos”. This is the location of the
+ * first mapped base in the piece being joined at this novel adjacency.
+ * <p>
+ * 3. The direction that the joined sequence continues in, starting from p. This is indicated by the orientation of
+ * square brackets surrounding p.
+ * <p>
+ * These 3 elements are combined in 4 possible ways to create the ALT. In each of the 4 cases, the assertion is that s
+ * is replaced with t, and then some piece starting at position p is joined to t. The cases are:
+ * <p>
+ * <pre>
+ *  REF  ALT     Meaning
+ *  s    t[p[    piece extending to the right of p is joined after t
+ *  s    t]p]    reverse comp piece extending left of p is joined after t
+ *  s    ]p]t    piece extending to the left of p is joined before t
+ *  s    [p[t    reverse comp piece extending right of p is joined before t
+ * </pre>
+ * The example in Figure 1 shows a 3-break operation involving 6 breakends. It exemplifies all possible orientations
+ * of breakends in adjacencies. Notice how the ALT field expresses the orientation of the breakends.
+ * <p>
+ * <pre>
+ * #CHROM  POS     ID      REF   ALT            QUAL FILTER  INFO
+ * 2       321681  bnd_W   G     G]17:198982]   6    PASS    SVTYPE=BND;MATEID=bnd_Y;EVENTID=2
+ * 2       321682  bnd_V   T     ]13:123456]T   6    PASS    SVTYPE=BND;MATEID=bnd_U;EVENTID=1
+ * 13      123456  bnd_U   C     C[2:321682[    6    PASS    SVTYPE=BND;MATEID=bnd_V;EVENTID=1
+ * 13      123457  bnd_X   A     [17:198983[A   6    PASS    SVTYPE=BND;MATEID=bnd_Z;EVENTID=3
+ * 17      198982  bnd_Y   A     A]2:321681]    6    PASS    SVTYPE=BND;MATEID=bnd_W;EVENTID=2
+ * 17      198983  bnd_Z   C     [13:123457[C   6    PASS    SVTYPE=BND;MATEID=bnd_X;EVENTID=3
+ * </pre>
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
