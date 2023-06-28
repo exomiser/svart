@@ -353,7 +353,7 @@ public class UseCaseTests {
         GenomicVariant bnd = vcfConverter.convertSymbolic(vcfConverter.parseContig("1"), "bnd_U", 12345, 12345, "C", "C[2:321682[", 0, "bnd_V", "tra2");
         assertInstanceOf(GenomicVariant.class, bnd);
         // or they can be converted to a specialised breakend variant
-        GenomicVariant bndb = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, ConfidenceInterval.precise(), "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        GenomicBreakendVariant bndb = vcfConverter.convertBreakend(vcfConverter.parseContig("1"), "bnd_U", 12345, "C", "C[2:321682[", "bnd_V", "tra2");
         assertInstanceOf(GenomicBreakendVariant.class, bndb);
 
         assertThat(snv.ref(), equalTo(ins.ref()));
