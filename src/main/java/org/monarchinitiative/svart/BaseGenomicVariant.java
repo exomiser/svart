@@ -193,18 +193,32 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         return newVariantInstance(contig(), id, other, coordinates().invert(contig()), refRevComp, altRevComp, changeLength, mateId, eventId);
     }
 
+    /**
+     * This method considers any instance to be equal to another if they are the same change on the same {@link Strand}
+     * of the same {@link Contig}. Therefore, <b>this implementation will ignore the id</b> such that the variants:
+     * <pre>
+     *     #CHROM    POS ID  REF ALT
+     *     1    20000   .   A   T
+     *     1    20000   rs12345678   A   T
+     * </pre>
+     * will be considered equal. This method will not normalise variants to the same strand before checking equality.
+     *
+     * @param o the other instance to compare
+     * @return true if the two {@link GenomicVariant} instances represent the same change on the same {@link Strand}
+     * of the same {@link Contig}.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         BaseGenomicVariant<?> that = (BaseGenomicVariant<?>) o;
-        return changeLength == that.changeLength && id.equals(that.id) && ref.equals(that.ref) && alt.equals(that.alt) && mateId.equals(that.mateId) && eventId.equals(that.eventId) && variantType == that.variantType;
+        return changeLength == that.changeLength && ref.equals(that.ref) && alt.equals(that.alt) && mateId.equals(that.mateId) && eventId.equals(that.eventId) && variantType == that.variantType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, ref, alt, mateId, eventId, variantType, changeLength);
+        return Objects.hash(super.hashCode(), ref, alt, mateId, eventId, variantType, changeLength);
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.monarchinitiative.svart.TestContigs.chr1;
 import static org.monarchinitiative.svart.TestContigs.chr2;
@@ -205,5 +206,14 @@ public class BaseGenomicVariantTest {
                 .changeLength(200)
                 .build());
         assertThat(exception.getMessage(), equalTo("Given changeLength of 200 inconsistent with expected changeLength of -1 for variant 1:12345-12346 CA>T"));
+    }
+
+    @Test
+    void idIsNotConsideredForEquality() {
+        GenomicVariant instance = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").id("rs1234567").build();
+        GenomicVariant other = GenomicVariant.builder().variant(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, "A", "TAA").build();
+        assertThat(instance.id(), equalTo("rs1234567"));
+        assertThat(other.id(), equalTo(""));
+        assertThat(instance, equalTo(other));
     }
 }
