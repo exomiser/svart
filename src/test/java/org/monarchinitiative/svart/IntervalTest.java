@@ -1,12 +1,14 @@
 package org.monarchinitiative.svart;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
-public class IntervalTest {
+class IntervalTest {
 
     record BasicInterval(Coordinates coordinates) implements Interval {
 
@@ -30,7 +32,7 @@ public class IntervalTest {
             "ONE_BASED, 3, 4,    ONE_BASED, 3, 4,  true",
             "ONE_BASED, 3, 4,    ONE_BASED, 4, 5,  false",
     })
-    public void contains_region(CoordinateSystem coordinateSystem, int start, int end,
+    void contains_region(CoordinateSystem coordinateSystem, int start, int end,
                                 CoordinateSystem queryCoordinateSystem, int queryStart, int queryEnd,
                                 boolean expected) {
         Interval region = BasicInterval.of(coordinateSystem, start, end);
@@ -50,7 +52,7 @@ public class IntervalTest {
             "ONE_BASED, 3, 3,   3, true",
             "ONE_BASED, 3, 3,   4, false",
     })
-    public void contains_position(CoordinateSystem coordinateSystem, int start, int end, int pos, boolean expected) {
+    void contains_position(CoordinateSystem coordinateSystem, int start, int end, int pos, boolean expected) {
         Interval region = BasicInterval.of(coordinateSystem, start, end);
         assertThat(region.contains(pos), equalTo(expected));
     }
@@ -63,7 +65,7 @@ public class IntervalTest {
             "ONE_BASED, 3, 4,   ONE_BASED, 4, 5,  true",
             "ONE_BASED, 3, 4,   ONE_BASED, 5, 5,  false",
     })
-    public void overlapsWith(CoordinateSystem coordinateSystem, int start, int end,
+    void overlapsWith(CoordinateSystem coordinateSystem, int start, int end,
                              CoordinateSystem queryCoordinateSystem, int queryStart, int queryEnd,
                              boolean expected) {
         Interval region = BasicInterval.of(coordinateSystem, start, end);
@@ -83,7 +85,7 @@ public class IntervalTest {
             "ONE_BASED, 4, 5,   ONE_BASED, 6, 7,  0",
             "ONE_BASED, 4, 5,   ONE_BASED, 7, 8,  1",
     })
-    public void distanceTo(CoordinateSystem coordinateSystem, int start, int end,
+    void distanceTo(CoordinateSystem coordinateSystem, int start, int end,
                            CoordinateSystem queryCoordinateSystem, int queryStart, int queryEnd,
                            int expected) {
         Interval region = BasicInterval.of(coordinateSystem, start, end);
@@ -103,7 +105,32 @@ public class IntervalTest {
             "ONE_BASED,  2, 3,   2",
             "ONE_BASED,  2, 4,   3",
     })
-    public void length(CoordinateSystem coordinateSystem, int start, int end, int expected) {
+    void length(CoordinateSystem coordinateSystem, int start, int end, int expected) {
         assertThat(BasicInterval.of(coordinateSystem,start, end).length(), equalTo(expected));
     }
+
+    @Test
+    void testStartTypes() {
+        Interval oneBasedCoords = BasicInterval.of(CoordinateSystem.ONE_BASED, 1, 10);
+        Interval zeroBasedCoords = BasicInterval.of(CoordinateSystem.ZERO_BASED,0, 10);
+        assertThat(oneBasedCoords.start(), not(equalTo(zeroBasedCoords.start())));
+        assertThat(oneBasedCoords.startZeroBased(), equalTo(zeroBasedCoords.start()));
+        assertThat(oneBasedCoords.start(), equalTo(zeroBasedCoords.startOneBased()));
+    }
+
+    @Test
+    void testContainsPosition() {
+        Interval oneBasedCoords = BasicInterval.of(CoordinateSystem.ONE_BASED, 1, 10);
+        assertThat(oneBasedCoords.contains(0), equalTo(false));
+        assertThat(oneBasedCoords.contains(1), equalTo(true));
+        assertThat(oneBasedCoords.contains(10), equalTo(true));
+        assertThat(oneBasedCoords.contains(11), equalTo(false));
+
+        Interval zeroBasedCoords = BasicInterval.of(CoordinateSystem.ZERO_BASED,0, 10);
+        assertThat(zeroBasedCoords.contains(0), equalTo(false));
+        assertThat(zeroBasedCoords.contains(1), equalTo(true));
+        assertThat(zeroBasedCoords.contains(10), equalTo(true));
+        assertThat(zeroBasedCoords.contains(11), equalTo(false));
+    }
+
 }

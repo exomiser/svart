@@ -16,10 +16,24 @@ public interface Interval extends CoordinateSystemed {
     }
 
     /**
-     * @return start coordinate of the region
+     * @return start coordinate of the interval, in its native {@link CoordinateSystem}
      */
     default int start() {
         return coordinates().start();
+    }
+
+    /**
+     * @return start coordinate of the interval, in the ZERO_BASED {@link CoordinateSystem}
+     */
+    default int startZeroBased() {
+        return coordinates().startZeroBased();
+    }
+
+    /**
+     * @return start coordinate of the interval, in the ONE_BASED {@link CoordinateSystem}
+     */
+    default int startOneBased() {
+        return coordinates().startOneBased();
     }
 
     default int startWithCoordinateSystem(CoordinateSystem target) {
@@ -39,9 +53,26 @@ public interface Interval extends CoordinateSystemed {
     }
 
     /**
-     * @return end coordinate of the region
+     * @return end coordinate of the region. Note that this is numerically identical in both zero and one-based
+     * coordinate systems.
      */
     default int end() {
+        return coordinates().end();
+    }
+
+    /**
+     * @return start coordinate of the interval, in the ZERO_BASED {@link CoordinateSystem}. Note that the end()
+     * coordinate in both zero and one-based systems are numerically equivalent, so this method is redundant.
+     */
+    default int endZeroBased() {
+        return coordinates().end();
+    }
+
+    /**
+     * @return start coordinate of the interval, in the ONE_BASED {@link CoordinateSystem}. Note that the end()
+     *      * coordinate in both zero and one-based systems are numerically equivalent, so this method is redundant.
+     */
+    default int endOneBased() {
         return coordinates().end();
     }
 
@@ -78,7 +109,7 @@ public interface Interval extends CoordinateSystemed {
     }
 
     default boolean contains(int position) {
-        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= endWithCoordinateSystem(CoordinateSystem.ONE_BASED);
+        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= end();
     }
 
     default boolean overlapsWith(Interval other) {

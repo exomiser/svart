@@ -16,7 +16,6 @@ import java.util.Comparator;
  * <p>
  * Note that for classes implementing this interface, it is <b>strongly</b> recommended that they call the
  * validateCoordinatesOnContig method at construction time in order to avoid errors later on.
- *
  */
 public interface GenomicInterval extends Stranded, Interval {
 
@@ -37,7 +36,7 @@ public interface GenomicInterval extends Stranded, Interval {
      * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
      * implementing {@link GenomicInterval} use this method to validate their inputs.
      *
-     * @param contig {@link Contig} on which the interval is located
+     * @param contig      {@link Contig} on which the interval is located
      * @param coordinates {@link Coordinates} of the interval.
      * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
      */
@@ -90,33 +89,123 @@ public interface GenomicInterval extends Stranded, Interval {
     }
 
     /**
-     * Returns the start position for this region on the given strand. The resulting position will be given in the
+     * Returns the start coordinate for this interval on the given strand. The resulting coordinate will be given in the
      * coordinates indicated by the coordinateSystem of the object instance.
      *
-     * @param strand target {@link Strand} for which the start position is required
+     * @param strand target {@link Strand} on which the start coordinate is required
      * @return start coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int startOnStrand(Strand strand) {
         return this.strand() == strand ? start() : coordinates().invertEnd(contig());
     }
 
+    /**
+     * Returns the start coordinate for this interval on the specified strand and coordinate coordinateSystem.
+     *
+     * @param strand           target {@link Strand} on which the start coordinate is required
+     * @param coordinateSystem target {@link CoordinateSystem} in which the start coordinate is required
+     * @return start coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
+     */
     default int startOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
         return (this.strand() == strand && this.coordinateSystem() == coordinateSystem) ? start() : startOnStrand(strand) + coordinateSystem().startDelta(coordinateSystem);
     }
 
     /**
-     * Returns the end position for this region on the given strand. The resulting position will be given in the
+     * Returns the start coordinate of the interval in Genomic Standard Coordinates (zero-start, right open) as used in
+     * BED or UCSC server. This is suitable for use when performing transformations, distance calculations or comparisons
+     * between {@link GenomicInterval} objects in absolute or reference genomic space.
+     * <p>
+     * Recommended for standard use by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS workstream</a>.
+     *
+     * @return the start coordinate on the positive strand using zero-based coordinates.
+     */
+    default int startStd() {
+        return startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ZERO_BASED);
+    }
+
+    /**
+     * Returns the start coordinate of the interval in zero-based coordinates on the strand specified. This is suitable
+     * for use when performing transformations, distance calculations or comparisons between {@link GenomicInterval}
+     * objects on a particular strand.
+     *
+     * @param strand The {@link Strand} on which to return the coordinate on.
+     * @return the start coordinate on the specified strand using zero-based coordinates.
+     */
+    default int startZeroBased(Strand strand) {
+        return startOnStrandWithCoordinateSystem(strand, CoordinateSystem.ZERO_BASED);
+    }
+
+    /**
+     * Returns the start coordinate of the interval in one-based coordinates on the strand specified. This is suitable
+     * for use when displaying variant information to humans as used in web-based genome browsers such as Ensembl, and
+     * compatibility with SAM, VCF, GFF, Wiggle and HGVS formats.
+     *
+     * @param strand The {@link Strand} on which to return the coordinate on.
+     * @return the start coordinate on the specified strand using one-based coordinates.
+     */
+    default int startOneBased(Strand strand) {
+        return startOnStrandWithCoordinateSystem(strand, CoordinateSystem.ONE_BASED);
+    }
+
+    /**
+     * Returns the end coordinate of the interval in one-based coordinates on the strand specified. This is suitable
+     * for use when displaying variant information to humans as used in web-based genome browsers such as Ensembl, and
+     * compatibility with SAM, VCF, GFF, Wiggle and HGVS formats.
+     *
+     * @param strand The {@link Strand} on which to return the coordinate on.
+     * @return the end coordinate on the specified strand using one-based coordinates.
+     */
+    default int endOneBased(Strand strand) {
+        return endOnStrandWithCoordinateSystem(strand, CoordinateSystem.ONE_BASED);
+    }
+
+    /**
+     * Returns the end coordinate for this region on the given strand. The resulting coordinate will be given in the
      * coordinates indicated by the coordinateSystem of the object instance.
      *
-     * @param strand target {@link Strand} for which the end position is required
+     * @param strand target {@link Strand} for which the end coordinate is required
      * @return end coordinate in the {@link CoordinateSystem} of the object on the designated {@link Strand}
      */
     default int endOnStrand(Strand strand) {
         return this.strand() == strand ? end() : coordinates().invertStart(contig());
     }
 
+    /**
+     * Returns the end coordinate for this interval on the specified strand and coordinate system.
+     *
+     * @param strand           the target strand on which the end coordinate is required
+     * @param coordinateSystem the target coordinate system in which the end coordinate is required
+     * @return the end coordinate in the specified coordinate system on the designated strand,
+     * or the end coordinate on the current strand if the strand and coordinate system match
+     */
     default int endOnStrandWithCoordinateSystem(Strand strand, CoordinateSystem coordinateSystem) {
         return this.strand() == strand && this.coordinateSystem() == coordinateSystem ? end() : endOnStrand(strand);
+    }
+
+    /**
+     * Returns the end coordinate of the interval in Genomic Standard Coordinates (zero-start, right open) as used in
+     * BED or UCSC server. This is suitable for use when performing transformations, distance calculations or comparisons
+     * between {@link GenomicInterval} objects in absolute or reference genomic space.
+     * <p>
+     * Recommended for standard use by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS
+     * workstream</a>.
+     *
+     * @return the end coordinate on the positive strand using zero-based coordinates.
+     */
+    default int endStd() {
+        return endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ZERO_BASED);
+    }
+
+    /**
+     * Returns the end coordinate of the interval in zero-based coordinates on the strand specified. This is suitable
+     * for use when performing transformations, distance calculations or comparisons between {@link GenomicInterval}
+     * objects on a particular strand.
+     *
+     * @param strand The {@link Strand} on which to return the coordinate on.
+     * @return the end coordinate on the specified strand using zero-based coordinates.
+     */
+    default int endZeroBased(Strand strand) {
+        return endOnStrandWithCoordinateSystem(strand, CoordinateSystem.ZERO_BASED);
     }
 
     /**
@@ -140,7 +229,7 @@ public interface GenomicInterval extends Stranded, Interval {
      * the number of bases present between the regions.
      * <p>
      * The distance is zero if the <code>a</code> and <code>b</code>
-     * are adjacent or if they overlap. The distance is positive if <code>a</code> is downstream of <code>b</code>
+     * are adjacent or if they overlap. The distance is positive if <code>a</code> is upstream of <code>b</code>
      * and negative if <code>a</code> is located downstream from <code>b</code>.
      *
      * @param other genomic region
