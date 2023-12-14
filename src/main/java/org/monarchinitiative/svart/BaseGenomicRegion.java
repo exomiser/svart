@@ -103,14 +103,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     }
 
     protected String formatCoordinates() {
-        if (coordinates.isPrecise()) {
-            return "coordinateSystem=" + coordinateSystem() +
-                    ", start=" + start() +
-                    ", end=" + end();
-        }
-        return "coordinateSystem=" + coordinateSystem() +
-                ", start=" + start() + ' ' + startConfidenceInterval() +
-                ", end=" + end() + ' ' + endConfidenceInterval();
+        return CoordinatesFormat.formatCoordinates(coordinates);
     }
 
     protected abstract static class Builder<T extends Builder<T>> {

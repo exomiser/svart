@@ -1,9 +1,6 @@
 package org.monarchinitiative.svart.impl;
 
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.Coordinates;
-import org.monarchinitiative.svart.GenomicInterval;
-import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.*;
 
 import java.util.Objects;
 
@@ -16,28 +13,27 @@ public record DefaultGenomicInterval(Contig contig, Strand strand, Coordinates c
         GenomicInterval.validateCoordinatesOnContig(contig, coordinates);
     }
 
-    public static GenomicInterval of(Contig contig, Strand strand, Coordinates coordinates) {
+    public static DefaultGenomicInterval of(Contig contig, Strand strand, Coordinates coordinates) {
         return new DefaultGenomicInterval(contig, strand, coordinates);
     }
 
     @Override
     public String toString() {
         return "GenomicInterval{" +
-                "contig=" + contigId() +
-                ", strand=" + strand() +
-                ", " + formatCoordinates() +
-                '}';
+               "contig=" + contigId() +
+               ", strand=" + strand() +
+               ", " + formatCoordinates(coordinates) +
+               '}';
     }
 
-    private String formatCoordinates() {
+    private String formatCoordinates(Coordinates coordinates) {
         if (coordinates.isPrecise()) {
-            return "coordinateSystem=" + coordinateSystem() +
-                    ", start=" + start() +
-                    ", end=" + end();
+            return "coordinateSystem=" + coordinates.coordinateSystem() +
+                   ", start=" + coordinates.start() +
+                   ", end=" + coordinates.end();
         }
-        return "coordinateSystem=" + coordinateSystem() +
-                ", start=" + start() + ' ' + startConfidenceInterval() +
-                ", end=" + end() + ' ' + endConfidenceInterval();
+        return "coordinateSystem=" + coordinates.coordinateSystem() +
+               ", start=" + coordinates.start() + (coordinates.startConfidenceInterval().isPrecise() ? "" : " " + coordinates.startConfidenceInterval()) +
+               ", end=" + coordinates.end() + (coordinates.endConfidenceInterval().isPrecise() ? "" : " " + coordinates.endConfidenceInterval());
     }
-
 }
