@@ -1,8 +1,9 @@
 package org.monarchinitiative.svart;
 
 /**
- * Here we model the two coordinate systems used in bioinformatics, the 'one-based' and 'zero-based' systems. Much has
- * been written about these e.g. http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
+ * Here we model the two coordinate systems used in bioinformatics, the 'one-based' and 'zero-based' systems as recommended
+ * by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS workstream</a>. Much has
+ * been written about these e.g. <a href=https://genome-blog.gi.ucsc.edu/blog/2016/12/12/the-ucsc-genome-browser-coordinate-counting-systems/>the ucsc genome browser coordinate counting systems</a>
  * (and also the resources linked from there), but for completeness we describe them here.
  * <p>
  * Given we have the sequence ATGC with positions 1-4 using a human friendly 1-start, fully closed system [1,4] (as most
@@ -44,25 +45,56 @@ public enum CoordinateSystem {
     // e.g. 1-start [1, 2] == 1-start (0, 2] == 0-start [0, 2)
     // ONE_BASED start = ZERO_BASED start + 1
     // ZERO_BASED start = ONE_BASED start - 1
+
+    /**
+     * A 1-start, fully closed coordinate system.
+     * <p>
+     * In this coordinate system, a region is specified by a <em>fully-closed</em> interval. For example, in the sequence
+     * 'ATGC' the bases 'ATG' will be contained in the region [1,3] in a one-based coordinate system. The SAM, VCF, GFF,
+     * Wiggle and HGVS use the 1-based coordinate system.
+     * <p>
+     * This coordinate system is recommended for use with most humans who find counting from 1 more intuitive.
+     */
     ONE_BASED,
+
+    /**
+     * 0-start, right-open coordinate system. In this coordinate system, a region is specified by a <em>left-closed
+     * right-open</em> interval.
+     * <p>
+     * For example, in the sequence 'ATGC' the bases 'ATG' will be contained in the region [0,3) in a zero-based
+     * coordinate system. The BAM, BCFv2, BED, and PSL formats use the 0-based coordinate system.
+     * <p>
+     * This coordinate system is recommended for use in computing slices, offsets, overlaps and lengths as there is no
+     * need for an additional step to add or subtract 1 when working with a start or end coordinate.
+     * <p>
+     * Recommended for standard use by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS workstream</a>.
+     */
     ZERO_BASED;
 
     /**
-     * A coordinate system where the first base of a sequence is one.
-     * In this co-ordinate system, a region is specified by a <em>fully-closed</em> interval. For example, the region between
-     * the 3rd and the 7th bases inclusive is [3,7]. The SAM, VCF, GFF and Wiggle formats use the 1-based coordinate
-     * system.
-     */
+     * A 1-start, fully closed coordinate system.
+     * <p>
+     * In this coordinate system, a region is specified by a <em>fully-closed</em> interval. For example, in the sequence
+     * 'ATGC' the bases 'ATG' will be contained in the region [1,3] in a one-based coordinate system. The SAM, VCF, GFF,
+     * Wiggle and HGVS use the 1-based coordinate system.
+     * <p>
+     * This coordinate system is recommended for use with most humans who find counting from 1 more intuitive.
+     * */
     public static CoordinateSystem oneBased() {
         return ONE_BASED;
     }
 
     /**
-     * A coordinate system where the first base of a sequence is zero. In this coordinate system, a region is specified
-     * by a <em>left-open right-closed</em> interval.
+     * 0-start, right-open coordinate system. In this coordinate system, a region is specified by a <em>left-closed
+     * right-open</em> interval.
      * <p>
-     * For example, the region between the 3rd and the 7th bases, where the end base is included, is [2,7). The BAM,
-     * BCFv2, BED, and PSL formats use the 0-based coordinate system.
+     * For example, in the sequence 'ATGC' the bases 'ATG' will be contained in the region [0,3) in a zero-based
+     * coordinate system. The BAM, BCFv2, BED, and PSL formats use the 0-based coordinate system.
+     * <p>
+     * This coordinate system is recommended for use in computing slices, offsets, overlaps and lengths as there is no
+     * need for an additional step to add or subtract 1 when working with a start or end coordinate.
+     * <p>
+     * Recommended for standard use by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS workstream</a>.
      */
     public static CoordinateSystem zeroBased() {
         return ZERO_BASED;
