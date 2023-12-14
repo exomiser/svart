@@ -81,8 +81,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BaseGenomicRegion)) return false;
-        BaseGenomicRegion<?> that = (BaseGenomicRegion<?>) o;
+        if (!(o instanceof BaseGenomicRegion<?> that)) return false;
         return contig.equals(that.contig) &&
                 strand == that.strand &&
                 coordinates.equals(that.coordinates);
