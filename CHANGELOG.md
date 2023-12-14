@@ -32,4 +32,12 @@ Changelog
 - Added new `VariantType.DELINS` for indicating a deletion+insertion
   event. ([issue #69](https://github.com/exomiser/svart/issues/69))
 - Updated `VariantType.MNV` detection and added ability to detect `VariantType.INV`.
+- Added new methods `startStd()`, `startZeroBased()`, `startZeroBased(strand)`, and their "end" and "oneBased"
+  combinations to the `GenomicInterval` class for more concise client code.
+- Removed the test for `id` equality from BaseGenomicVariant for comparison only based on sequence change identity.
+- Added a new `GenomicBreakendVariant.toSymbolicGenomicVariant()` method for easy conversion of `GenomicBreakendVariant`
+  s back to symbolic `GenomicVariant` representation.
+- Added new `VcfBreakendFormatter` functions, `makePosVcfField()` and `makeRefVcfField()`, to allow easy conversion
+  of `GenomicBreakendVariant` `start`, `ref`, and `alt` values back to symbolic variant representation.
+- Added extensive documentation to various classes to explain their relationships and usage contexts.
 - Updated Java requirement to 17
