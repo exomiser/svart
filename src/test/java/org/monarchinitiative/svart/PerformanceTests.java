@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.impl.CompactGenomicVariant;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +16,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,7 +42,7 @@ public class PerformanceTests {
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
                     .toList();
             allVariants.addAll(variants);
-            Thread.sleep(500);
+//            Thread.sleep(500);
             totalRead += variants.size();
         }
         System.gc();
@@ -87,14 +90,21 @@ public class PerformanceTests {
         // warm-up
         int totalRead = 0;
         var allVariants = new ArrayList<>();
+        AtomicInteger compactCount = new AtomicInteger();
         for (int i = 0; i < 50; i++) {
             List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
+                    .peek(genomicVariant -> {
+                        if (genomicVariant instanceof CompactGenomicVariant) {
+                            compactCount.getAndIncrement();
+                        }
+                    })
                     .toList();
-            Thread.sleep(500);
+//            Thread.sleep(500);
             allVariants.addAll(variants);
             totalRead += variants.size();
         }
+        System.out.println("Read " + compactCount.get() / 50 + " compact variants from " + totalRead / 50);
         System.gc();
         System.out.println("Read " + totalRead + " variants to warm-up");
         Thread.sleep(2000);
@@ -159,6 +169,9 @@ public class PerformanceTests {
                 int changeLength = intOrDefault(infoFields.get("SVLEN"), 0);
                 int end = intOrDefault(infoFields.get("END"), 0);
                 return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, end, ref, altAllele, changeLength);
+            }
+            if (ref.length() + altAllele.length() <= 11) {
+                return CompactGenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, altAllele);
             }
             return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, altAllele);
         }
