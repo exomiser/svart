@@ -41,9 +41,20 @@ public interface GenomicInterval extends Stranded, Interval {
      * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
      */
     static void validateCoordinatesOnContig(Contig contig, Coordinates coordinates) {
-        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
-        int start = coordinates.start();
-        int end = coordinates.end();
+        validateCoordinatesOnContig(contig, coordinates.coordinateSystem(), coordinates.start(), coordinates.end());
+    }
+
+    /**
+     * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
+     * implementing {@link GenomicInterval} use this method to validate their inputs.
+     *
+     * @param contig           {@link Contig} on which the interval is located
+     * @param coordinateSystem {@link CoordinateSystem} of the interval.
+     * @param start            interval start
+     * @param end              interval end
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
+     */
+    static void validateCoordinatesOnContig(Contig contig, CoordinateSystem coordinateSystem, int start, int end) {
         if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
             throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
         } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
