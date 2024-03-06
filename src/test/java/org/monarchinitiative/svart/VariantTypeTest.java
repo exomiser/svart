@@ -3,7 +3,6 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.svart.util.Seq;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -96,6 +95,14 @@ public class VariantTypeTest {
     })
     public void testParseStrippedValue(String input, VariantType expected) {
         assertThat(VariantType.parseType(input), equalTo(expected));
+    }
+
+    @Test
+    public void validateType() {
+        assertThat(VariantType.validateType("A", "T", VariantType.SNV), equalTo(VariantType.SNV));
+        assertThat(VariantType.validateType("N", "<INS>", VariantType.INS), equalTo(VariantType.INS));
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> VariantType.validateType("A", "T", VariantType.MNV));
+        assertThat(exception.getMessage(), equalTo("Variant type MNV not consistent with variant A-T"));
     }
 
     @Test

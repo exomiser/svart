@@ -329,6 +329,14 @@ public enum VariantType {
         return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
+    public static VariantType validateType(String ref, String alt, VariantType variantType) {
+        VariantType expected = parseType(ref, alt);
+        if (variantType == expected) {
+            return variantType;
+        }
+        throw new IllegalArgumentException("Variant type " + variantType + " not consistent with variant " + ref + "-" + alt);
+    }
+
     public static String requireNonSymbolic(String alt) {
         if (alt == null || isSymbolic(alt)) {
             throw new IllegalArgumentException("Illegal symbolic alt allele '" + alt + "'");
