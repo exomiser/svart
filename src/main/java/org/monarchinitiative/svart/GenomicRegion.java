@@ -24,7 +24,7 @@ public interface GenomicRegion extends GenomicInterval, Convertible<GenomicRegio
     GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     @Override
-    GenomicRegion withStrand(Strand other);
+    GenomicRegion withStrand(Strand strand);
 
     default GenomicRegion withPadding(int padding) {
         return withPadding(padding, padding);
