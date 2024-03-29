@@ -2,6 +2,7 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.*;
 
+@Deprecated
 public final class DefaultGenomicVariant extends BaseGenomicVariant<DefaultGenomicVariant> implements Comparable<GenomicVariant> {
 
     private DefaultGenomicVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {

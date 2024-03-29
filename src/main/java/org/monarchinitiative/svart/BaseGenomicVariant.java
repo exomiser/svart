@@ -227,7 +227,7 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
                 "contig=" + contigId() +
                 ", id='" + id + '\'' +
                 ", strand=" + strand() +
-                ", " + formatCoordinates() +
+                ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", variantType=" + variantType +
@@ -377,63 +377,5 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
         protected abstract GenomicVariant build();
 
         protected abstract T self();
-    }
-
-    private static class AlleleCache {
-
-        private static final String A = "A";
-        private static final String T = "T";
-        private static final String G = "G";
-        private static final String C = "C";
-        private static final String NO_CALL = ".";
-        private static final String SPAN_DEL = "*";
-        private static final String N = "N";
-
-        private AlleleCache() {
-        }
-
-        private static String cacheAllele(String alt) {
-            return alt.length() == 1 ? getCachedBase(alt) : alt;
-        }
-
-        private static String getCachedBase(String alt) {
-            char base = alt.charAt(0);
-            return switch (base) {
-                case 'A' -> A;
-                case 'T' -> T;
-                case 'G' -> G;
-                case 'C' -> C;
-                case '.' -> NO_CALL;
-                case '*' -> SPAN_DEL;
-                case 'N' -> N;
-                default -> alt;
-            };
-        }
-    }
-
-    private static class IdCache {
-
-        private static final String MISSING = ".";
-        private static final String EMPTY = "";
-
-        private IdCache() {
-        }
-
-        /**
-         * Returns a cached empty ("") or missing value (".") instance. Nulls will return an empty value. Other
-         * identifiers are returned as input.
-         *
-         * @param id An identifier string.
-         * @return A cached "" or "." instance or the original input value
-         */
-        private static String cacheId(String id) {
-            if (id == null || id.isEmpty()) {
-                return EMPTY;
-            }
-            if (id.length() == 1 && MISSING.equals(id)) {
-                return MISSING;
-            }
-            return id;
-        }
     }
 }

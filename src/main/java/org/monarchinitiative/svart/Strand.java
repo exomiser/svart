@@ -40,7 +40,7 @@ public enum Strand {
         return this == POSITIVE ? NEGATIVE : POSITIVE;
     }
 
-    static int compare(Strand x, Strand y) {
+    public static int compare(Strand x, Strand y) {
         return x.compareTo(y);
     }
 

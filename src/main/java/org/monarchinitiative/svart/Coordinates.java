@@ -342,7 +342,7 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
             result = ConfidenceInterval.compare(x.startConfidenceInterval(), y.startConfidenceInterval());
         }
         if (result == 0) {
-            result = Integer.compare(x.end(), y.endWithCoordinateSystem(x.coordinateSystem()));
+            result = Integer.compare(x.end(), y.end());
         }
         if (result == 0) {
             result = ConfidenceInterval.compare(x.endConfidenceInterval(), y.endConfidenceInterval());

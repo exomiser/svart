@@ -97,12 +97,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         return "BaseGenomicRegion{" +
                 "contig=" + contig.id() +
                 ", strand=" + strand +
-                ", " + formatCoordinates() +
+                ", " + CoordinatesFormat.formatCoordinates(coordinates) +
                 '}';
-    }
-
-    protected String formatCoordinates() {
-        return CoordinatesFormat.formatCoordinates(coordinates);
     }
 
     protected abstract static class Builder<T extends Builder<T>> {

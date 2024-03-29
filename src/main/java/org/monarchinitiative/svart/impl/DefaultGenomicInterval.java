@@ -4,7 +4,7 @@ import org.monarchinitiative.svart.*;
 
 import java.util.Objects;
 
-public record DefaultGenomicInterval(Contig contig, Strand strand, Coordinates coordinates) implements GenomicInterval {
+public record DefaultGenomicInterval(Contig contig, Strand strand, Coordinates coordinates) implements GenomicInterval, Comparable<GenomicInterval> {
 
     public DefaultGenomicInterval {
         Objects.requireNonNull(contig, "contig must not be null");
@@ -18,22 +18,17 @@ public record DefaultGenomicInterval(Contig contig, Strand strand, Coordinates c
     }
 
     @Override
+    public int compareTo(GenomicInterval o) {
+        return GenomicInterval.compare(this, o);
+    }
+
+    @Override
     public String toString() {
         return "GenomicInterval{" +
                "contig=" + contigId() +
                ", strand=" + strand() +
-               ", " + formatCoordinates(coordinates) +
+               ", " + CoordinatesFormat.formatCoordinates(coordinates) +
                '}';
     }
 
-    private String formatCoordinates(Coordinates coordinates) {
-        if (coordinates.isPrecise()) {
-            return "coordinateSystem=" + coordinates.coordinateSystem() +
-                   ", start=" + coordinates.start() +
-                   ", end=" + coordinates.end();
-        }
-        return "coordinateSystem=" + coordinates.coordinateSystem() +
-               ", start=" + coordinates.start() + (coordinates.startConfidenceInterval().isPrecise() ? "" : " " + coordinates.startConfidenceInterval()) +
-               ", end=" + coordinates.end() + (coordinates.endConfidenceInterval().isPrecise() ? "" : " " + coordinates.endConfidenceInterval());
-    }
 }

@@ -1,5 +1,6 @@
 package org.monarchinitiative.svart;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -111,6 +112,7 @@ public class BaseGenomicVariantTest {
         assertThat(exception.getMessage(), equalTo("Ref allele length of 2 inconsistent with Coordinates{coordinateSystem=ONE_BASED, start=1, end=200} (length 200) ref=AT, alt=A"));
     }
 
+    @Disabled("Not triggered as short GenomicVariants generate their own changeLength with new CompactVariant and SequenceVariant implementations")
     @Test
     void testAlleleChangeLengthMismatchThrowsException() {
         Exception exception = assertThrows(IllegalArgumentException.class, () ->

@@ -62,7 +62,7 @@ public final class DefaultGenomicBreakend extends BaseGenomicRegion<DefaultGenom
                 "contig=" + contigId() +
                 ", id='" + id + '\'' +
                 ", strand=" + strand() +
-                ", " + formatCoordinates() +
+                ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
                 '}';
     }
 }

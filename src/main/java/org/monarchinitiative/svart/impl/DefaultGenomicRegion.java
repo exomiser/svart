@@ -2,24 +2,24 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.*;
 
+import java.util.Objects;
+
 /**
  * 0- or 1-based region e.g. half-open [a,b) or fully closed [a,b] as indicated by the {@link CoordinateSystem}
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomicRegion> implements Comparable<GenomicRegion> {
+public record DefaultGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) implements GenomicRegion, Comparable<GenomicRegion> {
 
-    private DefaultGenomicRegion(Contig contig, Strand strand, Coordinates coordinates) {
-        super(contig, strand, coordinates);
+    public DefaultGenomicRegion {
+        Objects.requireNonNull(contig, "contig must not be null");
+        Objects.requireNonNull(strand, "strand must not be null");
+        Objects.requireNonNull(coordinates, "coordinates must not be null");
+        GenomicInterval.validateCoordinatesOnContig(contig, coordinates);
     }
 
     public static DefaultGenomicRegion of(Contig contig, Strand strand, Coordinates coordinates) {
-        return new DefaultGenomicRegion(contig, strand, coordinates);
-    }
-
-    @Override
-    protected DefaultGenomicRegion newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
         return new DefaultGenomicRegion(contig, strand, coordinates);
     }
 
@@ -28,14 +28,29 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
         return GenomicRegion.compare(this, o);
     }
 
+
+    /**
+     * @param coordinateSystem 
+     * @return
+     */
     @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
+    public GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem) {
+        if (this.coordinateSystem() == coordinateSystem) {
+            return this;
+        }
+        return new DefaultGenomicRegion(contig, strand, coordinates.withCoordinateSystem(coordinateSystem));
     }
 
+    /**
+     * @param strand
+     * @return
+     */
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public GenomicRegion withStrand(Strand strand) {
+        if (this.strand == strand) {
+            return this;
+        }
+        return new DefaultGenomicRegion(contig, strand, coordinates.invert(contig));
     }
 
     @Override
@@ -43,7 +58,7 @@ public final class DefaultGenomicRegion extends BaseGenomicRegion<DefaultGenomic
         return "GenomicRegion{" +
                 "contig=" + contigId() +
                 ", strand=" + strand() +
-                ", " + formatCoordinates() +
+                ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
                 '}';
     }
 }
