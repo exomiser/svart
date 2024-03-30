@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.impl.CompactGenomicVariant;
+import org.monarchinitiative.svart.impl.CompactSequenceVariant;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +18,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * introduced by Thread.sleep() are to allow time for benchmarking tools to be launched.
  */
 @Disabled("Performance tests")
-public class PerformanceTests {
+class PerformanceTests {
 
     @Test
-    public void readVariantContexts() throws InterruptedException {
+    void readVariantContexts() throws InterruptedException {
         Thread.sleep(2000);
 
         // warm-up
@@ -62,7 +61,7 @@ public class PerformanceTests {
     }
 
     @Test
-    public void readVariantContextsHtsJdk() {
+    void readVariantContextsHtsJdk() {
 
         // warm-up
         int totalRead = 0;
@@ -84,7 +83,7 @@ public class PerformanceTests {
     }
 
     @Test
-    public void readSvartVariants() throws InterruptedException {
+    void readSvartVariants() throws InterruptedException {
         Thread.sleep(2000);
 
         // warm-up
@@ -95,7 +94,7 @@ public class PerformanceTests {
             List<GenomicVariant> variants = new VcfVariantReader(GenomicAssemblies.GRCh37p13())
                     .readVariants(Path.of("src/test/resources/pfeiffer.vcf"))
                     .peek(genomicVariant -> {
-                        if (genomicVariant instanceof CompactGenomicVariant) {
+                        if (genomicVariant instanceof CompactSequenceVariant) {
                             compactCount.getAndIncrement();
                         }
                     })
@@ -120,7 +119,7 @@ public class PerformanceTests {
         assertTrue(true);
     }
 
-    public static Stream<VariantContext> readVariantContexts(Path vcfPath) {
+    static Stream<VariantContext> readVariantContexts(Path vcfPath) {
         Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
         try (VCFFileReader vcfReader = new VCFFileReader(vcfPath, false)) {
             return vcfReader.iterator().stream();
@@ -128,13 +127,7 @@ public class PerformanceTests {
     }
 
     // super-simple VCF reader which will only read the variant coordinates, ignoring any sample genotype information.
-    private static class VcfVariantReader {
-
-        private final GenomicAssembly genomicAssembly;
-
-        public VcfVariantReader(GenomicAssembly genomicAssembly) {
-            this.genomicAssembly = genomicAssembly;
-        }
+    private record VcfVariantReader(GenomicAssembly genomicAssembly) {
 
         public Stream<GenomicVariant> readVariants(Path vcfPath) {
             try {
@@ -169,9 +162,6 @@ public class PerformanceTests {
                 int changeLength = intOrDefault(infoFields.get("SVLEN"), 0);
                 int end = intOrDefault(infoFields.get("END"), 0);
                 return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, end, ref, altAllele, changeLength);
-            }
-            if (ref.length() + altAllele.length() <= 11) {
-                return CompactGenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, altAllele);
             }
             return GenomicVariant.of(genomicAssembly.contigByName(chrom), id, Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, altAllele);
         }

@@ -6,7 +6,7 @@
 
     <groupId>org.monarchinitiative.svart</groupId>
     <artifactId>svart</artifactId>
-    <version>2.0.0-RC6</version>
+    <version>2.0.0-RC7</version>
     <description>a library to ease representation of variants and performing genomic manipulations</description>
 
     <name>svart</name>
@@ -119,6 +119,18 @@
             <groupId>org.openjdk.jol</groupId>
             <artifactId>jol-core</artifactId>
             <version>0.17</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.32</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.32</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

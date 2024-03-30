@@ -5,8 +5,10 @@ import org.monarchinitiative.svart.util.Seq;
 import java.util.Objects;
 
 /**
+ * @deprecated Consider usinf {@link AbstractGenomicVariant} as a compositional alternative.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated(since = "2.0.0")
 public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseGenomicRegion<T> implements GenomicVariant {
 
     private final String id;
