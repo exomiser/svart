@@ -97,7 +97,7 @@ class CompactSequenceVariantTest {
 //        System.out.println(variant + " " + instance.bits() + " " + Long.toHexString(instance.bits()) + " " + Long.toBinaryString(instance.bits()));
 
         assertThat(instance.coordinateSystem(), equalTo(coordinateSystem));
-//        assertThat(instance.start(), equalTo(start));
+        assertThat(instance.start(), equalTo(start));
         assertThat(instance.end(), equalTo(end));
         assertThat(instance.strand(), equalTo(Strand.POSITIVE));
         assertThat(instance.ref(), equalTo(ref));
@@ -181,6 +181,22 @@ class CompactSequenceVariantTest {
     void variantType() {
         CompactSequenceVariant instance = CompactSequenceVariant.of(contig, "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.ONE_BASED, 12345, 12345), "A", "T");
         assertThat(instance.variantType(), equalTo(VariantType.SNV));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+      "A, T, true",
+      "ATGC, '', true",
+      "AAAAAAAAAAA, '', true", // just long enough
+      "AAAAAAAAAAA, 'T', false", // too long
+      "N, '', false",
+      "A, <INS>, false",
+      "'', *, false",
+      "'', ., false",
+
+    })
+    void testCanBeCompactVariant(String ref, String alt, boolean expected) {
+        assertThat(CompactSequenceVariant.canBeCompactVariant(ref, alt), equalTo(expected));
     }
 
     @ParameterizedTest

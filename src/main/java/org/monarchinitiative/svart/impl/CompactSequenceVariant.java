@@ -2,6 +2,7 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -68,7 +69,29 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
     }
 
     public static boolean canBeCompactVariant(String ref, String alt) {
-        return (ref.length() + alt.length()) <= MAX_BASES && !VariantType.isSymbolic(ref) && !VariantType.isSymbolic(alt) && isNotMissingOrStar(alt);
+        if (ref.length() + alt.length() > MAX_BASES) {
+            return false;
+        }
+        return isJustACGT(ref) && isJustACGT(alt);
+//        return (ref.length() + alt.length()) <= MAX_BASES
+//               && !VariantType.isSymbolic(ref)
+//               && !VariantType.isSymbolic(alt)
+//               && isNotMissingOrStar(alt)
+//               && isNotN(ref)
+//               && isNotN(alt);
+    }
+
+    private static boolean isJustACGT(String ref) {
+        for (char c : ref.toCharArray()) {
+             if (c != 'A' && c != 'C' && c != 'G' && c != 'T' && c != 'a' && c != 'c' && c != 'g' && c != 't') {
+                 return false;
+             }
+        }
+        return true;
+    }
+
+    private static boolean isNotN(String alt) {
+        return !"N".equals(alt);
     }
 
     private static boolean isNotMissingOrStar(String allele) {
@@ -119,24 +142,16 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
         };
     }
 
+    private static final byte[] BASE_BYTES = {'A', 'C', 'G', 'T'};
     private byte decodeBase(byte base) {
-        return switch (base) {
-            case 0b00 -> 'A';
-            case 0b11 -> 'T';
-            case 0b01 -> 'C';
-            case 0b10 -> 'G';
-            default -> throw new IllegalArgumentException("Unable to decode base " + base + " must be [AaTtGgCc]");
-        };
+        return BASE_BYTES[base];
     }
 
+    private static final String[] BASE_STRINGS = {A, C, G, T};
     private String decodeBaseAsString(byte base) {
-        return switch (base) {
-            case 0b00 -> A;
-            case 0b11 -> T;
-            case 0b01 -> C;
-            case 0b10 -> G;
-            default -> throw new IllegalArgumentException("Unable to decode base " + base + " must be [AaTtGgCc]");
-        };
+        // A = 0 (0b00), C = 1 (0b01), G = 2 (0b10), T = 3 (0b11)
+        // this is 2* faster than using a switch statement
+        return BASE_STRINGS[base];
     }
 
     private static final long ALLELE_LEN_MASK = 0b1111L;
@@ -156,7 +171,7 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
     @Override
     public String ref() {
         int alleleLength = refLength();
-        return alleleLength == 0 ? "" : decodeAllele(refLength(), (int) ALLELE_SEQ_FIELD_BITS);
+        return alleleLength == 0 ? "" : decodeAllele(alleleLength, (int) ALLELE_SEQ_FIELD_BITS);
     }
 
     /**
@@ -169,18 +184,14 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
     }
 
     private String decodeAllele(int alleleLength, int offset) {
-        // optimal path - no string allocation
-        if (alleleLength == 1) {
-            long base = (bits >> offset) & BASE_MASK;
-            return decodeBaseAsString((byte) base);
-        }
-        // do the whole thing and allocate a new string :'(
+        // optimal path - no string allocation, otherwise do the whole thing and allocate a new string :'(
+        return alleleLength == 1 ? decodeBaseAsString((byte) ((bits >> offset) & BASE_MASK)) : newAlleleString(alleleLength, offset);
+    }
+
+    private String newAlleleString(int alleleLength, int offset) {
         byte[] bases = new byte[alleleLength];
-        // https://alexharri.com/blog/bit-set-iteration
         for (int i = 0; i < alleleLength; i++) {
-            long base = (bits >> (offset - (i << 1))) & BASE_MASK;
-            byte decoded = decodeBase((byte) base);
-            bases[i] = decoded;
+            bases[i] = decodeBase((byte) ((bits >> (offset - (i << 1))) & BASE_MASK));
         }
         return new String(bases);
     }
@@ -287,8 +298,6 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
 
     @Override
     public CoordinateSystem coordinateSystem() {
-        // top 32 bits is a signed integer representing coordinate system and start. zero-based coordinates are +ve
-        // two's compliment still has leftmost bit as 1 to make entire long negative
         return (bits & 1L << COORDINATE_SYSTEM_OFFSET) == 0 ? CoordinateSystem.ZERO_BASED : CoordinateSystem.ONE_BASED;
     }
 
