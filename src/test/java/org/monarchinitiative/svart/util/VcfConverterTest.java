@@ -21,6 +21,43 @@ public class VcfConverterTest {
 
     private final VcfConverter instance = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
 
+    static class TestAbstractVariant extends AbstractGenomicVariant<TestAbstractVariant> {
+
+        protected TestAbstractVariant(GenomicVariant genomicVariant) {
+            super(genomicVariant);
+        }
+
+        public TestAbstractVariant(AbstractGenomicVariant.Builder<?> builder) {
+            super(builder);
+        }
+
+        /**
+         * @param genomicVariant
+         * @return
+         */
+        @Override
+        protected TestAbstractVariant newVariantInstance(GenomicVariant genomicVariant) {
+            return new TestAbstractVariant(genomicVariant);
+        }
+
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        static class Builder extends AbstractGenomicVariant.Builder<TestAbstractVariant.Builder> {
+
+            public TestAbstractVariant build() {
+                return new TestAbstractVariant(this);
+            }
+
+            @Override
+            protected TestAbstractVariant.Builder self() {
+                return this;
+            }
+        }
+    }
+
     @Nested
     public class ConvertNonSymbolicTests {
 
@@ -34,9 +71,9 @@ public class VcfConverterTest {
 
         @Test
         public void convertWithBuilder() {
-            GenomicVariant.Builder builder = instance.convert(GenomicVariant.builder(), instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
-            GenomicVariant variant = builder.build();
-            assertThat(variant, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
+            TestAbstractVariant.Builder builder = instance.convert(TestAbstractVariant.builder(), instance.parseContig("chr1"), "rs123456", 12345, "C", "T");
+            TestAbstractVariant variant = builder.build();
+            assertThat(variant.genomicVariant(), equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
         }
 
         @Test
@@ -81,8 +118,8 @@ public class VcfConverterTest {
 
         @Test
         public void convertSymbolicWithBuilder() {
-            GenomicVariant.Builder builder = instance.convertSymbolic(GenomicVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
-            GenomicVariant variant = builder.build();
+            TestAbstractVariant.Builder builder = instance.convertSymbolic(TestAbstractVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
+            TestAbstractVariant variant = builder.build();
             assertThat(variant.isSymbolic(), equalTo(true));
             assertThat(variant.contig(), equalTo(chr1));
             assertThat(variant.id(), equalTo(""));
@@ -97,7 +134,7 @@ public class VcfConverterTest {
         @Test
         public void convertSymbolicWithFullyTrimmedRefAlleleBuilder() {
             VcfConverter converter = new VcfConverter(b37, VariantTrimmer.rightShiftingTrimmer(VariantTrimmer.removingCommonBase()));
-            GenomicVariant.Builder builder = converter.convertSymbolic(GenomicVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
+            TestAbstractVariant.Builder builder = converter.convertSymbolic(TestAbstractVariant.builder(), instance.parseContig("chr1"), "", 12345, ConfidenceInterval.precise(), 12345, ConfidenceInterval.precise(), "C", "<INS>", 200);
             GenomicVariant variant = builder.build();
             assertThat(variant.isSymbolic(), equalTo(true));
             assertThat(variant.contig(), equalTo(chr1));

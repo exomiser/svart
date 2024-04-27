@@ -76,7 +76,7 @@ public class VcfConverter {
     }
 
     /**
-     * Creates a {@link BaseGenomicVariant.Builder} from the input VCF values. This method will only accept precise sequence variants,
+     * Creates a {@link AbstractGenomicVariant.Builder} from the input VCF values. This method will only accept precise sequence variants,
      * i.e. those with known REF and ALT allele sequences.
      * <p>
      * All input values should be provided exactly as seen in the VCF record, apart from multi allelic sites which should
@@ -88,10 +88,10 @@ public class VcfConverter {
      *
      * @throws IllegalArgumentException if provided with a symbolic or multi-alleleic alt allele.
      */
-    public <T extends BaseGenomicVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
+    public <T extends AbstractGenomicVariant.Builder<T>> T convert(T builder, Contig contig, String id, int pos, String ref, String alt) {
         VariantPosition trimmed = checkAndTrimNonSymbolic(pos, ref, alt);
         Coordinates coordinates = Coordinates.ofAllele(CoordinateSystem.ONE_BASED, trimmed.start(), trimmed.ref());
-        return builder.variant(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt()).id(id);
+        return builder.variant(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt());
     }
 
     private VariantPosition checkAndTrimNonSymbolic(int pos, String ref, String alt) {
@@ -167,7 +167,7 @@ public class VcfConverter {
     }
 
     /**
-     * Returns a {@link org.monarchinitiative.svart.BaseGenomicVariant.Builder} created from the VCF input value arguments for
+     * Returns a {@link org.monarchinitiative.svart.AbstractGenomicVariant.Builder} created from the VCF input value arguments for
      * symbolic alleles. This method will accept any type of symbolic or breakend alt (e.g. {@literal <DEL>} or {@literal C[2:12345[}) allele.
      * <p>
      * Alleles will be trimmed according to the {@link VariantTrimmer} supplied to this class.
@@ -176,11 +176,11 @@ public class VcfConverter {
      *
      * @throws IllegalArgumentException when supplied with a multi-allelic alt allele
      */
-    public <T extends BaseGenomicVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
+    public <T extends AbstractGenomicVariant.Builder<T>> T convertSymbolic(T builder, Contig contig, String id, int start, ConfidenceInterval startCi, int end, ConfidenceInterval endCi, String ref, String alt, int svlen) {
         VariantType.requireSymbolic(alt);
         VariantPosition trimmed = variantTrimmer.trim(Strand.POSITIVE, start, ref, alt);
         Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, trimmed.start(), startCi, end, endCi);
-        return builder.variant(contig, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen).id(id);
+        return builder.variant(contig, id, Strand.POSITIVE, coordinates, trimmed.ref(), trimmed.alt(), svlen);
     }
 
     /**
