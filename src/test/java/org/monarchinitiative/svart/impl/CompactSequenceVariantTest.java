@@ -10,10 +10,26 @@ import org.openjdk.jol.info.ClassLayout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class CompactSequenceVariantTest {
     private final TestContig contig = TestContig.of(1, 100000);
+
+    @ParameterizedTest
+    @CsvSource({
+            "N, A",
+            "D, 12344",
+            "C, <DEL>",
+            "C, *",
+            "C, ATG]CATGC[",
+            "C, ATGCATGCATG",
+    })
+    void illegalCompactVariantThrowsException(String ref, String alt) {
+        Exception result = assertThrows(IllegalArgumentException.class, () ->
+                CompactSequenceVariant.of(contig, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, ref, alt));
+        assertThat(result.getMessage(), equalTo("Unable to represent ref=" + ref + ", alt=" + alt + " (" + (ref.length() + alt.length()) + " bases) as compact variant. Length of (ref + alt) must be <= 11 bases and only contain characters [A, C, G, T, a, c, g, t]."));
+    }
 
     @ParameterizedTest
     @CsvSource({

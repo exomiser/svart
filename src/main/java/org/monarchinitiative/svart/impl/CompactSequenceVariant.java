@@ -2,7 +2,6 @@ package org.monarchinitiative.svart.impl;
 
 import org.monarchinitiative.svart.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -52,50 +51,40 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
     public static CompactSequenceVariant of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
         return of(contig, "", strand, coordinateSystem, start, ref, alt);
     }
+
     public static CompactSequenceVariant of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
-        VariantType.requireNonSymbolic(alt);
+        // check for nulls and then assert ref.length() + alt.length() <= 11 && ref & alt are ATGC only
+        if (!canBeCompactVariant(ref, alt)) {
+            throw new IllegalArgumentException("Unable to represent ref=" + ref + ", alt=" + alt + " (" + (ref.length() + alt.length()) + " bases) as compact variant. Length of (ref + alt) must be <= " + MAX_BASES + " bases and only contain characters [A, C, G, T, a, c, g, t].");
+        }
         int end = GenomicVariant.calculateEnd(start, coordinateSystem, ref, alt);
         GenomicInterval.validateCoordinatesOnContig(contig, coordinateSystem, start, end);
-        GenomicVariant.validateRefAllele(ref);
-        GenomicVariant.validateAltAllele(alt);
 
-        // check for nulls and then assert ref.length() + alt.length() <= 11 && ref & alt are ATGC only
-        if (ref.length() + alt.length() > MAX_BASES) {
-            throw new IllegalArgumentException("Maximum length of ref and alt alleles must be <= 11. Got " + (ref.length() + alt.length()) + ": ref=" + ref + ", alt=" + alt);
-        }
         long bits = toBits(strand, coordinateSystem, start, ref, alt);
         VariantType variantType = VariantType.parseType(ref, alt);
         return new CompactSequenceVariant(contig, GenomicVariant.cacheId(id), variantType, bits);
     }
 
+    /**
+     * Returns true if a variant can be represented as a {@link CompactSequenceVariant}.
+     * @param ref The ref allele.
+     * @param alt The alt allele.
+     * @return true if both the ref and alt allele can be represented in compact form.
+     */
     public static boolean canBeCompactVariant(String ref, String alt) {
         if (ref.length() + alt.length() > MAX_BASES) {
             return false;
         }
         return isJustACGT(ref) && isJustACGT(alt);
-//        return (ref.length() + alt.length()) <= MAX_BASES
-//               && !VariantType.isSymbolic(ref)
-//               && !VariantType.isSymbolic(alt)
-//               && isNotMissingOrStar(alt)
-//               && isNotN(ref)
-//               && isNotN(alt);
     }
 
-    private static boolean isJustACGT(String ref) {
+    public static boolean isJustACGT(String ref) {
         for (char c : ref.toCharArray()) {
              if (c != 'A' && c != 'C' && c != 'G' && c != 'T' && c != 'a' && c != 'c' && c != 'g' && c != 't') {
                  return false;
              }
         }
         return true;
-    }
-
-    private static boolean isNotN(String alt) {
-        return !"N".equals(alt);
-    }
-
-    private static boolean isNotMissingOrStar(String allele) {
-        return !".".equals(allele) && !"*".equals(allele);
     }
 
     private static long toBits(Strand strand, CoordinateSystem coordinateSystem, int start, String ref, String alt) {
