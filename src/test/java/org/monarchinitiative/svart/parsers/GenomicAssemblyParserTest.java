@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
 import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssemblyParser;
 import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.nio.file.Files;

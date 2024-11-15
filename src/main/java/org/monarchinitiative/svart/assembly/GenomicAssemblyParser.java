@@ -1,9 +1,6 @@
-package org.monarchinitiative.svart.parsers;
+package org.monarchinitiative.svart.assembly;
 
-import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.monarchinitiative.svart.impl.DefaultContig;
 import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 
@@ -20,6 +17,9 @@ import java.util.List;
  * These should be considered the source of truth for reference genomes.
  */
 public class GenomicAssemblyParser {
+
+    private GenomicAssemblyParser() {
+    }
 
     public static GenomicAssembly parseAssembly(Path assemblyReportPath) {
         try (BufferedReader bufferedReader = Files.newBufferedReader(assemblyReportPath)) {
@@ -111,28 +111,25 @@ public class GenomicAssemblyParser {
             String value = kv[1].trim();
             String key = kv[0].replace("# ", "");
             switch (key) {
-                case "Assembly name":
-                    assemblyBuilder.name(value);
-                case "Description":
-                case "Organism name":
-                    assemblyBuilder.organismName(value);
-                case "Taxid":
-                    assemblyBuilder.taxId(value);
-                case "BioProject":
-                case "Submitter":
-                    assemblyBuilder.submitter(value);
-                case "Date":
-                    assemblyBuilder.date(value);
-                case "Assembly type":
-                case "Release type":
-                case "Assembly level":
-                case "Genome representation":
-                case "RefSeq category":
-                case "GenBank assembly accession":
-                    assemblyBuilder.genBankAccession(value);
-                case "RefSeq assembly accession":
-                    assemblyBuilder.refSeqAccession(value);
-                case "RefSeq assembly and GenBank assemblies identical":
+                case "Assembly name" -> assemblyBuilder.name(value);
+                case "Description" -> {
+                    // do nothing
+                }
+                case "Organism name" -> assemblyBuilder.organismName(value);
+                case "Taxid" -> assemblyBuilder.taxId(value);
+                case "BioProject" -> {
+                    // do nothing
+                }
+                case "Submitter" -> assemblyBuilder.submitter(value);
+                case "Date" -> assemblyBuilder.date(value);
+                case "Assembly type", "Release type", "Assembly level", "Genome representation", "RefSeq category" -> {
+                    // do nothing
+                }
+                case "GenBank assembly accession" -> assemblyBuilder.genBankAccession(value);
+                case "RefSeq assembly accession" -> assemblyBuilder.refSeqAccession(value);
+                default -> {
+                    // do nothing
+                }
             }
         }
     }
