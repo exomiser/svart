@@ -12,14 +12,14 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class IntervalOverlapsTest {
+class IntervalOverlapsTest {
 
     private final Contig chr1 = GenomicAssemblies.GRCh38p13().contigById(1);
     private final GenomicRegion region1 = GenomicRegion.of(chr1, Strand.POSITIVE, Coordinates.zeroBased(200, 400));
     private final GenomicRegion region2 = GenomicRegion.of(chr1, Strand.POSITIVE, Coordinates.zeroBased(800, 1600));
 
     @Test
-    public void overlapping() {
+    void overlapping() {
         List<GenomicRegion> overlaps = List.of(this.region1, region2);
         IntervalOverlaps<GenomicRegion> instance = IntervalOverlaps.of(overlaps);
         assertThat(instance.hasOverlaps(), equalTo(true));
@@ -30,7 +30,7 @@ public class IntervalOverlapsTest {
     }
 
     @Test
-    public void neighbours() {
+    void neighbours() {
         IntervalOverlaps<GenomicRegion> instance = IntervalOverlaps.neighbours(region1, region2);
         assertThat(instance.hasOverlaps(), equalTo(false));
         assertThat(instance.overlaps(), equalTo(List.of()));
@@ -43,7 +43,7 @@ public class IntervalOverlapsTest {
     }
 
     @Test
-    public void neighboursLeftOnly() {
+    void neighboursLeftOnly() {
         IntervalOverlaps<GenomicRegion> instance = IntervalOverlaps.neighbours(region1, null);
         assertThat(instance.hasOverlaps(), equalTo(false));
         assertThat(instance.overlaps(), equalTo(List.of()));
@@ -56,7 +56,7 @@ public class IntervalOverlapsTest {
     }
 
     @Test
-    public void neighboursRightOnly() {
+    void neighboursRightOnly() {
         IntervalOverlaps<GenomicRegion> instance = IntervalOverlaps.neighbours(null, region2);
         assertThat(instance.hasOverlaps(), equalTo(false));
         assertThat(instance.overlaps(), equalTo(List.of()));
@@ -70,7 +70,7 @@ public class IntervalOverlapsTest {
 
 
     @Test
-    public void empty() {
+    void empty() {
         IntervalOverlaps<GenomicRegion> instance = IntervalOverlaps.empty();
         assertThat(instance.hasOverlaps(), equalTo(false));
         assertThat(instance.hasLeft(), equalTo(false));

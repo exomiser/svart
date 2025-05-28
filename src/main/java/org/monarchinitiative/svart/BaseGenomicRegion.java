@@ -1,8 +1,13 @@
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.coordinates.CoordinatesFormat;
+
 import java.util.Objects;
 
 /**
+ * Base class of a {@link GenomicRegion}. It is intended that this class be extended by other classes requiring this base
+ * functionality. An optional fluent {@link Builder} class is also provided for extension.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */

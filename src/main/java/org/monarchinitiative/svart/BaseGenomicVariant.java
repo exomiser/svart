@@ -1,14 +1,18 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.svart.coordinates.CoordinatesFormat;
+import org.monarchinitiative.svart.sequence.NucleotideSeq;
+import org.monarchinitiative.svart.variant.AlleleCache;
+import org.monarchinitiative.svart.variant.IdCache;
 
 import java.util.Objects;
 
 /**
- * @deprecated Consider using {@link AbstractGenomicVariant} as a compositional alternative.
+ * Base class for a {@link GenomicVariant}. This class is intended to be extended by other classes which require general
+ * variant properties. It can be used to represent both sequence and symbolic variants, including breakend variants.
+ * Consider using {@link AbstractGenomicVariant} as a compositional alternative.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Deprecated(since = "2.0.0")
 public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseGenomicRegion<T> implements GenomicVariant {
 
     private final String id;
@@ -190,8 +194,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             return (T) this;
         }
 
-        String refRevComp = Seq.reverseComplement(ref);
-        String altRevComp = isSymbolic() ? alt : Seq.reverseComplement(alt);
+        String refRevComp = NucleotideSeq.reverseComplement(ref);
+        String altRevComp = isSymbolic() ? alt : NucleotideSeq.reverseComplement(alt);
         return newVariantInstance(contig(), id, other, coordinates().invert(contig()), refRevComp, altRevComp, changeLength, mateId, eventId);
     }
 
@@ -226,18 +230,18 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
     @Override
     public String toString() {
         return "GenomicVariant{" +
-                "contig=" + contigId() +
-                ", id='" + id + '\'' +
-                ", strand=" + strand() +
-                ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
-                ", ref='" + ref + '\'' +
-                ", alt='" + alt + '\'' +
-                ", variantType=" + variantType +
-                ", length=" + length() +
-                ", changeLength=" + changeLength +
-                mateIdStr() +
-                eventIdStr() +
-                '}';
+               "contig=" + contigId() +
+               ", id='" + id + '\'' +
+               ", strand=" + strand() +
+               ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
+               ", ref='" + ref + '\'' +
+               ", alt='" + alt + '\'' +
+               ", variantType=" + variantType +
+               ", length=" + length() +
+               ", changeLength=" + changeLength +
+               mateIdStr() +
+               eventIdStr() +
+               '}';
     }
 
     private String mateIdStr() {
@@ -371,8 +375,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             }
             this.strand = strand;
             coordinates = coordinates.invert(contig);
-            ref = Seq.reverseComplement(ref);
-            alt = VariantType.isSymbolic(alt) ? alt : Seq.reverseComplement(alt);
+            ref = NucleotideSeq.reverseComplement(ref);
+            alt = VariantType.isSymbolic(alt) ? alt : NucleotideSeq.reverseComplement(alt);
             return self();
         }
 

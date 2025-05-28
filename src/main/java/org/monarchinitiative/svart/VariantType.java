@@ -1,6 +1,6 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.svart.sequence.NucleotideSeq;
 
 import java.util.Objects;
 
@@ -250,12 +250,14 @@ public enum VariantType {
         if (isSymbolic(alt)) {
             return parseType(alt);
         }
+        final int refLength = ref.length();
+        final int altLength = alt.length();
         // SNV SO:0001483 - SNVs are single nucleotide positions in genomic DNA at which different sequence alternatives exist.
-        if (ref.length() == alt.length() && ref.length() == 1) {
+        if (refLength == altLength && refLength == 1) {
             return VariantType.SNV;
         }
         // MNV SO:0001013 - A multiple nucleotide polymorphism with alleles of common length > 1, for example AAA/TTT.
-        if (ref.length() == alt.length() && ref.length() > 1) {
+        if (refLength == altLength && refLength > 1) {
             // INV SO:1000036 - A continuous nucleotide sequence is inverted in the same position.
             if (isInversion(ref, alt)) {
                 return VariantType.INV;
@@ -265,13 +267,13 @@ public enum VariantType {
         // DEL SO:0000159 - The point at which one or more contiguous nucleotides were excised.
         // ATC>AT, AT>A or A> == DEL - handle untrimmed cases too
         // check start and end of ref in case of flipping to opposite strands e.g. AG>A becomes CT>T
-        if (alt.length() < ref.length() && (ref.startsWith(alt) || ref.endsWith(alt))) {
+        if (altLength < refLength && (ref.startsWith(alt) || ref.endsWith(alt))) {
             return DEL;
         }
         // INS SO:0000667 - The sequence of one or more nucleotides added between two adjacent nucleotides in the sequence.
         // >A or A>AT, AT>ATC == INS - handle untrimmed cases too
         // check start and end of alt in case of flipping to opposite strands e.g. A>AG becomes T>CT
-        if (ref.length() < alt.length() && (alt.startsWith(ref) || alt.endsWith(ref))) {
+        if (refLength < altLength && (alt.startsWith(ref) || alt.endsWith(ref))) {
             return INS;
         }
         // DELINS SO:1000032 - A sequence alteration which included an insertion and a deletion, affecting 2 or more bases.
@@ -293,7 +295,7 @@ public enum VariantType {
                 // Other dinucleotide combinations are true inversions GA -> TC, CT -> AG
                 return true;
             }
-            return Seq.reverseComplement(ref).equalsIgnoreCase(alt);
+            return NucleotideSeq.reverseComplement(ref).equalsIgnoreCase(alt);
         }
         return false;
     }

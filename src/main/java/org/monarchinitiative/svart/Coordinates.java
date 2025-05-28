@@ -1,6 +1,9 @@
 package org.monarchinitiative.svart;
 
 
+import org.monarchinitiative.svart.coordinates.ImpreciseCoordinates;
+import org.monarchinitiative.svart.coordinates.PreciseCoordinates;
+
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -19,7 +22,7 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
 public sealed interface Coordinates extends Convertible<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
     static Coordinates empty() {
-        return PreciseCoordinates.EMPTY;
+        return PreciseCoordinates.empty();
     }
 
     CoordinateSystem coordinateSystem();
@@ -270,6 +273,7 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
             throw new InvalidCoordinatesException("Coordinates " + start + '-' + end + " cannot have end coordinate `" + end + "` with negative value");
         }
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+            //             if (start < 0) { // for telomeric variants
             if (start <= 0) {
                 throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with zero or negative value");
             }

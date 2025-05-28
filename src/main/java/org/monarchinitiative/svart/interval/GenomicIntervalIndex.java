@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 2.0.0
  */
-public class GenomicIntervalIndex<T extends GenomicInterval> {
+public final class GenomicIntervalIndex<T extends GenomicInterval> {
     // RIGHT_OPEN, 0-start system
     private static final CoordinateSystem INDEX_COORDINATE_SYSTEM = IntervalTree.COORDINATE_SYSTEM;
     private static final Strand INDEX_STRAND = Strand.POSITIVE;

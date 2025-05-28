@@ -1,14 +1,13 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.CompactSequenceVariant;
-import org.monarchinitiative.svart.impl.DefaultSequenceVariant;
-import org.monarchinitiative.svart.impl.SymbolicVariant;
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.svart.sequence.NucleotideSeq;
+import org.monarchinitiative.svart.variant.*;
+import org.monarchinitiative.svart.vcf.VcfBreakendFormatter;
+import org.monarchinitiative.svart.vcf.VcfBreakendResolver;
+import org.monarchinitiative.svart.vcf.VcfConverter;
 
 import java.util.Comparator;
 import java.util.Objects;
-
-import static org.monarchinitiative.svart.GenomicComparators.*;
 
 /**
  * A {@link GenomicVariant} represents a variation of the sequence of a {@link GenomicRegion}. It is the key abstraction
@@ -34,7 +33,7 @@ import static org.monarchinitiative.svart.GenomicComparators.*;
  * allocation. Given this it is <em>highly</em> recommended to use the static factory method on this interface.
  * <p>
  * In general, it is recommended that applications use the HTSJDK to parse the VCF file and then convert the alleles into
- * {@link GenomicVariant} using the {@link org.monarchinitiative.svart.util.VcfConverter} as this will coordinate trimming
+ * {@link GenomicVariant} using the {@link VcfConverter} as this will coordinate trimming
  * and creation of {@link GenomicVariant} objects.
  * <p>
  * The {@link GenomicVariant} can be used to represent sequence, symbolic or breakend variant types, although the breakend
@@ -44,10 +43,10 @@ import static org.monarchinitiative.svart.GenomicComparators.*;
  * unless they specifically need a {@link GenomicBreakendVariant}.
  * <p>
  * A {@link GenomicVariant} can be converted into a {@link GenomicBreakendVariant} using the
- * {@link org.monarchinitiative.svart.util.VcfBreakendResolver} utility class and the {@link GenomicBreakendVariant} will
+ * {@link VcfBreakendResolver} utility class and the {@link GenomicBreakendVariant} will
  * provide the means of representing itself as a symbolic {@link GenomicVariant} via the
  * {@link GenomicBreakendVariant#toSymbolicGenomicVariant()} method or this can be done manually using the
- * {@link org.monarchinitiative.svart.util.VcfBreakendFormatter} utility.
+ * {@link VcfBreakendFormatter} utility.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
@@ -116,11 +115,15 @@ public interface GenomicVariant extends GenomicRegion {
     }
 
     default boolean isBreakend() {
-        return VariantType.isBreakend(alt()) || variantType() == VariantType.BND;
+        return VariantType.isBreakend(alt()) || variantType() == VariantType.BND || variantType() == VariantType.TRA;
     }
 
     static Comparator<GenomicVariant> naturalOrder() {
-        return GenomicVariantNaturalOrderComparator.INSTANCE;
+        return GenomicComparators.GenomicVariantNaturalOrderComparator.INSTANCE;
+    }
+
+    default int compareTo(GenomicVariant o) {
+        return GenomicVariant.compare(this, o);
     }
 
     static int compare(GenomicVariant x, GenomicVariant y) {
@@ -175,7 +178,7 @@ public interface GenomicVariant extends GenomicRegion {
         if (!VariantType.isSymbolic(alt)) {
             return of(contig, id, strand, coordinates, ref, alt);
         }
-        return SymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
+        return DefaultSymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
     static GenomicVariant of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end, String ref, String alt, int changeLength) {
@@ -187,14 +190,14 @@ public interface GenomicVariant extends GenomicRegion {
             return of(contig, id, strand, coordinateSystem, start, ref, alt);
         }
         Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
-        return SymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
+        return DefaultSymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength);
     }
 
     static GenomicVariant of(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
         if (!VariantType.isSymbolic(alt)) {
             return of(contig, id, strand, coordinates, ref, alt);
         }
-        return SymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
+        return DefaultSymbolicVariant.of(contig, id, strand, coordinates, ref, alt, changeLength, mateId, eventId);
     }
 
     private static void requireLengthIfSymbolic(String alt) {
@@ -420,8 +423,8 @@ public interface GenomicVariant extends GenomicRegion {
             }
             this.strand = strand;
             coordinates = coordinates.invert(contig);
-            ref = Seq.reverseComplement(ref);
-            alt = VariantType.isSymbolic(alt) ? alt : Seq.reverseComplement(alt);
+            ref = NucleotideSeq.reverseComplement(ref);
+            alt = VariantType.isSymbolic(alt) ? alt : NucleotideSeq.reverseComplement(alt);
             return this;
         }
 

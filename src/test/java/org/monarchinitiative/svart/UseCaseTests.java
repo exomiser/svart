@@ -3,8 +3,12 @@ package org.monarchinitiative.svart;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.util.*;
-import org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition;
+import org.monarchinitiative.svart.sequence.*;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer.VariantPosition;
+import org.monarchinitiative.svart.vcf.VcfBreakendFormatter;
+import org.monarchinitiative.svart.vcf.VcfBreakendResolver;
+import org.monarchinitiative.svart.vcf.VcfConverter;
 
 import java.nio.file.Path;
 
@@ -12,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UseCaseTests {
+class UseCaseTests {
 
     @Test
     void buildSimpleSnp() {
@@ -70,14 +74,14 @@ public class UseCaseTests {
 
         // Here we're making a more complicated class which is also Convertible and Transposable
         record TransposableFeature(Contig contig, Strand strand, Coordinates coordinates,  String id,
-                                   String sequence) implements GenomicInterval, Convertible<TransposableFeature>, Transposable<TransposableFeature>  {
+                                   String sequence) implements GenomicInterval, Convertible<TransposableFeature>, Transposable<TransposableFeature> {
 
             @Override
             public TransposableFeature withStrand(Strand other) {
                 if (this.strand() == other) {
                     return this;
                 }
-                return new TransposableFeature(contig, other, coordinates.invert(contig), id, Seq.reverseComplement(sequence));
+                return new TransposableFeature(contig, other, coordinates.invert(contig), id, NucleotideSeq.reverseComplement(sequence));
             }
 
             @Override
@@ -207,7 +211,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void createDonorAcceptorRegionFromExon() {
+    void createDonorAcceptorRegionFromExon() {
         TestContig contig = TestContig.of(1, 100);
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, 70);
 
@@ -223,7 +227,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void insertionLiesInExon() {
+    void insertionLiesInExon() {
         TestContig contig = TestContig.of(1, 100);
         GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), 50, 70);
 
@@ -232,7 +236,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void symbolicVariantContainsSnv() {
+    void symbolicVariantContainsSnv() {
         Contig chr1 = TestContig.of(1, 1000);
         GenomicVariant largeIns = GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 1, "T", "<INS>", 100);
         assertTrue(largeIns.contains(GenomicVariant.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 1, "A", "T")));
@@ -242,7 +246,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void checkGeneContainsVariant() {
+    void checkGeneContainsVariant() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // FGFR2 gene is located on chromosome 10 (CM000672.1): 123,237,848-123_357_972 reverse strand. (1-based, positive strand coordinates)
@@ -260,7 +264,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void emptyRegionsWithDifferentCoordinateSystems() {
+    void emptyRegionsWithDifferentCoordinateSystems() {
         // these are empty regions and can be used to represent a 'slice' in-between two bases
         GenomicRegion oneBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.oneBased(), 1, 0);
         GenomicRegion zeroBasedEmpty = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 0);
@@ -272,7 +276,7 @@ public class UseCaseTests {
         assertThat(oneBasedEmpty.withCoordinateSystem(CoordinateSystem.zeroBased()), equalTo(zeroBasedEmpty));
     }
     @Test
-    public void trimMultiAllelicSite() {
+    void trimMultiAllelicSite() {
         // Given the VCF record:
         // chr1    225725424       .       CTT     C,CT    258.06  FreqFilter      AC=1,1;AF=0.500,0.500;AN=2;DP=7;ExcessHet=3.0103;FS=0.000;MAX_FREQ=3.1360424;MLEAC=1,1;MLEAF=0.500,0.500;MQ=60.00;QD=29.21;SOR=0.941    GT:AD:DP:GQ:PL  1/2:0,4,3:7:58:275,76,58,106,0,85
         Contig chr1 = TestContig.of(1, 249_250_621);
@@ -306,7 +310,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void parseGenomicRegionFromBedFile() {
+    void parseGenomicRegionFromBedFile() {
         // Load the Human GRCh37.13 assembly from a NCBI assembly report
         GenomicAssembly b37 = GenomicAssembly.readAssembly(Path.of("src/test/resources/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
         // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
@@ -339,7 +343,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void breakendsAreAlmostLikeNonBreakends() {
+    void breakendsAreAlmostLikeNonBreakends() {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         VcfConverter vcfConverter = new VcfConverter(b37, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
         // VCF file, parsed with the HTSJDK to get a VariantContext instance...
@@ -399,7 +403,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void nonCanonicalBreakend_mantaUnresolved() {
+    void nonCanonicalBreakend_mantaUnresolved() {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // 1	166448783	gnomAD-SV_v2.1_BND_1_4095	N	<BND>	892	UNRESOLVED	END=166448784;SVTYPE=BND;SVLEN=-1;CHR2=6;POS2=166448783;END2=166448784;ALGORITHMS=manta;EVIDENCE=PE;UNRESOLVED_TYPE=SINGLE_ENDER_+-;
         GenomicBreakend left = GenomicBreakend.of(b37.contigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 166448784, 166448783);
@@ -414,7 +418,7 @@ public class UseCaseTests {
     }
 
     @Test
-    public void nonCanonicalBreakend_snifflesTRA() {
+    void nonCanonicalBreakend_snifflesTRA() {
         GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // https://github.com/fritzsedlazeck/Sniffles/issues/73  - should run with  "--report_BND true"
         // 1 	797316 	TRA0029399SUR 	N 	<TRA> 	. 	PASS 	SUPP=2;AVGLEN=100000;med_start=797265;med_stop=797265;SVTYPE=TRA;SVMETHOD=SURVIVORv2;CHR2=8;END=245650;STRANDS=++;

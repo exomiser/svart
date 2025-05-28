@@ -1,6 +1,8 @@
 package org.monarchinitiative.svart;
 
 
+import org.monarchinitiative.svart.coordinates.CoordinatesFormat;
+
 import java.util.Objects;
 
 

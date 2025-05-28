@@ -21,7 +21,6 @@
 package org.monarchinitiative.svart.assembly;
 
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 
 import java.io.InputStream;
 import java.nio.file.Path;

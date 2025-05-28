@@ -1,8 +1,6 @@
 package org.monarchinitiative.svart.assembly;
 
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.impl.DefaultContig;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,7 +14,7 @@ import java.util.List;
  *
  * These should be considered the source of truth for reference genomes.
  */
-public class GenomicAssemblyParser {
+public final class GenomicAssemblyParser {
 
     private GenomicAssemblyParser() {
     }
