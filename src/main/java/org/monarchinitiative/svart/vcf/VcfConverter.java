@@ -13,7 +13,7 @@ import java.util.Objects;
  * the positions being provided as FULLY_CLOSED (one-based) on the POSITIVE strand. The class will trim any non-symbolic/breakend
  * alleles.
  */
-public class VcfConverter {
+public final class VcfConverter {
 
     private final GenomicAssembly genomicAssembly;
     private final VariantTrimmer variantTrimmer;

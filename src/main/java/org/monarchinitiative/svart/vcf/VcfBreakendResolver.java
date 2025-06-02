@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public class VcfBreakendResolver {
+public final class VcfBreakendResolver {
 
     private static final String IUPAC_BASES = "ACGTUWSMKRYBDHVNacgtuwsmkrybdhvn";
 
