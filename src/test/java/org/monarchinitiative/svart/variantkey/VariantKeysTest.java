@@ -17,14 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class VariantKeysTest {
 
     @Test
-    void encodeRefAlt() {
-        System.out.printf("%08x%n", VariantKeys.encodeRefAlt("T", "C"));
-        System.out.printf("%08x%n", VariantKeys.encodeRefAlt("ACG", "ACGTACGTAC"));
-        System.out.printf("%08x%n", VariantKeys.encodeRefAlt("GCCTCCCCAGCCACGGTGAGGACCCACCCTGGCATGATCCCCCTCATCA", "G"));
-        System.out.printf("%08x%n", VariantKeys.encodeRefAlt("AACCATCTGTATTGATGCACTGTCCATGTTT", "A"));
-    }
-
-    @Test
     void testEncodeRefAlt() {
         final String[] input =
                 {"A", "C", "N", "GT", "ACG", "ACGTa", "ACGTac", "ACGTacg", "ACGTacgt", "ACGTACGTAC", "ACGTacgtACGT"};

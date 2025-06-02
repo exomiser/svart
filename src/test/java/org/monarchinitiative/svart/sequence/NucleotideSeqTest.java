@@ -17,21 +17,16 @@ class NucleotideSeqTest {
 
     @Test
     void reverseComplementByteArray() {
-        byte[] seq = "ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn".getBytes(StandardCharsets.US_ASCII);
+        byte[] seq = "ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn.*".getBytes(StandardCharsets.US_ASCII);
         byte[] reversed = NucleotideSeq.reverseComplement(seq);
         String rev = new String(reversed, StandardCharsets.US_ASCII);
-        assertThat(rev, is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
+        assertThat(rev, is("*.nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
     }
 
     @Test
     void reverseComplementString() {
-        assertThat(NucleotideSeq.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn"),
-                is("nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
-    }
-
-    @Test
-    void name() {
-        System.out.println(NucleotideSeq.reverseComplement("nbdhvNBDHVryRYmkswMKSWaacgtAACGT.*"));
+        assertThat(NucleotideSeq.reverseComplement("ACGTUacgtuWSMKwsmkRYryBDHVNbdhvn.*"),
+                is("*.nbdhvNBDHVryRYmkswMKSWaacgtAACGT"));
     }
 
     @Test
