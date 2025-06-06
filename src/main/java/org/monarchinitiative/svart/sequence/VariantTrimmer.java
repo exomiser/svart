@@ -29,9 +29,9 @@ import java.util.Objects;
  * <a href="https://genome.sph.umich.edu/wiki/Variant_Normalization">VT Normalise</a> published as
  * <a href="https://doi.org/10.1093/bioinformatics/btv112">Unified representation of genetic variants</a> VCF-specific left-shifted algorithm
  * <p>
- * <href <a href="https://doi.org/10.1093/bioinformatics/btz856">SPDI: data model for variants and applications at NCBI</a> Variant OverCorrection Algorithm (VOCA) described in supplementary material
+ * <a href="https://doi.org/10.1093/bioinformatics/btz856">SPDI: data model for variants and applications at NCBI</a> Variant OverCorrection Algorithm (VOCA) described in supplementary material
  * <p>
- * <href <a href="https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html">GA4GH Variation Representation Specification - Normalisation</a> published as <href <a href="https://doi.org/10.1016/j.xgen.2021.100027">The GA4GH Variation Representation Specification (VRS): a computational framework for variation representation and federated identification.</a>
+ * <a href="https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html">GA4GH Variation Representation Specification - Normalisation</a> published as <a href="https://doi.org/10.1016/j.xgen.2021.100027">The GA4GH Variation Representation Specification (VRS): a computational framework for variation representation and federated identification.</a>
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class VariantTrimmer {
