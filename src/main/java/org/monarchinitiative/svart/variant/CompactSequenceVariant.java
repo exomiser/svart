@@ -56,8 +56,8 @@ public record CompactSequenceVariant(Contig contig, String id, VariantType varia
         if (!canBeCompactVariant(ref, alt)) {
             throw new IllegalArgumentException("Unable to represent ref=" + ref + ", alt=" + alt + " (" + (ref.length() + alt.length()) + " bases) as compact variant. Length of (ref + alt) must be <= " + MAX_BASES + " bases and only contain characters [A, C, G, T, a, c, g, t].");
         }
-        int end = start + ref.length() + Coordinates.endDelta(coordinateSystem);
-        GenomicInterval.validateCoordinatesOnContig(contig, coordinateSystem, start, end);
+        int end = Coordinates.calculateEnd(coordinateSystem, start, ref);
+        Coordinates.validateCoordinatesOnContig(contig, coordinateSystem, start, end);
 
         long bits = toBits(strand, coordinateSystem, start, ref, alt);
         VariantType variantType = VariantType.parseType(ref, alt);

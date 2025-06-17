@@ -124,6 +124,19 @@ class CoordinatesTest {
 
     @ParameterizedTest
     @CsvSource({
+            "ONE_BASED, 1, '', 0",
+            "ONE_BASED, 1, A, 1",
+            "ONE_BASED, 1, ATG, 3",
+            "ZERO_BASED, 0, '', 0",
+            "ZERO_BASED, 0, A, 1",
+            "ZERO_BASED, 0, ATG, 3",
+    })
+    void calculateEnd(CoordinateSystem coordinateSystem, int start, String ref, int expected) {
+        assertThat(Coordinates.calculateEnd(coordinateSystem, start, ref), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             // given a coordinate on a contig of length 5
             "ONE_BASED,   1,  5",
             "ONE_BASED,   2,  4",
