@@ -109,7 +109,7 @@ public interface Interval extends CoordinateSystemed {
     }
 
     default boolean contains(int position) {
-        return startWithCoordinateSystem(CoordinateSystem.ONE_BASED) <= position && position <= end();
+        return startOneBased() <= position && position <= end();
     }
 
     default boolean overlapsWith(Interval other) {

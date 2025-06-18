@@ -1,8 +1,8 @@
 package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.DefaultContig;
 import org.monarchinitiative.svart.assembly.SequenceRole;
-import org.monarchinitiative.svart.impl.DefaultContig;
 
 /**
  * A model of a genomic reference sequence based on the NCBI assembly report.

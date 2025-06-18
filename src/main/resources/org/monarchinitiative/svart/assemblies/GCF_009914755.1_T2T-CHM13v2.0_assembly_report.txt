@@ -6,7 +6,6 @@
 # BioProject:     PRJNA559484
 # Submitter:      T2T Consortium
 # Date:           2022-01-24
-# Synonyms:       hs1	
 # Assembly type:  haploid
 # Release type:   major
 # Assembly level: Complete Genome

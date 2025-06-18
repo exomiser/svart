@@ -2,11 +2,10 @@
 package org.monarchinitiative.svart;
 
 
-import org.monarchinitiative.svart.impl.DefaultGenomicRegion;
+import org.monarchinitiative.svart.region.DefaultGenomicRegion;
 
 import java.util.Comparator;
 
-import static org.monarchinitiative.svart.GenomicComparators.*;
 
 /**
  * A {@link GenomicRegion} is a {@link GenomicInterval} e.g. transcribed, regulatory or intergenic regions of a
@@ -24,7 +23,7 @@ public interface GenomicRegion extends GenomicInterval, Convertible<GenomicRegio
     GenomicRegion withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     @Override
-    GenomicRegion withStrand(Strand other);
+    GenomicRegion withStrand(Strand strand);
 
     default GenomicRegion withPadding(int padding) {
         return withPadding(padding, padding);
@@ -38,7 +37,7 @@ public interface GenomicRegion extends GenomicInterval, Convertible<GenomicRegio
     }
 
     static Comparator<GenomicInterval> naturalOrder() {
-        return GenomicIntervalNaturalOrderComparator.INSTANCE;
+        return GenomicComparators.GenomicIntervalNaturalOrderComparator.INSTANCE;
     }
 
     static int compare(GenomicRegion x, GenomicRegion y) {

@@ -1,6 +1,6 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultGenomicInterval;
+import org.monarchinitiative.svart.region.DefaultGenomicInterval;
 
 import java.util.Comparator;
 
@@ -41,14 +41,7 @@ public interface GenomicInterval extends Stranded, Interval {
      * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
      */
     static void validateCoordinatesOnContig(Contig contig, Coordinates coordinates) {
-        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
-        int start = coordinates.start();
-        int end = coordinates.end();
-        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
-        }
+        coordinates.validateCoordinatesOnContig(contig);
     }
 
     /**

@@ -1,8 +1,6 @@
 
 package org.monarchinitiative.svart;
 
-import java.util.Objects;
-
 /**
  * Class representing the VCF confidence interval:
  * <p>
@@ -14,19 +12,14 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
+public record ConfidenceInterval(int lowerBound, int upperBound) implements Comparable<ConfidenceInterval> {
 
     private static final ConfidenceInterval PRECISE = new ConfidenceInterval(0, 0);
 
-    private final int lowerBound;
-    private final int upperBound;
-
-    private ConfidenceInterval(int lowerBound, int upperBound) {
+    public ConfidenceInterval {
         if (lowerBound > 0 || upperBound < 0) {
             throw new IllegalArgumentException("'" + lowerBound + ", " + upperBound + "' ConfidenceInterval must have negative lowerBound and positive upperBound");
         }
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
     }
 
     public static ConfidenceInterval of(int lowerBound, int upperBound) {
@@ -38,14 +31,6 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
 
     public static ConfidenceInterval precise() {
         return PRECISE;
-    }
-
-    public int lowerBound() {
-        return lowerBound;
-    }
-
-    public int upperBound() {
-        return upperBound;
     }
 
     public int minPos(int pos) {
@@ -84,20 +69,6 @@ public class ConfidenceInterval implements Comparable<ConfidenceInterval> {
 
     public static int compare(ConfidenceInterval x, ConfidenceInterval y) {
         return Integer.compare(x.length(), y.length());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConfidenceInterval)) return false;
-        ConfidenceInterval that = (ConfidenceInterval) o;
-        return lowerBound == that.lowerBound &&
-                upperBound == that.upperBound;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lowerBound, upperBound);
     }
 
     @Override

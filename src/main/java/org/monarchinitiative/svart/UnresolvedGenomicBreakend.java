@@ -16,14 +16,10 @@ final class UnresolvedGenomicBreakend extends BaseGenomicRegion<UnresolvedGenomi
     }
 
     static UnresolvedGenomicBreakend instance(CoordinateSystem coordinateSystem) {
-        switch (coordinateSystem) {
-            case ONE_BASED:
-                return ONE_BASED_UNRESOLVED_BREAKEND;
-            case ZERO_BASED:
-                return ZERO_BASED_UNRESOLVED_BREAKEND;
-            default:
-                throw new IllegalStateException("Unexpected coordinate system: " + coordinateSystem);
-        }
+        return switch (coordinateSystem) {
+            case ONE_BASED -> ONE_BASED_UNRESOLVED_BREAKEND;
+            case ZERO_BASED -> ZERO_BASED_UNRESOLVED_BREAKEND;
+        };
     }
 
     @Override

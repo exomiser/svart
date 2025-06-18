@@ -1,6 +1,9 @@
 package org.monarchinitiative.svart;
 
 
+import org.monarchinitiative.svart.coordinates.ImpreciseCoordinates;
+import org.monarchinitiative.svart.coordinates.PreciseCoordinates;
+
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -19,7 +22,7 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
 public sealed interface Coordinates extends Convertible<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
     static Coordinates empty() {
-        return PreciseCoordinates.EMPTY;
+        return PreciseCoordinates.empty();
     }
 
     CoordinateSystem coordinateSystem();
@@ -147,10 +150,27 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
      * @return true indicating intervals a and b overlap or false if they do not.
      */
     public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        if (isEmpty(aSystem, aStart, aEnd) && isEmpty(bSystem, bStart, bEnd)) {
-            return zeroBasedStart(aSystem, aStart) == bEnd && zeroBasedStart(bSystem, bStart) == aEnd;
+        return overlapZeroBased(zeroBasedStart(aSystem, aStart), aEnd, zeroBasedStart(bSystem, bStart), bEnd);
+    }
+
+    /**
+     * Fast zero-based overlap calculation. <b>IMPORTANT: This method requires zero-based coordinates!!!</b>
+     * Determines whether two regions overlap, returning true if they do and false if they do not. Empty intervals are
+     * NOT considered as overlapping if they are at the boundaries of the other interval. However, two empty intervals
+     * with the same start and end coordinates are considered as overlapping. This method is transitive such
+     * that overlap(a, b) = overlap(b, a).
+     *
+     * @param aStart  zero-based start coordinate of interval a
+     * @param aEnd    zero-based end coordinate of interval a
+     * @param bStart  zero-based start coordinate of interval b
+     * @param bEnd    zero-based end coordinate of interval b
+     * @return true indicating intervals a and b overlap or false if they do not.
+     */
+    public static boolean overlapZeroBased(int aStart, int aEnd, int bStart, int bEnd) {
+        if (aStart == aEnd && bStart == bEnd) {
+            return aStart == bEnd;
         }
-        return zeroBasedStart(aSystem, aStart) < bEnd && zeroBasedStart(bSystem, bStart) < aEnd;
+        return aStart < bEnd && bStart < aEnd;
     }
 
     default int overlapLength(Coordinates other) {
@@ -264,12 +284,26 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
         return coordinateSystem == CoordinateSystem.ONE_BASED ? -1 : 0;
     }
 
+    /**
+     * Calculates the end coordinate for an allele based on the given start coordinate, reference bases and coordinate
+     * system.
+     *
+     * @param coordinateSystem the coordinate system of the start coordinate
+     * @param start the starting coordinate of the reference allele
+     * @param ref the reference allele bases
+     * @return the calculated end coordinate
+     */
+    static int calculateEnd(CoordinateSystem coordinateSystem, int start, String ref) {
+        return start + ref.length() + endDelta(coordinateSystem);
+    }
+
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
         Objects.requireNonNull(coordinateSystem);
         if (end < 0) {
             throw new InvalidCoordinatesException("Coordinates " + start + '-' + end + " cannot have end coordinate `" + end + "` with negative value");
         }
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
+            //             if (start < 0) { // for telomeric variants
             if (start <= 0) {
                 throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with zero or negative value");
             }
@@ -287,6 +321,36 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
             }
         }
     }
+
+    /**
+     * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
+     * implementing {@link GenomicInterval} use this method to validate their inputs.
+     *
+     * @param contig           {@link Contig} on which the interval is located
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
+     */
+    default void validateCoordinatesOnContig(Contig contig) {
+        validateCoordinatesOnContig(contig, coordinateSystem(), start(), end());
+    }
+
+    /**
+     * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
+     * implementing {@link GenomicInterval} use this method to validate their inputs.
+     *
+     * @param contig           {@link Contig} on which the interval is located
+     * @param coordinateSystem {@link CoordinateSystem} of the interval.
+     * @param start            interval start
+     * @param end              interval end
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
+     */
+    static void validateCoordinatesOnContig(Contig contig, CoordinateSystem coordinateSystem, int start, int end) {
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
+            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
+        }
+    }
+
 
     static Coordinates of(CoordinateSystem coordinateSystem, int start, int end) {
         return PreciseCoordinates.of(coordinateSystem, start, end);
@@ -321,7 +385,7 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
         //  C   S  L  E
         //  []  1  1  1  (S + L - 1)  ('one-based')
         //  [)  0  1  1  (S + L)      ('zero-based')
-        return PreciseCoordinates.of(coordinateSystem, pos, pos + ref.length() + endDelta(coordinateSystem));
+        return PreciseCoordinates.of(coordinateSystem, pos, calculateEnd(coordinateSystem, pos, ref));
     }
 
     /**
@@ -342,7 +406,7 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
             result = ConfidenceInterval.compare(x.startConfidenceInterval(), y.startConfidenceInterval());
         }
         if (result == 0) {
-            result = Integer.compare(x.end(), y.endWithCoordinateSystem(x.coordinateSystem()));
+            result = Integer.compare(x.end(), y.end());
         }
         if (result == 0) {
             result = ConfidenceInterval.compare(x.endConfidenceInterval(), y.endConfidenceInterval());

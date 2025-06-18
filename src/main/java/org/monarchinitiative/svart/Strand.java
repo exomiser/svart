@@ -19,13 +19,11 @@ public enum Strand {
     }
 
     public static Strand parseStrand(String value) {
-        switch (value) {
-            case "-":
-                return NEGATIVE;
-            case "+":
-            default:
-                return POSITIVE;
-        }
+        return switch (value) {
+            case "-" -> NEGATIVE;
+            case "+" -> POSITIVE;
+            default -> POSITIVE;
+        };
     }
 
     public boolean isPositive() {
@@ -40,7 +38,7 @@ public enum Strand {
         return this == POSITIVE ? NEGATIVE : POSITIVE;
     }
 
-    static int compare(Strand x, Strand y) {
+    public static int compare(Strand x, Strand y) {
         return x.compareTo(y);
     }
 

@@ -16,7 +16,7 @@ import java.util.*;
  * @author <a href="mailto:manuel.holtgrewe@charite.de">Manuel Holtgrewe</a>
  * @since 2.0.0
  */
-public class IntervalTree<T> {
+public final class IntervalTree<T> {
 
     public static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.ZERO_BASED;
 

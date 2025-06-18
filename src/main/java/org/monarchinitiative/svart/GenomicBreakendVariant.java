@@ -1,7 +1,8 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultGenomicBreakendVariant;
-import org.monarchinitiative.svart.util.VcfBreakendFormatter;
+import org.monarchinitiative.svart.variant.DefaultGenomicBreakendVariant;
+import org.monarchinitiative.svart.vcf.VcfBreakendFormatter;
+import org.monarchinitiative.svart.vcf.VcfBreakendResolver;
 
 /**
  * A {@link GenomicBreakendVariant} is a specialised type of {@link GenomicVariant} for representing pairs of
@@ -14,14 +15,14 @@ import org.monarchinitiative.svart.util.VcfBreakendFormatter;
  * 13      123456  bnd_U   C     C[2:321682[    6    PASS    SVTYPE=BND;MATEID=bnd_V;EVENTID=1
  * </pre>
  * Here each record can be represented either as a {@link GenomicVariant} using the exact same values as contained in the
- * VCF record, or using a {@link org.monarchinitiative.svart.util.VcfBreakendResolver} a {@link GenomicBreakendVariant}
+ * VCF record, or using a {@link VcfBreakendResolver} a {@link GenomicBreakendVariant}
  * can be 'resolved'. The resulting strands, positions and sequences can differ significantly from the VCF representation.
  * <p>
  * Given their specialised nature, it is <em>highly</em> recommended to create a standard symbolic {@link GenomicVariant}
  * for most purposes as the REF and ALT values will remain the same as in the VCF file. However, once 'resolved' into a
- * {@link GenomicBreakendVariant} using a {@link org.monarchinitiative.svart.util.VcfBreakendResolver} the REF and ALT
+ * {@link GenomicBreakendVariant} using a {@link VcfBreakendResolver} the REF and ALT
  * alleles will represent the actual sequence changes on that strand. In order to return back to VCF convention,
- * the {@link org.monarchinitiative.svart.util.VcfBreakendFormatter} can be used to re-construct the REF and ALT alleles,
+ * the {@link VcfBreakendFormatter} can be used to re-construct the REF and ALT alleles,
  * although this interface provides a {@link GenomicBreakendVariant#toSymbolicGenomicVariant()} method to do this.
  * <p>
  *
@@ -65,9 +66,9 @@ public interface GenomicBreakendVariant extends GenomicVariant {
     /**
      * A {@link GenomicBreakendVariant} of the given values. It is <em>highly</> recommended to create a standard symbolic
      * {@link GenomicVariant} for most purposes as the REF and ALT values will remain the same as in the VCF file. However,
-     * once 'resolved' into a {@link GenomicBreakendVariant} using a {@link org.monarchinitiative.svart.util.VcfBreakendResolver}
+     * once 'resolved' into a {@link GenomicBreakendVariant} using a {@link VcfBreakendResolver}
      * the REF and ALT alleles will represent the actual sequence changes on that strand. In order to return back to VCF convention,
-     * the {@link org.monarchinitiative.svart.util.VcfBreakendFormatter} can be used to re-construct the REF and ALT alleles
+     * the {@link VcfBreakendFormatter} can be used to re-construct the REF and ALT alleles
      *
      * @param eventId The VCF event ID
      * @param left  The left {@link GenomicBreakend}
@@ -83,7 +84,7 @@ public interface GenomicBreakendVariant extends GenomicVariant {
     /**
      * Returns a new symbolic {@link GenomicVariant} instance created from the current {@link GenomicBreakendVariant}.
      * The returned {@link GenomicVariant} coordinates, ref and alt allele values will match the original input VCF
-     * values supplied to the {@link org.monarchinitiative.svart.util.VcfBreakendResolver}.
+     * values supplied to the {@link VcfBreakendResolver}.
      *
      * @return A {@link GenomicVariant} containing the original VCF values for POS, REF and ALT
      */

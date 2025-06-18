@@ -1,10 +1,16 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.svart.coordinates.CoordinatesFormat;
+import org.monarchinitiative.svart.sequence.NucleotideSeq;
+import org.monarchinitiative.svart.variant.AlleleCache;
+import org.monarchinitiative.svart.variant.IdCache;
 
 import java.util.Objects;
 
 /**
+ * Base class for a {@link GenomicVariant}. This class is intended to be extended by other classes which require general
+ * variant properties. It can be used to represent both sequence and symbolic variants, including breakend variants.
+ * Consider using {@link AbstractGenomicVariant} as a compositional alternative.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseGenomicRegion<T> implements GenomicVariant {
@@ -188,8 +194,8 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             return (T) this;
         }
 
-        String refRevComp = Seq.reverseComplement(ref);
-        String altRevComp = isSymbolic() ? alt : Seq.reverseComplement(alt);
+        String refRevComp = NucleotideSeq.reverseComplement(ref);
+        String altRevComp = isSymbolic() ? alt : NucleotideSeq.reverseComplement(alt);
         return newVariantInstance(contig(), id, other, coordinates().invert(contig()), refRevComp, altRevComp, changeLength, mateId, eventId);
     }
 
@@ -224,18 +230,18 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
     @Override
     public String toString() {
         return "GenomicVariant{" +
-                "contig=" + contigId() +
-                ", id='" + id + '\'' +
-                ", strand=" + strand() +
-                ", " + formatCoordinates() +
-                ", ref='" + ref + '\'' +
-                ", alt='" + alt + '\'' +
-                ", variantType=" + variantType +
-                ", length=" + length() +
-                ", changeLength=" + changeLength +
-                mateIdStr() +
-                eventIdStr() +
-                '}';
+               "contig=" + contigId() +
+               ", id='" + id + '\'' +
+               ", strand=" + strand() +
+               ", " + CoordinatesFormat.formatCoordinates(coordinates()) +
+               ", ref='" + ref + '\'' +
+               ", alt='" + alt + '\'' +
+               ", variantType=" + variantType +
+               ", length=" + length() +
+               ", changeLength=" + changeLength +
+               mateIdStr() +
+               eventIdStr() +
+               '}';
     }
 
     private String mateIdStr() {
@@ -369,71 +375,13 @@ public abstract class BaseGenomicVariant<T extends GenomicVariant> extends BaseG
             }
             this.strand = strand;
             coordinates = coordinates.invert(contig);
-            ref = Seq.reverseComplement(ref);
-            alt = VariantType.isSymbolic(alt) ? alt : Seq.reverseComplement(alt);
+            ref = NucleotideSeq.reverseComplement(ref);
+            alt = VariantType.isSymbolic(alt) ? alt : NucleotideSeq.reverseComplement(alt);
             return self();
         }
 
         protected abstract GenomicVariant build();
 
         protected abstract T self();
-    }
-
-    private static class AlleleCache {
-
-        private static final String A = "A";
-        private static final String T = "T";
-        private static final String G = "G";
-        private static final String C = "C";
-        private static final String NO_CALL = ".";
-        private static final String SPAN_DEL = "*";
-        private static final String N = "N";
-
-        private AlleleCache() {
-        }
-
-        private static String cacheAllele(String alt) {
-            return alt.length() == 1 ? getCachedBase(alt) : alt;
-        }
-
-        private static String getCachedBase(String alt) {
-            char base = alt.charAt(0);
-            return switch (base) {
-                case 'A' -> A;
-                case 'T' -> T;
-                case 'G' -> G;
-                case 'C' -> C;
-                case '.' -> NO_CALL;
-                case '*' -> SPAN_DEL;
-                case 'N' -> N;
-                default -> alt;
-            };
-        }
-    }
-
-    private static class IdCache {
-
-        private static final String MISSING = ".";
-        private static final String EMPTY = "";
-
-        private IdCache() {
-        }
-
-        /**
-         * Returns a cached empty ("") or missing value (".") instance. Nulls will return an empty value. Other
-         * identifiers are returned as input.
-         *
-         * @param id An identifier string.
-         * @return A cached "" or "." instance or the original input value
-         */
-        private static String cacheId(String id) {
-            if (id == null || id.isEmpty()) {
-                return EMPTY;
-            }
-            if (id.length() == 1 && MISSING.equals(id)) {
-                return MISSING;
-            }
-            return id;
-        }
     }
 }

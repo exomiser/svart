@@ -1,6 +1,7 @@
 package org.monarchinitiative.svart.assembly;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  * Utility class for reading {@link GenomicAssembly} objects from NCBI assembly_report.txt files. This class also
  * provides some more contemporary reference assemblies for human and mouse for user convenience.
  */
-public class GenomicAssemblies {
+public final class GenomicAssemblies {
 
     private enum Assembly {
         GRCH37_P13("GCA_000001405.14", "GCF_000001405.25", "GCF_000001405.25_GRCh37.p13_assembly_report.txt"),
@@ -245,7 +246,7 @@ public class GenomicAssemblies {
         String assembliesParentDir = String.format("ftp://ftp.ncbi.nlm.nih.gov/genomes/all/%s/%s/%s/%s", matcher.group("prefix"), acc.substring(0, 3), acc.substring(3, 6), acc.substring(6, 9));
         String fullDirName = null;
         try {
-            URL parentDirUrl = new URL(assembliesParentDir + ";type=d");
+            URL parentDirUrl = URI.create(assembliesParentDir + ";type=d").toURL();
             URLConnection conn = parentDirUrl.openConnection();
             try (InputStream inputStream = conn.getInputStream()) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -258,7 +259,7 @@ public class GenomicAssemblies {
             }
             if (fullDirName != null) {
                 String assemblyReportUrl = assembliesParentDir + "/" + fullDirName + "/" + fullDirName + "_assembly_report.txt";
-                return new URL(assemblyReportUrl);
+                return URI.create(assemblyReportUrl).toURL();
             }
         } catch (IOException e) {
             throw new IllegalStateException(e);

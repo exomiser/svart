@@ -47,17 +47,6 @@ public enum CoordinateSystem {
     // ZERO_BASED start = ONE_BASED start - 1
 
     /**
-     * A 1-start, fully closed coordinate system.
-     * <p>
-     * In this coordinate system, a region is specified by a <em>fully-closed</em> interval. For example, in the sequence
-     * 'ATGC' the bases 'ATG' will be contained in the region [1,3] in a one-based coordinate system. The SAM, VCF, GFF,
-     * Wiggle and HGVS use the 1-based coordinate system.
-     * <p>
-     * This coordinate system is recommended for use with most humans who find counting from 1 more intuitive.
-     */
-    ONE_BASED,
-
-    /**
      * 0-start, right-open coordinate system. In this coordinate system, a region is specified by a <em>left-closed
      * right-open</em> interval.
      * <p>
@@ -69,7 +58,19 @@ public enum CoordinateSystem {
      * <p>
      * Recommended for standard use by the <a href=https://genomestandards.org/standards/genome-coordinates/>GA4GH GKS workstream</a>.
      */
-    ZERO_BASED;
+    ZERO_BASED,
+
+    /**
+     * A 1-start, fully closed coordinate system.
+     * <p>
+     * In this coordinate system, a region is specified by a <em>fully-closed</em> interval. For example, in the sequence
+     * 'ATGC' the bases 'ATG' will be contained in the region [1,3] in a one-based coordinate system. The SAM, VCF, GFF,
+     * Wiggle and HGVS use the 1-based coordinate system.
+     * <p>
+     * This coordinate system is recommended for use with most humans who find counting from 1 more intuitive.
+     */
+    ONE_BASED;
+
 
     /**
      * A 1-start, fully closed coordinate system.
@@ -120,5 +121,9 @@ public enum CoordinateSystem {
             return 0;
         }
         return this == ZERO_BASED ? 1 : -1;
+    }
+
+    public static int compare(CoordinateSystem x, CoordinateSystem y) {
+        return x.compareTo(y);
     }
 }

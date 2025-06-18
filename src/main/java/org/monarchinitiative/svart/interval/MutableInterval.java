@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author <a href="mailto:max.schubach@charite.de">Max Schubach</a>
  * @since 2.0.0
  */
-class MutableInterval<T> implements Comparable<MutableInterval<T>> {
+final class MutableInterval<T> implements Comparable<MutableInterval<T>> {
 
     /**
      * start point of the interval (inclusive)
