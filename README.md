@@ -202,20 +202,20 @@ class ConvertVcfTest {
         // CHR	POS	ID	REF	ALT
         // chr1	12345	rs123456	C	T	6	PASS	.
         GenomicVariant snv = vcfConverter.convert(vcfConverter.parseContig("chr1"), "rs123456", 12345, "C", "T");
-        assertThat(snv, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
+        assertThat(snv, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, "C", "T")));
 
         // symbolic alleles
         // chr1	12345	.	C	<INS>	6	PASS	SVTYPE=INS;END=12345;SVLEN=200
         GenomicVariant ins = vcfConverter.convertSymbolic(vcfConverter.parseContig("chr1"), "", 12345, 12345, "C", "<INS>", 200);
-        assertThat(ins, equalTo(Variant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
+        assertThat(ins, equalTo(GenomicVariant.of(chr1, "rs123456", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12345, 12345, "C", "<INS>", 200)));
 
         // breakend variants
         // 1	12345	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND;MATEID=bnd_V;EVENT=tra2
-        GenomicVariant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("chr1"), "bnd_U", 12345, "C", "C[2:321682[", ConfidenceInterval.precise(), "bnd_V", "tra2");
+        GenomicVariant bnd = vcfConverter.convertBreakend(vcfConverter.parseContig("chr1"), "bnd_U", 12345, "C", "C[2:321682[", "bnd_V", "tra2");
 
-        GenomicBreakend left = Breakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
-        GenomicBreakend right = Breakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
-        assertThat(bnd, equalTo(Variant.of("tra2", left, right, "C", "")));
+        GenomicBreakend left = GenomicBreakend.of(chr1, "bnd_U", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 12346, 12345);
+        GenomicBreakend right = GenomicBreakend.of(chr2, "bnd_V", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 321682, 321681);
+        assertThat(bnd, equalTo(GenomicBreakendVariant.of("tra2", left, right, "C", "")));
     }
 }
 ```
@@ -224,10 +224,10 @@ Multi-allelic sites
 ===
 Another source of errors and confusion for the unprepared are VCF multi-allelic sites where a single VCF record lists two
 or more ALT alleles at a position. In order that the variants can be correctly represented they require 'trimming' to their
-shortest form which, depending on the untrimmed variant can have a different start to what is displayed in the VCF record.
+shortest form, which depending on the untrimmed variant can have a different start to what is displayed in the VCF record.
 
 Again there are several, occasionally opposing, schools of thought on how best to trim a variant left, then right ('right shift')
-or right, then left ('left shift'). The HGVS recommend right shifting, whereas VCF requires left shifting. This is further
+or right, then left ('left shift'). The HGVS recommends right shifting, whereas VCF requires left shifting. This is further
 complicated by requiring a 'padding' base, as VCF does for the reference allele, or removing this base. The svart API 
 provides the `VariantTrimmer` class to enable users to perform this in a strand-safe way.
 
@@ -269,7 +269,7 @@ class BedTests {
     @Test
     public void parseGenomicRegionFromBedFile() {
         // Load the Human GRCh37.13 assembly
-        GenomicAssembly b37 = GenomicAssembly.GRCh37p13();
+        GenomicAssembly b37 = GenomicAssemblies.GRCh37p13();
         // BED uses left-open coordinates, with positions in standard genomic coordinates (i.e. positive strand), with
         // the 6th column indicating the strand. Using the example from - https://grch37.ensembl.org/info/website/upload/bed.html
         GenomicRegion pos1 = parseBedRecord(b37, "chr7\t127471196\t127472363\tPos1\t0\t+");

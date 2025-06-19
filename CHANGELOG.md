@@ -11,7 +11,7 @@ Changelog
 - Moved `Position` and `Bound` semantics into `Coordinates` with new `Coordinates.of()`, `Coordinates.oneBased()`
   and `Coordinates.oneBased()` static constructor methods
 - Changed behaviour of `Coordinates.overlap` such that zero-length intervals are not considered as overlapping if they
-  touch/abut another coordinates boundaries. For example, an insertion directly 5' of a transcript start site will not
+  touch/abut another coordinate's boundaries. For example, an insertion directly 5' of a transcript start site will not
   be considered to overlap the start site.
 - Variant, Breakend and BreakendVariant and their implementations have all had `Genomic` prepended to their names in
   order to try and minimise name clashes with uses in other
@@ -31,6 +31,7 @@ Changelog
   defining `VariantType`, in particular SNV, MNV, DEL, INS. ([issue #67](https://github.com/exomiser/svart/issues/67))
 - Added new `VariantType.DELINS` for indicating a deletion+insertion
   event. ([issue #69](https://github.com/exomiser/svart/issues/69))
+- Added new `VariantType.CNV_TR` for indicating a tandem repeat event in VCF4.4
 - Updated `VariantType.MNV` detection and added ability to detect `VariantType.INV`.
 - Added new methods `startStd()`, `startZeroBased()`, `startZeroBased(strand)`, and their "end" and "oneBased"
   combinations to the `GenomicInterval` class for more concise client code.
@@ -40,4 +41,9 @@ Changelog
 - Added new `VcfBreakendFormatter` functions, `makePosVcfField()` and `makeRefVcfField()`, to allow easy conversion
   of `GenomicBreakendVariant` `start`, `ref`, and `alt` values back to symbolic variant representation.
 - Added extensive documentation to various classes to explain their relationships and usage contexts.
+- Added new `CompactSequenceVariant` and related [`VariantKey`](https://www.biorxiv.org/content/10.1101/473744v3) 
+  implementation for compact representation of short sequence variants.
+- Renamed `Seq` class to `NucleotideSeq`
+- Minor re-organisation of packages to better represent the classes and concepts of the library. e.g. `util` package has
+  been split into new `sequence` and `vcf` packages.
 - Updated Java requirement to 17
