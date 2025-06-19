@@ -297,26 +297,32 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
         return start + ref.length() + endDelta(coordinateSystem);
     }
 
+    /**
+     * Checks that a set of coordinates are within the contig start for the coordinate system and in the correct
+     * orientation such that the end must occur after the start. Exceptions to this rule are:
+     * <ul>
+     *   <li>One-based insertions are of the form start = end + 1 e.g. [1, 0] for an insertion point before the first base
+     *   of a contig.</li>
+     *   <li>For virtual telomeric sequences occurring before or after the contig, a single base at position [0, 0] or
+     *   [-1, 0) will be considered as valid.</li>
+     * </ul>
+     */
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
         Objects.requireNonNull(coordinateSystem);
-        if (end < 0) {
-            throw new InvalidCoordinatesException("Coordinates " + start + '-' + end + " cannot have end coordinate `" + end + "` with negative value");
-        }
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
-            //             if (start < 0) { // for telomeric variants
-            if (start <= 0) {
-                throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with zero or negative value");
+            if (start < 0) {
+                throw new CoordinatesOutOfBoundsException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with a negative value");
             }
             if (start > end + 1) {
-                // region [2,1] is an empty region, equivalent to (1,2)
+                // region [2,1] is an empty region, equivalent to [1,1)
                 throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
             }
         } else if (coordinateSystem == ZERO_BASED) {
-            if (start < 0) {
-                throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with negative value");
+            if (start < -1) {
+                throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with a negative value");
             }
             if (start > end) {
-                // region [1,1) is an empty region, equivalent to (0,2)
+                // region [1,1) is an empty region, equivalent to [2,1]
                 throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " must have a start position before the end position");
             }
         }
@@ -335,18 +341,20 @@ public sealed interface Coordinates extends Convertible<Coordinates> permits Pre
 
     /**
      * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
-     * implementing {@link GenomicInterval} use this method to validate their inputs.
+     * implementing {@link GenomicInterval} use this method to validate their inputs. Coordinates are given a +/-1 base
+     * outside the length of a contig to enable representation of virtual telomeric sequences.
      *
      * @param contig           {@link Contig} on which the interval is located
      * @param coordinateSystem {@link CoordinateSystem} of the interval.
      * @param start            interval start
      * @param end              interval end
-     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig +/- one base for
+     * telomeres.
      */
     static void validateCoordinatesOnContig(Contig contig, CoordinateSystem coordinateSystem, int start, int end) {
-        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 0 || end > contig.length() + 1)) {
             throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < -1 || end > contig.length() + 1)) {
             throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
         }
     }

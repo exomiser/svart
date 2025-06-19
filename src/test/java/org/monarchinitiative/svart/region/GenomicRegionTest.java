@@ -23,11 +23,11 @@ class GenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             // given a coordinate on a contig of length 5
-            "ONE_BASED,   5,  6",
-            "ONE_BASED,   6,  6",
+            "ONE_BASED,   6,  7",
+            "ONE_BASED,   7,  7",
 
-            "ZERO_BASED,  5,  6",
-            "ZERO_BASED,  6,  6",
+            "ZERO_BASED,  6,  7",
+            "ZERO_BASED,  7,  7",
     })
     void coordinatesOutOfBounds(CoordinateSystem coordinateSystem, int start, int end) {
         Contig contig = TestContig.of(1, 5);

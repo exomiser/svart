@@ -1,7 +1,6 @@
 package org.monarchinitiative.svart.variant;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.Contig;
@@ -18,12 +17,8 @@ class DefaultSequenceVariantTest {
 
     private final Contig chr1 = TestContig.of(1, 1000);
 
-    /**
-     * Issue #
-     */
-    @Disabled("telomeric")
     @Test
-    void allowsTelomericVariants() {
+    void telomericSequenceVariant() {
         Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, 1001, 1002);
         GenomicVariant telomericVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, coordinates, "AT", "A");
         GenomicVariant oppositeStrand = telomericVariant.toOppositeStrand();

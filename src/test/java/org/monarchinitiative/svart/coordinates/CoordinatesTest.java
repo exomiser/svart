@@ -54,6 +54,12 @@ class CoordinatesTest {
         private final Coordinates instance = Coordinates.zeroBased(0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise());
 
         @Test
+        void impreciseConstructorWithEmptyCiReturnsPrecise() {
+            Coordinates actuallyPrecise = Coordinates.zeroBased(0, ConfidenceInterval.of(0, 0), 10, ConfidenceInterval.precise());
+            assertThat(actuallyPrecise, equalTo(Coordinates.zeroBased(0,  10)));
+        }
+
+        @Test
         void impreciseToPrecise() {
             assertThat(instance, equalTo(Coordinates.of(CoordinateSystem.zeroBased(), 0, ConfidenceInterval.of(0, 2), 10, ConfidenceInterval.precise())));
             assertThat(instance.isPrecise(), is(false));
@@ -245,14 +251,27 @@ class CoordinatesTest {
     @Nested
     class Validate {
 
+        private final Contig contig = TestContig.of(1, 5);
+
+        // Here the telomeres are represented as N at
+        // positions 0 and 6 which lie before and after
+        // the contig
+        //  ctg        <------------------>
+        //  seq   | N | A | T | G | T | G | N |
+        //  1-b   | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+        //  0-b  -1   0   1   2   3   4   5   6
+
         @ParameterizedTest
         @CsvSource({
                 // given a coordinate on a contig of length 5
+                "ONE_BASED,   0,  0", // last base of telomere before start
+                "ONE_BASED,   0,  1", // insertion before start
                 "ONE_BASED,   1,  0",
                 "ONE_BASED,   1,  1",
                 "ONE_BASED,   1,  5",
 
-                "ZERO_BASED,  0,  0",
+                "ZERO_BASED, -1, 0",  // last telomere base before start
+                "ZERO_BASED,  0,  0", // insertion before start of contig
                 "ZERO_BASED,  0,  1",
                 "ZERO_BASED,  0,  5",
         })
@@ -260,21 +279,58 @@ class CoordinatesTest {
             assertDoesNotThrow(() -> Coordinates.validateCoordinates(coordinateSystem, start, end));
         }
 
-
         @ParameterizedTest
         @CsvSource({
                 // given a coordinate on a contig of length 5
+                "ONE_BASED, -1, -1", // too far into telomere before start
                 "ONE_BASED,   1,  -1",
-                "ONE_BASED,   0,  1",
-                "ONE_BASED,   0,  0",
-                "ONE_BASED,   5,  3",
+                "ONE_BASED,   5,  3", // inverted
 
-                "ZERO_BASED,  5,  4",
+                "ZERO_BASED, -2, -1", // too far into telomere before start
                 "ZERO_BASED,  0,  -1",
-                "ZERO_BASED,  -1,  0",
+                "ZERO_BASED,  5,  4", // inverted
         })
         void invalidCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
             assertThrows(InvalidCoordinatesException.class, () -> Coordinates.validateCoordinates(coordinateSystem, start, end));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "ONE_BASED, 0, 0", // last telomere base before start
+                "ONE_BASED, 1, 0", // insertion before start of contig
+                "ONE_BASED, 0, 6", // T2T
+                "ONE_BASED, 1, 1", // first base
+                "ONE_BASED, 1, 5", // whole contig
+                "ONE_BASED, 5, 5", // last base
+                "ONE_BASED, 6, 5", // insertion after end of contig
+                "ONE_BASED, 6, 6", // first telomere base after end
+
+                "ZERO_BASED, -1, 0", // last telomere base before start
+                "ZERO_BASED, 0, 0", // insertion before start of contig
+                "ZERO_BASED, -1, 6", // T2T
+                "ZERO_BASED, 0, 1", // first base
+                "ZERO_BASED, 0, 5", // whole contig
+                "ZERO_BASED, 4, 5", // last base
+                "ZERO_BASED, 5, 5", // insertion after end of contig
+                "ZERO_BASED, 5, 6", // first telomere base after end
+        })
+        void validateOnContigOk(CoordinateSystem coordinateSystem, int start, int end) {
+            Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+            assertDoesNotThrow(() -> coordinates.validateCoordinatesOnContig(contig));
+            // check inverting also produces valid coordinates
+            Coordinates inverted = coordinates.invert(contig);
+            assertDoesNotThrow(() -> inverted.validateCoordinatesOnContig(contig));
+            assertThat(inverted.invert(contig), equalTo(coordinates));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "ONE_BASED, 7, 7", // too far into telomere after end
+                "ZERO_BASED, 6, 7", // too far into telomere after end
+        })
+        void validateOnContigOutOfBounds(CoordinateSystem coordinateSystem, int start, int end) {
+            Coordinates coordinates = Coordinates.of(coordinateSystem, start, end);
+            assertThrows(CoordinatesOutOfBoundsException.class, () -> coordinates.validateCoordinatesOnContig(contig));
         }
     }
 

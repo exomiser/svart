@@ -29,15 +29,6 @@ class DefaultSymbolicVariantTest {
         assertThat(exception.getMessage(), containsString("Illegal non-symbolic alt allele 'TAA'"));
     }
 
-    @Disabled("telomeric")
-    @Test
-    void telomericBreakend() {
-        // chrUn_KI270435v1 92984 SV_318_2 N N[chr15:17081574[ 80
-        DefaultSymbolicVariant variant = DefaultSymbolicVariant.of(GenomicAssemblies.GRCh38p13().contigByName("chrUn_KI270435v1"), Strand.POSITIVE, CoordinateSystem.ONE_BASED, 92984, 92984, "N", "N[chr15:17081574[", 0);
-        System.out.println(variant.contig());
-        System.out.println(variant);
-    }
-
     @Test
     void shouldBeSymbolic() {
         GenomicVariant instance = GenomicVariant.of(chr1, "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 1, 1, "A", "<INS>", 100);
@@ -223,6 +214,18 @@ class DefaultSymbolicVariantTest {
         assertThat(instance.changeLength(), equalTo(0));
         assertThat(instance.mateId(), equalTo("bnd_v"));
         assertThat(instance.eventId(), equalTo("event_1"));
+    }
+
+    @Test
+    void symbolicTelomericBreakend() {
+        // chrUn_KI270435v1 92984 SV_318_2 N N[chr15:17081574[ 80
+        DefaultSymbolicVariant variant = DefaultSymbolicVariant.of(GenomicAssemblies.GRCh38p13().contigByName("chrUn_KI270435v1"), "SV_318_2", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 92984, 92984, "N", "N[chr15:17081574[", 0);
+        assertThat(variant.contigName(), equalTo("HSCHRUN_RANDOM_128"));
+        assertThat(variant.coordinates(), equalTo(Coordinates.of(CoordinateSystem.ONE_BASED, 92984, 92984)));
+        assertThat(variant.id(), equalTo("SV_318_2"));
+        assertThat(variant.ref(), equalTo("N"));
+        assertThat(variant.alt(), equalTo("N[chr15:17081574["));
+        assertThat(variant.isBreakend(), equalTo(true));
     }
 
     @Test
