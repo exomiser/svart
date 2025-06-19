@@ -74,6 +74,9 @@ public enum VariantType {
 
     INV,
     CNV,
+    // VCF 4.4 addition for tandem repeat expansions
+    // (https://samtools.github.io/hts-specs/VCFv4.4.pdf#subsection.5.7)
+    CNV_TR(CNV),
     BND,
 
     // Non-canonical types used by other progs,
@@ -182,7 +185,9 @@ public enum VariantType {
                 return CNV_GAIN;
             case "CNV:LOSS":
                 return CNV_LOSS;
-
+            // VCF 4.4+ Tandem repeat
+            case "CNV:TR":
+                return CNV_TR;
             default:
                 // fall-through
         }

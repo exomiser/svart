@@ -72,6 +72,7 @@ class VariantTypeTest {
             "N, <INS:ME:ALU>,    INS_ME_ALU",
             "N, <CNV:GAIN>,    CNV_GAIN",
             "N, C[2:12345[,    BND",
+            "N, <CNV:TR>,   CNV_TR",
     })
     void parseTypeRefAlt(String ref, String alt, VariantType baseType) {
         assertThat(VariantType.parseType(ref, alt), equalTo(baseType));
@@ -117,6 +118,7 @@ class VariantTypeTest {
             "INS_ME, INS",
             "INS_ME_ALU, INS",
             "CNV_GAIN, CNV",
+            "CNV_TR, CNV",
             "BND, BND"
     })
     void testGetBaseTypeFromSubType(VariantType subType, VariantType baseType) {
@@ -131,6 +133,7 @@ class VariantTypeTest {
         assertThat(VariantType.INS_ME.subType(), equalTo(VariantType.INS_ME));
         assertThat(VariantType.INS_ME_HERV.subType(), equalTo(VariantType.INS_ME));
         assertThat(VariantType.BND.subType(), equalTo(VariantType.BND));
+        assertThat(VariantType.CNV_TR.subType(), equalTo(VariantType.CNV_TR));
     }
 
     @Test
