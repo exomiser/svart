@@ -19,8 +19,8 @@ class DefaultSequenceVariantTest {
 
     @Test
     void telomericSequenceVariant() {
-        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, 1001, 1002);
-        GenomicVariant telomericVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, coordinates, "AT", "A");
+        Coordinates coordinates = Coordinates.of(CoordinateSystem.ONE_BASED, 1001, 1001);
+        GenomicVariant telomericVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, coordinates, "A", "ATT");
         GenomicVariant oppositeStrand = telomericVariant.toOppositeStrand();
         assertThat(oppositeStrand.toOppositeStrand(), equalTo(telomericVariant));
     }
