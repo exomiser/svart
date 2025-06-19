@@ -11,7 +11,11 @@ import org.monarchinitiative.svart.variant.DefaultGenomicBreakend;
 public interface GenomicBreakend extends GenomicRegion {
 
     static GenomicBreakend unresolved(CoordinateSystem coordinateSystem) {
-        return UnresolvedGenomicBreakend.instance(coordinateSystem);
+        return UnresolvedGenomicBreakend.of(coordinateSystem);
+    }
+
+    static GenomicBreakend unresolved(CoordinateSystem coordinateSystem, String id) {
+        return UnresolvedGenomicBreakend.of(coordinateSystem, id);
     }
 
     /**
@@ -42,7 +46,7 @@ public interface GenomicBreakend extends GenomicRegion {
      * @return <code>true</code> if the breakend is unresolved
      */
     default boolean isUnresolved() {
-        return this.equals(unresolved(coordinateSystem()));
+        return false;
     }
 
     static GenomicBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {

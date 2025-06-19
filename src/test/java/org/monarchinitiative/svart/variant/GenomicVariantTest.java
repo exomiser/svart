@@ -1,12 +1,14 @@
 package org.monarchinitiative.svart.variant;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.ConfidenceInterval;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
+import org.monarchinitiative.svart.vcf.VcfConverter;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -324,13 +326,85 @@ class GenomicVariantTest {
         assertThat(instance, equalTo(other));
     }
 
-    @Disabled("telomeric")
-    @Test
-    void telomericVariantsOutOfContigBoundsTest() {
-        // chrUn_KI270435v1	92984	667974	N	CGGAGTGGGGTGGAATGGAATCAACGCGAGTGCAGGGGAATGGAA	.	PASS	SVMETHOD=DYSGUv1.8.3;SVTYPE=INS;END=92984;CHR2=chrUn_KI270435v1;GRP=667974;NGRP=1;CT=3to5;CIPOS95=0;CIEND95=0;SVLEN=45;KIND=extra-regional;GC=46.85;NEXP=10;STRIDE=5;EXPSEQ=ggaatggaaT;RPOLY=90;OL=0;SU=54;WR=0;PE=0;SR=0;SC=54;BND=10;LPREC=0;RT=pe
-        Contig chrUnKI270435v1 = GenomicAssemblies.GRCh38p13().contigByName("chrUn_KI270435v1");
-        System.out.println(chrUnKI270435v1);
-        GenomicVariant instance = GenomicVariant.of(chrUnKI270435v1, Strand.POSITIVE, Coordinates.oneBased(92984, 92984),"N", "CGGAGTGGGGTGGAATGGAATCAACGCGAGTGCAGGGGAATGGAA", 44);
-        System.out.println(instance);
+    /**
+     * Issue #72 "Telomeric variants throwing CoordinatesOutOfBoundsException"
+     */
+    @Nested
+    class TelomericVariantsShouldNotThrowCoordinatesOutOfBoundsErrors {
+
+        private static final Contig chr15 = GenomicAssemblies.GRCh38p13().contigById(15);
+        private static final Contig chrUnKI270435v1 = GenomicAssemblies.GRCh38p13().contigByName("chrUn_KI270435v1");
+        private static final VcfConverter VCF_CONVERTER = new VcfConverter(GenomicAssemblies.GRCh38p13(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+
+        // test start and end telomeric breakends and insertions.
+        @Test
+        void testsTelomericCompactSequenceVariant() {
+            Coordinates coordinates = Coordinates.oneBased(0, 0);
+            GenomicVariant telomericVariant = GenomicVariant.of(chr1, "", Strand.POSITIVE, coordinates, "N", "NATT");
+            // This will actually be a DefaultSequenceVariant as 'N' is not representable in a 2-bit base encoding
+            GenomicVariant oppositeStrand = telomericVariant.toOppositeStrand();
+            assertThat(oppositeStrand.toOppositeStrand(), equalTo(telomericVariant));
+            GenomicVariant oppositeStrandZeroBased = oppositeStrand.toZeroBased();
+            GenomicVariant zeroBased = oppositeStrandZeroBased.toOppositeStrand();
+            assertThat(zeroBased.toOneBased(), equalTo(telomericVariant));
+        }
+
+        @Test
+        void testTelomericSequenceVariant() {
+            // chrUn_KI270435v1	92984	667974	N	CGGAGTGGGGTGGAATGGAATCAACGCGAGTGCAGGGGAATGGAA	.	PASS	SVMETHOD=DYSGUv1.8.3;SVTYPE=INS;END=92984;CHR2=chrUn_KI270435v1;GRP=667974;NGRP=1;CT=3to5;CIPOS95=0;CIEND95=0;SVLEN=45;KIND=extra-regional;GC=46.85;NEXP=10;STRIDE=5;EXPSEQ=ggaatggaaT;RPOLY=90;OL=0;SU=54;WR=0;PE=0;SR=0;SC=54;BND=10;LPREC=0;RT=pe
+            GenomicVariant instance = GenomicVariant.of(chrUnKI270435v1, Strand.POSITIVE, Coordinates.oneBased(92984, 92984),"N", "CGGAGTGGGGTGGAATGGAATCAACGCGAGTGCAGGGGAATGGAA", 44);
+            GenomicVariant oppositeStrand = instance.toOppositeStrand();
+            GenomicVariant oppositeStrandZeroBased = oppositeStrand.toZeroBased();
+            GenomicVariant zeroBased = oppositeStrandZeroBased.toOppositeStrand();
+            assertThat(zeroBased.toOneBased(), equalTo(instance));
+        }
+
+        @Test
+        void testVcfConverterConvertSequenceTelomericVariant() {
+            GenomicVariant instance = VCF_CONVERTER.convert(chrUnKI270435v1, "", 92984,"N", "CGGAGTGGGGTGGAATGGAATCAACGCGAGTGCAGGGGAATGGAA");
+            GenomicVariant oppositeStrand = instance.toOppositeStrand();
+            GenomicVariant oppositeStrandZeroBased = oppositeStrand.toZeroBased();
+            GenomicVariant zeroBased = oppositeStrandZeroBased.toOppositeStrand();
+            assertThat(zeroBased.toOneBased(), equalTo(instance));
+        }
+
+        @Test
+        void testVcfConverterConvertSymbolicTelomericVariant() {
+            // chr15	17081574	SV_318_1	N	]chrUn_KI270435v1:92984]N	80	UnexpectedCoverage	SVTYPE=BND;REGIONA=17081574,17081856;REGIONB=92658,92984;LFA=216,154;LFB=216,154;LTE=26,0;CTG=.;E127_CHROM=SV_318_1|chr15;E127_POS=SV_318_1|17081574;E127_QUAL=SV_318_1|80;E127_FILTERS=SV_318_1|UnexpectedCoverage;E127_SAMPLE=SV_318_1|E127|GT:1/1|CN:.|COV:128.73498233215548:0:163.76452599388378|DV:26|RV:0|LQ:0.6362869198312237:0.5879284649776453|RR:19:0|DR:44:0;E127_INFO=SV_318_1|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.;SUPP_VEC=1;set=filterIntiddit;FOUNDBY=1;tiddit_CHROM=SV_318_1|chr15;tiddit_POS=SV_318_1|17081574;tiddit_QUAL=SV_318_1|80;tiddit_FILTERS=SV_318_1|UnexpectedCoverage;tiddit_SAMPLE=SV_318_1;tiddit_INFO=SV_318_1|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.|SUPP_VEC:1;svdb_origin=tiddit;SUPP_VEC=001;AC=2;AN=2	GT:CN:COV:DV:RV:LQ:RR:DR	1/1:.:128.735,0,163.765:26:0:0.636287,0.587928:19,0:44,0
+            // chrUn_KI270435v1	92984	SV_318_2	N	N[chr15:17081574[	80	UnexpectedCoverage	SVTYPE=BND;REGIONA=17081574,17081856;REGIONB=92658,92984;LFA=216,154;LFB=216,154;LTE=26,0;CTG=.;E127_CHROM=SV_318_2|chrUn_KI270435v1;E127_POS=SV_318_2|92984;E127_QUAL=SV_318_2|80;E127_FILTERS=SV_318_2|UnexpectedCoverage;E127_SAMPLE=SV_318_2|E127|GT:1/1|CN:.|COV:128.73498233215548:0:163.76452599388378|DV:26|RV:0|LQ:0.6362869198312237:0.5879284649776453|RR:19:0|DR:44:0;E127_INFO=SV_318_2|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.;SUPP_VEC=1;set=filterIntiddit;FOUNDBY=1;tiddit_CHROM=SV_318_2|chrUn_KI270435v1;tiddit_POS=SV_318_2|92984;tiddit_QUAL=SV_318_2|80;tiddit_FILTERS=SV_318_2|UnexpectedCoverage;tiddit_SAMPLE=SV_318_2;tiddit_INFO=SV_318_2|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.|SUPP_VEC:1;svdb_origin=tiddit;SUPP_VEC=001;AC=2;AN=2	GT:CN:COV:DV:RV:LQ:RR:DR	1/1:.:128.735,0,163.765:26:0:0.636287,0.587928:19,0:44,0
+            GenomicVariant sv318_1 = VCF_CONVERTER.convertSymbolic(chr15, "SV_318_1", 17081574, 17081574, "N", "]chrUn_KI270435v1:92984]N", 0, "SV_318_2", "");
+            assertThat(sv318_1.coordinates(), equalTo(Coordinates.oneBased(17081574, 17081574)));
+            assertThat(sv318_1.ref(), equalTo("N"));
+            assertThat(sv318_1.alt(), equalTo("]chrUn_KI270435v1:92984]N"));
+            assertThat(sv318_1.variantType(), equalTo(VariantType.BND));
+            assertThat(sv318_1.mateId(), equalTo("SV_318_2"));
+
+            GenomicVariant sv318_2 = VCF_CONVERTER.convertSymbolic(chrUnKI270435v1, "SV_318_2", 92984, 92984, "N", "N[chr15:17081574[", 0, "SV_318_1", "");
+            assertThat(sv318_2.coordinates(), equalTo(Coordinates.oneBased(92984, 92984))); // telomeric virtual base
+            assertThat(sv318_2.ref(), equalTo("N"));
+            assertThat(sv318_2.alt(), equalTo("N[chr15:17081574["));
+            assertThat(sv318_2.variantType(), equalTo(VariantType.BND));
+            assertThat(sv318_2.mateId(), equalTo("SV_318_1"));
+        }
+
+        @Test
+        void testVcfConverterConvertBreakendTelomericVariant() {
+            // chr15	17081574	SV_318_1	N	]chrUn_KI270435v1:92984]N	80	UnexpectedCoverage	SVTYPE=BND;REGIONA=17081574,17081856;REGIONB=92658,92984;LFA=216,154;LFB=216,154;LTE=26,0;CTG=.;E127_CHROM=SV_318_1|chr15;E127_POS=SV_318_1|17081574;E127_QUAL=SV_318_1|80;E127_FILTERS=SV_318_1|UnexpectedCoverage;E127_SAMPLE=SV_318_1|E127|GT:1/1|CN:.|COV:128.73498233215548:0:163.76452599388378|DV:26|RV:0|LQ:0.6362869198312237:0.5879284649776453|RR:19:0|DR:44:0;E127_INFO=SV_318_1|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.;SUPP_VEC=1;set=filterIntiddit;FOUNDBY=1;tiddit_CHROM=SV_318_1|chr15;tiddit_POS=SV_318_1|17081574;tiddit_QUAL=SV_318_1|80;tiddit_FILTERS=SV_318_1|UnexpectedCoverage;tiddit_SAMPLE=SV_318_1;tiddit_INFO=SV_318_1|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.|SUPP_VEC:1;svdb_origin=tiddit;SUPP_VEC=001;AC=2;AN=2	GT:CN:COV:DV:RV:LQ:RR:DR	1/1:.:128.735,0,163.765:26:0:0.636287,0.587928:19,0:44,0
+            // chrUn_KI270435v1	92984	SV_318_2	N	N[chr15:17081574[	80	UnexpectedCoverage	SVTYPE=BND;REGIONA=17081574,17081856;REGIONB=92658,92984;LFA=216,154;LFB=216,154;LTE=26,0;CTG=.;E127_CHROM=SV_318_2|chrUn_KI270435v1;E127_POS=SV_318_2|92984;E127_QUAL=SV_318_2|80;E127_FILTERS=SV_318_2|UnexpectedCoverage;E127_SAMPLE=SV_318_2|E127|GT:1/1|CN:.|COV:128.73498233215548:0:163.76452599388378|DV:26|RV:0|LQ:0.6362869198312237:0.5879284649776453|RR:19:0|DR:44:0;E127_INFO=SV_318_2|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.;SUPP_VEC=1;set=filterIntiddit;FOUNDBY=1;tiddit_CHROM=SV_318_2|chrUn_KI270435v1;tiddit_POS=SV_318_2|92984;tiddit_QUAL=SV_318_2|80;tiddit_FILTERS=SV_318_2|UnexpectedCoverage;tiddit_SAMPLE=SV_318_2;tiddit_INFO=SV_318_2|SVTYPE:BND|REGIONA:17081574:17081856|REGIONB:92658:92984|LFA:216:154|LFB:216:154|LTE:26:0|CTG:.|SUPP_VEC:1;svdb_origin=tiddit;SUPP_VEC=001;AC=2;AN=2	GT:CN:COV:DV:RV:LQ:RR:DR	1/1:.:128.735,0,163.765:26:0:0.636287,0.587928:19,0:44,0
+            GenomicBreakendVariant sv318_1 = VCF_CONVERTER.convertBreakend(chr15, "SV_318_1", 17081574, "N", "]chrUn_KI270435v1:92984]N", "SV_318_2", "");
+            assertThat(sv318_1.coordinates(), equalTo(Coordinates.oneBased(84909616, 84909615))); // -ve strand
+            assertThat(sv318_1.strand(), equalTo(Strand.NEGATIVE));
+            assertThat(sv318_1.ref(), equalTo("N"));
+            assertThat(sv318_1.alt(), equalTo(""));
+            assertThat(sv318_1.variantType(), equalTo(VariantType.BND));
+            assertThat(sv318_1.mateId(), equalTo("SV_318_2"));
+            GenomicBreakendVariant sv318_2 = VCF_CONVERTER.convertBreakend(chrUnKI270435v1, "SV_318_2", 92984, "N", "N[chr15:17081574[", "SV_318_1", "");
+            assertThat(sv318_2.coordinates(), equalTo(Coordinates.oneBased(92985, 92984))); // insert after telomeric virtual base
+            assertThat(sv318_2.strand(), equalTo(Strand.POSITIVE));
+            assertThat(sv318_2.ref(), equalTo("N"));
+            assertThat(sv318_2.alt(), equalTo(""));
+            assertThat(sv318_2.variantType(), equalTo(VariantType.BND));
+            assertThat(sv318_2.mateId(), equalTo("SV_318_1"));
+        }
     }
 }

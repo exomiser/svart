@@ -85,11 +85,11 @@ class DefaultGenomicRegionTest {
     @ParameterizedTest
     @CsvSource({
             "POSITIVE, ONE_BASED,  10,  1",
-            "POSITIVE, ONE_BASED,   0, 10",
-            "POSITIVE, ONE_BASED,   0, -1",
+            "POSITIVE, ONE_BASED,   -1, 10",
+            "POSITIVE, ONE_BASED,   -1, -1",
             "POSITIVE, ZERO_BASED, 10,  0",
             "POSITIVE, ZERO_BASED,  0, -1",
-            "POSITIVE, ZERO_BASED, -1, 10",
+            "POSITIVE, ZERO_BASED, -2, 10",
     })
     void testThrowsExceptionWithInvalidCoordinates(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd) {
         assertThrows(InvalidCoordinatesException.class, () -> GenomicRegion.of(chr1, inputStrand, inputCoords, inputStart, inputEnd));
@@ -97,8 +97,8 @@ class DefaultGenomicRegionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, ONE_BASED,  1, 11",
-            "POSITIVE, ZERO_BASED, 0, 11",
+            "POSITIVE, ONE_BASED,  0, 12",
+            "POSITIVE, ZERO_BASED, 0, 12",
     })
     void testThrowsExceptionWithCoordinatesOutOfBounds(Strand inputStrand, CoordinateSystem inputCoords, int inputStart, int inputEnd) {
         assertThrows(CoordinatesOutOfBoundsException.class, () -> GenomicRegion.of(chr1, inputStrand, inputCoords, inputStart, inputEnd));

@@ -5,21 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.ConfidenceInterval;
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Coordinates;
-import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.GenomicBreakend;
-import org.monarchinitiative.svart.GenomicBreakendVariant;
-import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -52,6 +45,301 @@ class VcfBreakendResolverTest {
     }
 
     @Nested
+    class VcfSpecTests {
+
+        private static final GenomicAssembly HG19 = GenomicAssemblies.GRCh37p13();
+        private static final VcfBreakendResolver HG19_RESOLVER = new VcfBreakendResolver(HG19);
+        // CASE REF  ALT     Meaning                                                    Example
+        // 1    s    t[p[    piece extending to the right of p is joined after t        t|p+>
+        // 2    s    t]p]    reverse comp piece extending left of p is joined after t   t|<-p
+        // 3    s    ]p]t    piece extending to the left of p is joined before t        <+p|t
+        // 4    s    [p[t    reverse comp piece extending right of p is joined before t p->|t
+
+        // * #CHROM  POS     ID      REF   ALT            QUAL FILTER  INFO
+        // * 2       321681  bnd_W   G     G]17:198982]   6    PASS    SVTYPE=BND;MATEID=bnd_Y;EVENTID=2  (CASE_2)
+        // * 2       321682  bnd_V   T     ]13:123456]T   6    PASS    SVTYPE=BND;MATEID=bnd_U;EVENTID=1  (CASE_3)
+        // * 13      123456  bnd_U   C     C[2:321682[    6    PASS    SVTYPE=BND;MATEID=bnd_V;EVENTID=1  (CASE_1)
+        // * 13      123457  bnd_X   A     [17:198983[A   6    PASS    SVTYPE=BND;MATEID=bnd_Z;EVENTID=3  (CASE_4)
+        // * 17      198982  bnd_Y   A     A]2:321681]    6    PASS    SVTYPE=BND;MATEID=bnd_W;EVENTID=2  (CASE_2)
+        // * 17      198983  bnd_Z   C     [13:123457[C   6    PASS    SVTYPE=BND;MATEID=bnd_X;EVENTID=3  (CASE_2)
+
+        /**
+         * 5.4 Specifying complex rearrangements with breakends
+         * <p>
+         * An arbitrary rearrangement event can be summarized as a set of novel adjacencies. Each adjacency ties together
+         * 2 breakends. The two breakends at either end of a novel adjacency are called mates.
+         * <p>
+         * There is one line of VCF (i.e. one record) for each of the two breakends in a novel adjacency. A breakend record is
+         * identified with the tag "SVTYPE=BND" in the INFO field. The REF field of a breakend record indicates a base or
+         * sequence s of bases beginning at position POS, as in all VCF records. The ALT field of a breakend record indicates
+         * a replacement for s. This "breakend replacement" has three parts:
+         * <ol>
+         * <li>The string t that replaces places s. The string t may be an extended version of s if some novel bases are inserted
+         * during the formation of the novel adjacency.</li>
+         * <li>The position p of the mate breakend, indicated by a string of the form "chr:pos". This is the location of the
+         * first mapped base in the piece being joined at this novel adjacency.</li>
+         * <li>The direction that the joined sequence continues in, starting from p. This is indicated by the orientation of
+         * square brackets surrounding p.</li>
+         * </ol>
+         * <p>
+         * These 3 elements are combined in 4 possible ways to create the ALT. In each of the 4 cases, the assertion is that s
+         * is replaced with t, and then some piece starting at position p is joined to t. The cases are:
+         * <p>
+         * <pre>
+         * REF	ALT Meaning
+         * s	t[p[	piece extending to the right of p is joined after t
+         * s	t]p]	reverse comp piece extending left of p is joined after t
+         * s	]p]t	piece extending to the left of p is joined before t
+         * s	[p[t	reverse comp piece extending right of p is joined before t
+         * </pre>
+         * <p>
+         * The example in Figure 1 shows a 3-break operation involving 6 breakends. It exemplifies all possible orientations
+         * of breakends in adjacencies. Notice how the ALT field expresses the orientation of the breakends.
+         * <p>
+         * <pre>
+         * #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+         * 2	321681	bnd_W	G	G]17:198982]	6	PASS	SVTYPE=BND
+         * 2	321682	bnd_V	T	]13:123456]T	6	PASS	SVTYPE=BND
+         * 13	123456	bnd_U	C	C[2:321682[	6	PASS	SVTYPE=BND
+         * 13	123457	bnd_X	A	[17:198983[A	6	PASS	SVTYPE=BND
+         * 17	198982	bnd_Y	A	A]2:321681]	6	PASS	SVTYPE=BND
+         * 17	198983	bnd_Z	C	[13:123457[C	6	PASS	SVTYPE=BND
+         * </pre>
+         */
+        @ParameterizedTest
+        @CsvSource({
+                // CHROM  POS     ID      REF   ALT MATEID EVENTID, LEFT_START, LEFT_END, RIGHT_CHROM, RIGHT_START, RIGHT_END, RIGHT_STRAND
+                "2, 321681, bnd_W, G, G]17:198982], bnd_Y, 2, 321682, 321681, 17, 198983, 198982, NEGATIVE",
+                "2, 321682, bnd_V, T, ]13:123456]T, bnd_U, 1, 321682, 321681, 13, 123457, 123456, POSITIVE",
+                "13, 123456, bnd_U, C, C[2:321682[, bnd_V, 1, 123457, 123456, 2, 321682, 321681, POSITIVE",
+                "13, 123457, bnd_X, A, [17:198983[A, bnd_Z, 3, 123457, 123456, 17, 198983, 198982, NEGATIVE",
+                "17, 198982, bnd_Y, A, A]2:321681], bnd_W, 2, 198983, 198982, 2, 321682, 321681, NEGATIVE",
+                "17, 198983, bnd_Z, C, [13:123457[C, bnd_X, 3, 198983, 198982, 13, 123457, 123456, NEGATIVE",
+                // Inserted sequence
+                "2, 321682, bnd_V, T, ]13:123456]AGTNNNNNCAT, bnd_U, ins, 321682, 321681, 13, 123457, 123456, POSITIVE",
+                "13, 123456, bnd_U, C, CAGTNNNNNCA[2:321682[, bnd_V, ins, 123457, 123456, 2, 321682, 321681, POSITIVE",
+        })
+            // CASE REF  ALT     Meaning                                                    Example
+            // 1    s    t[p[    piece extending to the right of p is joined after t        t|p+>
+            // 2    s    t]p]    reverse comp piece extending left of p is joined after t   t|<-p
+            // 3    s    ]p]t    piece extending to the left of p is joined before t        <+p|t
+            // 4    s    [p[t    reverse comp piece extending right of p is joined before t p->|t
+        void parseVcfSpec(String chrom, int pos, String id, String ref, String alt, String mateId, String eventId) {
+            GenomicBreakendVariant variant = resolveBreakendVariant(chrom, pos, id, ref, alt, mateId, eventId);
+            assertThat(variant.contigName(), equalTo(chrom));
+            // pos, strand, ref and alt are debatable!
+            assertThat(variant.left().id(), equalTo(id));
+            assertThat(variant.right().id(), equalTo(mateId));
+            assertThat(variant.eventId(), equalTo(eventId));
+        }
+
+        private GenomicBreakendVariant resolveBreakendVariant(String chrom, int pos, String id, String ref, String alt, String mateId, String eventId) {
+            return HG19_RESOLVER.resolve(eventId, id, mateId, HG19.contigByName(chrom), pos, ConfidenceInterval.precise(), ConfidenceInterval.precise(), ref, alt);
+        }
+
+        /**
+         * 5.4.1 Inserted Sequence
+         * Sometimes, as shown in Figure 2, some bases are inserted between the two breakends, this information is also carried
+         * in the ALT column:
+         * <pre>
+         * #CHROM   POS   ID    REF    ALT    QUAL   FILTER    INFO
+         * 2 321682 bndV  T ]13:123456]AGTNNNNNCAT 6  PASS  SVTYPE=BND;MATEID=bnd U
+         * 13 123456 bndU C CAGTNNNNNCA[2:321682[  6  PASS  SVTYPE=BND;MATEID=bnd V
+         * </pre>
+         */
+        @ParameterizedTest
+        @CsvSource({
+                // CHR13-123456-C]AGTNNNNNCA[T-321682-CHR2
+
+                // 3    s    ]p]t    piece extending to the left of p is joined before t    <+p|t
+                //  2-321682-T ]13:123456]AGTNNNNNCAT
+                "2, 321682, bnd_V, T, ']13:123456]AGTNNNNNCAT', bnd_U, ins, TGNNNNNACT",
+
+                // 1    s    t[p[    piece extending to the right of p is joined after t        t|p+>
+                // 13-1234546-C CAGTNNNNNCA[2:321682[
+                "13, 123456, bnd_U, C, 'CAGTNNNNNCA[2:321682[', bnd_V, ins, AGTNNNNNCA"
+        })
+        void testBreakendInsertion(String contig, int position, String id, String ref, String alt, String mateId, String eventId, String expectedAlt) {
+            GenomicBreakendVariant variant = resolveBreakendVariant(contig, position, id, ref, alt, mateId, eventId);
+            assertThat(variant.alt(), equalTo(expectedAlt));
+        }
+
+
+        /**
+         * 5.4.5 Telomeres
+         * For a rearrangement involving the telomere end of a reference chromosome, we define a virtual telomeric breakend
+         * that serves as a breakend partner for the breakend at the telomere. That way every breakend has a partner. If the
+         * chromosome extends from position 1 to N, then the virtual telomeric breakends are at positions 0 and N+1. For
+         * example, to describe the reciprocal translocation of the entire chromosome 1 into chromosome 13, as illustrated in
+         * Figure 6:
+         * <pre>
+         *         0      1      chr1
+         *         =     T======
+         *          X   / Y
+         *             /
+         *   123456  /   123457  chr13
+         *    ====C      A======
+         *         U    V
+         * </pre>
+         * Figure 6: Telomeres
+         * <p>
+         * the records would look like:
+         * <pre>
+         * #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+         * 1	0	bnd_X	N	.[13:123457[	6	PASS	SVTYPE=BND;MATEID=bnd_V
+         * 1	1	bnd_Y	T	]13:123456]T	6	PASS	SVTYPE=BND;MATEID=bnd_U
+         * 13	123456	bnd_U	C	C[1:1[	6	PASS	SVTYPE=BND;MATEID=bnd_Y
+         * 13	123457	bnd_V	A	]1:0]A	6	PASS	SVTYPE=BND;MATEID=bnd_X
+         * </pre>
+         */
+        @ParameterizedTest
+        @CsvSource({
+                "1, 0, bnd_X, N, .[13:123457[, bnd_V, TELOMERE",
+                "1, 1, bnd_Y, T, ]13:123456]T, bnd_U, TELOMERE",
+                "13, 123456, bnd_U, C, C[1:1[, bnd_Y, TELOMERE",
+                "13, 123457, bnd_V, A, ]1:0]A, bnd_X, TELOMERE"
+        })
+        void testTelomereBreakend(String chrom, int pos, String id, String ref, String alt, String mateId, String eventId) {
+            var breakendVariant = resolveBreakendVariant(chrom, pos, id, ref, alt, mateId, eventId);
+            assertThat(breakendVariant.contigName(), equalTo(chrom));
+            // pos, strand, ref and alt are debatable!
+            assertThat(breakendVariant.left().id(), equalTo(id));
+            assertThat(breakendVariant.mateId(), equalTo(mateId));
+            assertThat(breakendVariant.eventId(), equalTo(eventId));
+        }
+
+
+        /**
+         * 5.4.6 Event modifiers
+         * As mentioned previously, a single rearrangement event can be described as a set of novel adjacencies. For example,
+         * a reciprocal rearrangement such as in Figure 7
+         * <p>
+         * <pre>
+         *      chr2    321681     1234567       chr13
+         *      =============G     A===============
+         *                    W - X
+         *      chr13   123456     321682        chr2
+         *      =============C     T===============
+         *                    U - V
+         * </pre>
+         * Figure 7: Reciprocal rearrangement
+         * <p>
+         * would be described as:
+         * <pre>
+         * #CHROM   POS ID  REF ALT QUAL    FILTER  INFO
+         * 2    321681  bndW    G   G[13:123457[    6   PASS    SVTYPE=BND;MATEID=bndX;EVENT=RR0
+         * 2    321682  bndV    T   ]13:123456]T    6   PASS    SVTYPE=BND;MATEID=bndU;EVENT=RR0
+         * 13   123456  bndU    C   C[2:321682[     6   PASS    SVTYPE=BND;MATEID=bndV;EVENT=RR0
+         * 13   123457  bndX    A   ]2:321681]A     6   PASS    SVTYPE=BND;MATEID=bndW;EVENT=RR0
+         * </pre>
+         */
+        @ParameterizedTest
+        @CsvSource({
+                // chrom, pos, id, ref, alt, mateId, eventId, expectedContig, expectedStrand
+                "2, 321681, bndW, G, G[13:123457[, bndU, INV0, '2', POSITIVE", // 1 s t[p[ piece extending to the right of p is joined after t t|p+>
+                "2, 321682, bndV, T, ]13:123456]T, bndX, INV0, '2', NEGATIVE", // 3 s ]p]t piece extending to the left of p is joined before t <+p|t
+                "13, 123456, bndU, C, C[2:321682[, bndW, INV0, '13', POSITIVE", // 1 s t[p[ piece extending to the right of p is joined after t t|p+>
+                "13, 123457, bndX, A, ]2:321681]A, bndV, INV0, '13', NEGATIVE"  // 3 s ]p]t piece extending to the left of p is joined before t <+p|t
+        })
+        void testReciprocalRearrangement(String chrom, int pos, String id, String ref, String alt, String mateId, String eventId, String expectedContig, Strand expectedStrand) {
+            // 1    s    t[p[    piece extending to the right of p is joined after t        t|p+>
+            // 3    s    ]p]t    piece extending to the left of p is joined before t        <+p|t
+
+            //2    321681  bndW    G   G[13:123457[    6   PASS    SVTYPE=BND;MATEID=bndX;EVENT=RR0
+            //     1               s    t[p[    piece extending to the right of p is joined after t        t|p+>
+
+            //2    321682  bndV    T   ]13:123456]T    6   PASS    SVTYPE=BND;MATEID=bndU;EVENT=RR0
+            //               3    s    ]p]t    piece extending to the left of p is joined before t        <+p|t
+
+            //13   123456  bndU    C   C[2:321682[     6   PASS    SVTYPE=BND;MATEID=bndV;EVENT=RR0
+            //     1               s    t[p[    piece extending to the right of p is joined after t        t|p+>
+
+            //13   123457  bndX    A   ]2:321681]A     6   PASS    SVTYPE=BND;MATEID=bndW;EVENT=RR0
+            //               3    s    ]p]t    piece extending to the left of p is joined before t        <+p|t
+
+            var breakend = resolveBreakendVariant(chrom, pos, id, ref, alt, mateId, eventId);
+            assertThat(breakend.contigName(), equalTo(expectedContig));
+            assertThat(breakend.strand(), equalTo(expectedStrand));
+            // pos, strand, ref and alt are debatable!
+            assertThat(breakend.left().id(), equalTo(id));
+            assertThat(breakend.mateId(), equalTo(mateId));
+            assertThat(breakend.eventId(), equalTo(eventId));
+        }
+
+
+        /**
+         * 5.4.7 Inversions
+         * Similarly an inversion such as in Figure 8:
+         * <pre>
+         *      chr2    321681     421682         321682     421681       chr2
+         *      =============G     T-------------------A     C===============
+         *                    W - V       &lt;INV&gt;       U - X
+         * </pre>
+         * Figure 8: Inversion
+         * <p>
+         * can be described equivalently in two ways. Either one uses the short hand notation described previously (recom-
+         * mended for simple cases):
+         * <pre>
+         * #CHROM   POS ID  REF ALT QUAL    FILTER  INFO
+         * 2    321682  INV0    T  <INV>   6   PASS    SVTYPE=INV;END=421681
+         * </pre>
+         * or one describes the breakends:
+         * <pre>
+         * #CHROM POS ID REF ALT QUAL FILTER INFO
+         * 2    321681  bnd_W   G   G]2:421681] 6   PASS    SVTYPE=BND;MATEID=bnd_U;EVENT=INV0
+         * 2    321682  bnd_V   T   [2:421682[T 6   PASS    SVTYPE=BND;MATEID=bnd_X;EVENT=INV0
+         * 2    421681  bnd_U   A   A]2:321681] 6   PASS    SVTYPE=BND;MATEID=bnd_W;EVENT=INV0
+         * 2    421682  bnd_X   C   [2:321682[C 6   PASS    SVTYPE=BND;MATEID=bnd_V;EVENT=INV0
+         * </pre>
+         */
+        @ParameterizedTest
+        @CsvSource({
+                // chrom, pos, id, ref, alt, mateId, eventId, expectedContig, expectedStrand, expectedPos
+                "2, 321681, bndW, G, G]2:421681], bndU, INV0, '2', POSITIVE, 321681", // 2 s t]p] reverse comp piece extending left of p is joined after t t|<-p
+                "2, 321682, bndV, T, [2:421682[T, bndX, INV0, '2', NEGATIVE, 242877691", // 4 s [p[t reverse comp piece extending right of p is joined before t p->|t
+                "2, 421681, bndU, A, A]2:321681], bndW, INV0, '2', POSITIVE, 421681", // 2 s t]p] reverse comp piece extending left of p is joined after t t|<-p
+                "2, 421682, bndX, C, [2:321682[C, bndV, INV0, '2', NEGATIVE, 242777691"  // 4 s [p[t reverse comp piece extending right of p is joined before t p->|t
+        })
+        void testBreakendInversion(String chrom, int pos, String id, String ref, String alt, String mateId, String eventId,
+                                   String expectedContig, Strand expectedStrand, int expectedPos) {
+            // 2    s    t]p]    reverse comp piece extending left of p is joined after t   t|<-p
+            // 4    s    [p[t    reverse comp piece extending right of p is joined before t p->|t
+
+            //#CHROM POS ID REF ALT QUAL FILTER INFO
+            //2 321681 bndW G G]2:421681] 6 PASS SVTYPE=BND;MATEID=bndU;EVENT=INV0
+            //     2        s t]p]    reverse comp piece extending left of p is joined after t   t|<-p
+
+            //2 321682 bndV T [2:421682[T 6 PASS SVTYPE=BND;MATEID=bndX;EVENT=INV0
+            //      4       s [p[t    reverse comp piece extending right of p is joined before t p->|t
+
+            //2 421681 bndU A A]2:321681] 6 PASS SVTYPE=BND;MATEID=bndW;EVENT=INV0
+            //     2        s t]p]    reverse comp piece extending left of p is joined after t   t|<-p
+
+            //2 421682 bndX C [2:321682[C 6 PASS SVTYPE=BND;MATEID=bndV;EVENT=INV0
+            //      4       s [p[t    reverse comp piece extending right of p is joined before t p->|t
+
+            var breakend = resolveBreakendVariant(chrom, pos, id, ref, alt, mateId, eventId);
+
+            // Basic assertions
+            assertThat(breakend.contigName(), equalTo(expectedContig));
+            assertThat(breakend.strand(), equalTo(expectedStrand));
+            assertThat(breakend.start(), equalTo(expectedPos));
+
+            // Breakend-specific assertions
+            assertThat(breakend.isBreakend(), equalTo(true));
+            assertThat(breakend.variantType(), equalTo(VariantType.BND));
+            assertThat(breakend.eventId(), equalTo(eventId));
+            assertThat(breakend.id(), equalTo(id));
+//            assertThat(breakend.ref(), equalTo(ref));
+            // pos, strand, ref and alt are debatable!
+
+            // Verify mate relationships
+            assertThat(breakend.left().id(), equalTo(id));
+            assertThat(breakend.right().contigName(), equalTo(expectedContig));
+        }
+    }
+
+    @Nested
     class AlleleSequenceTests {
 
         @ParameterizedTest
@@ -64,8 +352,8 @@ class VcfBreakendResolverTest {
                 "bndA, '', chr1, 3, C, .C,                       chr1, NEGATIVE, 2, 2, G, .",
         })
         void parseAlleles(String id, String mateId, String leftChr, int leftPos, String ref, String alt,
-                                 String leftContig, Strand leftStrand, int leftStart, int leftEnd,
-                                 String exptRef, String exptAlt) {
+                          String leftContig, Strand leftStrand, int leftStart, int leftEnd,
+                          String exptRef, String exptAlt) {
 
             GenomicAssembly assembly = testAssembly(TestContig.of(1, 5), TestContig.of(2, 10));
 
@@ -193,7 +481,7 @@ class VcfBreakendResolverTest {
             //"event1, bndA, bndB, chr1, 3, C, C[chr2:8[,       chr2, POSITIVE, 8, 7",
             GenomicVariant genomicVariant = GenomicVariant.of(assembly.contigByName("chr1"), "bndA", Strand.POSITIVE, Coordinates.oneBased(3, 3), "C", "C[chr2:8[", 0, "bndB", "event1");
             GenomicBreakendVariant resolvedFromVariant = instance.resolveBreakend(genomicVariant);
-            GenomicVariant expected = instance.resolve("event1", "bndA", "bndB", assembly.contigByName("chr1"), 3,"C", "C[chr2:8[");
+            GenomicVariant expected = instance.resolve("event1", "bndA", "bndB", assembly.contigByName("chr1"), 3, "C", "C[chr2:8[");
             assertThat(resolvedFromVariant, equalTo(expected));
         }
 

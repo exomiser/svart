@@ -1,16 +1,8 @@
 package org.monarchinitiative.svart.vcf;
 
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Coordinates;
-import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.ConfidenceInterval;
-import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.sequence.NucleotideSeq;
-import org.monarchinitiative.svart.GenomicBreakend;
-import org.monarchinitiative.svart.GenomicBreakendVariant;
-import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.VariantType;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -132,14 +124,14 @@ public final class VcfBreakendResolver {
             // The right breakend position needs to be shifted by -1 because the fully-closed empty region will place the
             // break to the right of the input position but this needs to be to the left because the VCF always includes the
             // reference base but indicates the break is to the left of this. Hence, 'left' and 'right' breakends.
-            Coordinates coordinates = Coordinates.of(VCF_COORDINATE_SYSTEM, rightStart, ciEnd, rightStart - 1, ciEnd);
+            Coordinates coordinates = Coordinates.ofBreakend(VCF_COORDINATE_SYSTEM, rightStart, ciEnd);
             right = parseRightBreakend(mateId, altMatcher.group("contig"), rightStrand, coordinates);
             leftStrand = determineLeftStrand(ref, alt, head, tail);
             insertedSeq = leftStrand.isPositive() ? head.substring(1) : tail.substring(0, tail.length() - 1);
         }
         // maybe this is unresolved? e.g. 'G.' (POS) or '.G' (NEG)
         else if (alt.startsWith(".") || alt.endsWith(".")) {
-            right = GenomicBreakend.unresolved(VCF_COORDINATE_SYSTEM);
+            right = GenomicBreakend.unresolved(VCF_COORDINATE_SYSTEM, mateId);
             leftStrand = alt.indexOf('.') == 0 ? Strand.NEGATIVE : Strand.POSITIVE;
             insertedSeq = leftStrand.isPositive() ? alt.substring(1) : alt.substring(0, alt.length() - 1);
         } else {
@@ -148,7 +140,7 @@ public final class VcfBreakendResolver {
         // The left breakend position needs to be shifted by +1 because the fully-closed empty region will place the
         // break to the left of the input position but this needs to be to the right because the VCF always includes the
         // reference base but indicates the break is to the right of this. Hence 'left' and 'right' breakends.
-        Coordinates leftCoordinates = Coordinates.of(VCF_COORDINATE_SYSTEM, position + 1, ciPos, position, ciPos);
+        Coordinates leftCoordinates = Coordinates.ofBreakend(VCF_COORDINATE_SYSTEM, position + 1, ciPos);
         GenomicBreakend left = createBreakend(contig, id, leftStrand, leftCoordinates);
 
         return GenomicBreakendVariant.of(eventId, left, right,
@@ -181,7 +173,7 @@ public final class VcfBreakendResolver {
 
     private static GenomicBreakend createBreakend(Contig contig, String id, Strand strand, Coordinates coordinates) {
         // VCF coordinates are always given in 1-based coordinates on the POS strand, so we need to check the position
-        // and *then* create the breakend on the to the strand indicated - do not be tempted to inline the strand part prematurely!
+        // and *then* create the breakend on the strand indicated - do not be tempted to inline the strand part prematurely!
         Coordinates coord = strand == VCF_STRAND ? coordinates : coordinates.invert(contig);
         return GenomicBreakend.of(contig, id, strand, coord);
     }
