@@ -1,15 +1,21 @@
 package org.monarchinitiative.svart;
 
-import org.monarchinitiative.svart.impl.DefaultGenomicBreakend;
+import org.monarchinitiative.svart.variant.DefaultGenomicBreakend;
 
 /**
+ * A broken end of a {@link Contig} used as a component of a {@link GenomicBreakendVariant}.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface GenomicBreakend extends GenomicRegion {
 
     static GenomicBreakend unresolved(CoordinateSystem coordinateSystem) {
-        return UnresolvedGenomicBreakend.instance(coordinateSystem);
+        return UnresolvedGenomicBreakend.of(coordinateSystem);
+    }
+
+    static GenomicBreakend unresolved(CoordinateSystem coordinateSystem, String id) {
+        return UnresolvedGenomicBreakend.of(coordinateSystem, id);
     }
 
     /**
@@ -40,7 +46,7 @@ public interface GenomicBreakend extends GenomicRegion {
      * @return <code>true</code> if the breakend is unresolved
      */
     default boolean isUnresolved() {
-        return this.equals(unresolved(coordinateSystem()));
+        return false;
     }
 
     static GenomicBreakend of(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, int start, int end) {
@@ -48,7 +54,6 @@ public interface GenomicBreakend extends GenomicRegion {
         return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }
 
-        // TODO - should we have Breakend.left() and Breakend.right() constructors as this will enable direct input of the VCF coordinates.
     static GenomicBreakend of(Contig contig, String id, Strand strand, Coordinates coordinates) {
         return DefaultGenomicBreakend.of(contig, id, strand, coordinates);
     }

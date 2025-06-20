@@ -202,7 +202,7 @@ public abstract class BaseGenomicBreakendVariant<T extends GenomicBreakendVarian
                 '}';
     }
 
-    public abstract static class Builder<T extends Builder<T>> extends BaseGenomicRegion.Builder<T> {
+    public abstract static class Builder<T extends Builder<T>> {
 
         protected GenomicBreakend left;
         protected GenomicBreakend right;
@@ -212,17 +212,16 @@ public abstract class BaseGenomicBreakendVariant<T extends GenomicBreakendVarian
 
         // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
         // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
-        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
-        // to maintain the correct state when finally built.
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters maintain
+        // the correct state when finally built.
 
-        public T with(GenomicBreakendVariant breakendVariant) {
+        public T breakendVariant(GenomicBreakendVariant breakendVariant) {
             Objects.requireNonNull(breakendVariant, "breakendVariant cannot be null");
-            return with(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), breakendVariant.alt());
+            return breakendVariant(breakendVariant.eventId(), breakendVariant.left(), breakendVariant.right(), breakendVariant.ref(), breakendVariant.alt());
         }
 
-        public T with(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
+        public T breakendVariant(String eventId, GenomicBreakend left, GenomicBreakend right, String ref, String alt) {
             Objects.requireNonNull(left, "left breakend cannot be null");
-            super.with(left);
             this.eventId = Objects.requireNonNull(eventId);
             this.left = Objects.requireNonNull(left);
             this.right = Objects.requireNonNull(right);
@@ -231,18 +230,21 @@ public abstract class BaseGenomicBreakendVariant<T extends GenomicBreakendVarian
             return self();
         }
 
-        /**
-         * A no-op override. Breakend variants, with breakends possibly being on different strands are not able to
-         * change their strand.
-         * @param strand the target strand on which to place this variant
-         * @return the same instance
-         */
-        @Override
-        public T withStrand(Strand strand) {
+        public T asZeroBased() {
+            return withCoordinateSystem(CoordinateSystem.ZERO_BASED);
+        }
+
+        public T asOneBased() {
+            return withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        }
+
+        public T withCoordinateSystem(CoordinateSystem coordinateSystem) {
+            this.left = left.withCoordinateSystem(coordinateSystem);
+            this.right = right.withCoordinateSystem(coordinateSystem);
             return self();
         }
 
-        protected abstract BaseGenomicBreakendVariant<?> build();
+        protected abstract GenomicBreakendVariant build();
 
         protected abstract T self();
     }

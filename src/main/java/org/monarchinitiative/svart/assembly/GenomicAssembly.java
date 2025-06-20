@@ -21,8 +21,6 @@
 package org.monarchinitiative.svart.assembly;
 
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
-import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -30,6 +28,9 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
+ * A genomic assembly based on the NCBI assembly_report.txt. This interface provides methods for retrieving genomic
+ * reference sequence {@link Contig} instances by name or numerical identifier.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */

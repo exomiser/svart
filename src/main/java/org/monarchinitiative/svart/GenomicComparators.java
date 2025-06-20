@@ -16,21 +16,21 @@ class GenomicComparators {
         }
     }
 
-    enum RegionNaturalOrderComparator implements Comparator<Region<?>> {
+    enum IntervalNaturalOrderComparator implements Comparator<Interval> {
         INSTANCE;
 
         @Override
-        public int compare(Region o1, Region o2) {
-            return Region.compare(o1, o2);
+        public int compare(Interval o1, Interval o2) {
+            return Interval.compare(o1, o2);
         }
     }
 
-    enum GenomicRegionNaturalOrderComparator implements Comparator<GenomicRegion> {
+    enum GenomicIntervalNaturalOrderComparator implements Comparator<GenomicInterval> {
         INSTANCE;
 
         @Override
-        public int compare(GenomicRegion o1, GenomicRegion o2) {
-            return GenomicRegion.compare(o1, o2);
+        public int compare(GenomicInterval o1, GenomicInterval o2) {
+            return GenomicInterval.compare(o1, o2);
         }
     }
 

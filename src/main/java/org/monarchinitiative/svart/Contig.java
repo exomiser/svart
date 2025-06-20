@@ -1,53 +1,72 @@
 package org.monarchinitiative.svart;
 
 import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.DefaultContig;
 import org.monarchinitiative.svart.assembly.SequenceRole;
-import org.monarchinitiative.svart.impl.DefaultContig;
 
 /**
+ * A model of a genomic reference sequence based on the NCBI assembly report.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 public interface Contig extends Comparable<Contig> {
 
-    // Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file.
-    // *MUST* be natural ordering of [autosomes] [sex-chromosomes] [mitochondrial]
-    // *MUST* be unique within an assembly
-    // Other unplaced, unlocalised, patch, alt-scaffold sequences are not required to be ordered in any specific way.
-    // Zero is reserved as the 'unknown' value.
+    /**
+     * Reserved range 1-25 in the case of human for the 'assembled-molecule' in the assembly report file.
+     * <b>MUST</b> be natural ordering of [autosomes] [sex-chromosomes] [mitochondrial].
+     * <b>MUST</b> be unique within an assembly.
+     * Other unplaced, unlocalised, patch, alt-scaffold sequences are not required to be ordered in any specific way but
+     * their id should be based on declared order.
+     * Zero is reserved as the 'unknown' value.
+     */
     int id();
 
-    // Sequence-name column 0 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
+    /**
+     * Sequence-name column 0 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT
+     */
     String name();
 
     /**
-     * @return contig sequence role
+     * @return The {@link SequenceRole} of the {@link Contig}
      */
     SequenceRole sequenceRole();
 
-    // Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT. This may be a duplicate of
-    // the sequenceName field for chromosomes, but for unlocalised scaffolds, alt loci, patches etc will point to the chromosome on which they
-    // are located.
+    /**
+     * Assigned-Molecule column 2 (zero-based) of the assembly report file e.g. 1-22, X,Y,MT. This may be a duplicate of
+     * the sequenceName field for chromosomes, but for unlocalised scaffolds, alt loci, patches etc will point to the chromosome on which they
+     * are located.
+     */
     String assignedMolecule();
 
-    // Assigned-Molecule-Location/Type column 3 (zero-based) of the assembly report file. One of Chromosome, Mitochondrion, na
+    /**
+     * The {@link AssignedMoleculeType} of the {@link Contig}
+     * Assigned-Molecule-Location/Type column 3 (zero-based) of the assembly report file. One of Chromosome, Mitochondrion, na
+     */
     AssignedMoleculeType assignedMoleculeType();
 
-    // Sequence-Length column 8 (zero-based) of assembly-report
+    /**
+     * Sequence-Length column 8 (zero-based) of assembly-report
+     */
     int length();
 
-    // The Genbank identifier for the contig. This should not be empty and is the primary source of the sequence.
-    // GenBank-Accn column 4 (zero-based) of assembly-report
+    /**
+     * The Genbank identifier for the contig. This should not be empty and is the primary source of the sequence.
+     * GenBank-Accn column 4 (zero-based) of assembly-report
+     */
     String genBankAccession();
 
-    // The RefSeq accession of the contig or empty if unknown
-    // RefSeq is recommended by the HGVS for use when reporting variants.
-    // http://varnomen.hgvs.org/bg-material/refseq/
-    // RefSeq-Accn column 6 (zero-based) of assembly-report
+    /**
+     * The RefSeq accession of the contig or empty if unknown
+     * RefSeq is recommended by the <a href="http://varnomen.hgvs.org/bg-material/refseq/">HGVS</a> for use when reporting variants.
+     * RefSeq-Accn column 6 (zero-based) of assembly-report
+     */
     String refSeqAccession();
 
-    // Because chr prefixes are awesome
-    // UCSC-style-name column 9 (zero-based) of assembly-report
+    /**
+     * Because chr prefixes are awesome?
+     * UCSC-style-name column 9 (zero-based) of assembly-report
+     */
     String ucscName();
 
     //# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name

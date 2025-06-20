@@ -1,6 +1,9 @@
 package org.monarchinitiative.svart;
 
 
+import org.monarchinitiative.svart.coordinates.ImpreciseCoordinates;
+import org.monarchinitiative.svart.coordinates.PreciseCoordinates;
+
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -16,12 +19,10 @@ import static org.monarchinitiative.svart.CoordinateSystem.ZERO_BASED;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
-public interface Coordinates extends CoordinateSystemed<Coordinates> {
+public sealed interface Coordinates extends Convertible<Coordinates> permits PreciseCoordinates, ImpreciseCoordinates {
 
-    Coordinates EMPTY = PreciseCoordinates.of(ZERO_BASED, 0, 0);
-
-    default Coordinates empty() {
-        return EMPTY;
+    static Coordinates empty() {
+        return PreciseCoordinates.empty();
     }
 
     CoordinateSystem coordinateSystem();
@@ -100,7 +101,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return coordinateSystem == ZERO_BASED ? 0 : ZERO_BASED.startDelta(coordinateSystem);
     }
 
-    Coordinates withPadding(int upstream, int downstream);
+    Coordinates extend(int upstream, int downstream);
 
     /**
      * Returns the length of a region, in bases
@@ -136,7 +137,8 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
 
     /**
      * Determines whether two regions overlap, returning true if they do and false if they do not. Empty intervals are
-     * considered as overlapping if they are at the boundaries of the other interval. This method is transitive such
+     * NOT considered as overlapping if they are at the boundaries of the other interval. However, two empty intervals
+     * with the same start and end coordinates are considered as overlapping. This method is transitive such
      * that overlap(a, b) = overlap(b, a). The input {@link CoordinateSystem} are not required to match.
      *
      * @param aSystem {@link CoordinateSystem} for interval described by positions aStart and aEnd
@@ -148,14 +150,27 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
      * @return true indicating intervals a and b overlap or false if they do not.
      */
     public static boolean overlap(CoordinateSystem aSystem, int aStart, int aEnd, CoordinateSystem bSystem, int bStart, int bEnd) {
-        // Check empty intervals abutting a region are included, this includes other empty intervals at the same position.
-        if (isEmpty(aSystem, aStart, aEnd)) {
-            return aContainsB(bSystem, bStart, bEnd, aSystem, aStart, aEnd);
+        return overlapZeroBased(zeroBasedStart(aSystem, aStart), aEnd, zeroBasedStart(bSystem, bStart), bEnd);
+    }
+
+    /**
+     * Fast zero-based overlap calculation. <b>IMPORTANT: This method requires zero-based coordinates!!!</b>
+     * Determines whether two regions overlap, returning true if they do and false if they do not. Empty intervals are
+     * NOT considered as overlapping if they are at the boundaries of the other interval. However, two empty intervals
+     * with the same start and end coordinates are considered as overlapping. This method is transitive such
+     * that overlap(a, b) = overlap(b, a).
+     *
+     * @param aStart  zero-based start coordinate of interval a
+     * @param aEnd    zero-based end coordinate of interval a
+     * @param bStart  zero-based start coordinate of interval b
+     * @param bEnd    zero-based end coordinate of interval b
+     * @return true indicating intervals a and b overlap or false if they do not.
+     */
+    public static boolean overlapZeroBased(int aStart, int aEnd, int bStart, int bEnd) {
+        if (aStart == aEnd && bStart == bEnd) {
+            return aStart == bEnd;
         }
-        if (isEmpty(bSystem, bStart, bEnd)) {
-            return aContainsB(aSystem, aStart, aEnd, bSystem, bStart, bEnd);
-        }
-        return zeroBasedStart(aSystem, aStart) < bEnd && zeroBasedStart(bSystem, bStart) < aEnd;
+        return aStart < bEnd && bStart < aEnd;
     }
 
     default int overlapLength(Coordinates other) {
@@ -269,29 +284,81 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         return coordinateSystem == CoordinateSystem.ONE_BASED ? -1 : 0;
     }
 
+    /**
+     * Calculates the end coordinate for an allele based on the given start coordinate, reference bases and coordinate
+     * system.
+     *
+     * @param coordinateSystem the coordinate system of the start coordinate
+     * @param start the starting coordinate of the reference allele
+     * @param ref the reference allele bases
+     * @return the calculated end coordinate
+     */
+    static int calculateEnd(CoordinateSystem coordinateSystem, int start, String ref) {
+        return start + ref.length() + endDelta(coordinateSystem);
+    }
+
+    /**
+     * Checks that a set of coordinates are within the contig start for the coordinate system and in the correct
+     * orientation such that the end must occur after the start. Exceptions to this rule are:
+     * <ul>
+     *   <li>One-based insertions are of the form start = end + 1 e.g. [1, 0] for an insertion point before the first base
+     *   of a contig.</li>
+     *   <li>For virtual telomeric sequences occurring before or after the contig, a single base at position [0, 0] or
+     *   [-1, 0) will be considered as valid.</li>
+     * </ul>
+     */
     static void validateCoordinates(CoordinateSystem coordinateSystem, int start, int end) {
         Objects.requireNonNull(coordinateSystem);
-        if (end < 0) {
-            throw new InvalidCoordinatesException("Coordinates " + start + '-' + end + " cannot have end coordinate `" + end + "` with negative value");
-        }
         if (coordinateSystem == CoordinateSystem.ONE_BASED) {
-            if (start <= 0) {
-                throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with zero or negative value");
+            if (start < 0) {
+                throw new CoordinatesOutOfBoundsException("One-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with a negative value");
             }
             if (start > end + 1) {
-                // region [2,1] is an empty region, equivalent to (1,2)
+                // region [2,1] is an empty region, equivalent to [1,1)
                 throw new InvalidCoordinatesException("One-based coordinates " + start + '-' + end + " must have a start position at most one place past the end position");
             }
         } else if (coordinateSystem == ZERO_BASED) {
-            if (start < 0) {
-                throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with negative value");
+            if (start < -1) {
+                throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + start + '-' + end + " cannot have start coordinate `" + start + "` with a negative value");
             }
             if (start > end) {
-                // region [1,1) is an empty region, equivalent to (0,2)
+                // region [1,1) is an empty region, equivalent to [2,1]
                 throw new InvalidCoordinatesException("Zero-based coordinates " + start + '-' + end + " must have a start position before the end position");
             }
         }
     }
+
+    /**
+     * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
+     * implementing {@link GenomicInterval} use this method to validate their inputs.
+     *
+     * @param contig           {@link Contig} on which the interval is located
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig.
+     */
+    default void validateCoordinatesOnContig(Contig contig) {
+        validateCoordinatesOnContig(contig, coordinateSystem(), start(), end());
+    }
+
+    /**
+     * Ensures that the coordinates fit within the length of the contig. It is <b>strongly</b> recommended that classes
+     * implementing {@link GenomicInterval} use this method to validate their inputs. Coordinates are given a +/-1 base
+     * outside the length of a contig to enable representation of virtual telomeric sequences.
+     *
+     * @param contig           {@link Contig} on which the interval is located
+     * @param coordinateSystem {@link CoordinateSystem} of the interval.
+     * @param start            interval start
+     * @param end              interval end
+     * @throws CoordinatesOutOfBoundsException when the coordinates overflow the length of the contig +/- one base for
+     * telomeres.
+     */
+    static void validateCoordinatesOnContig(Contig contig, CoordinateSystem coordinateSystem, int start, int end) {
+        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 0 || end > contig.length() + 1)) {
+            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
+        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < -1 || end > contig.length() + 1)) {
+            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
+        }
+    }
+
 
     static Coordinates of(CoordinateSystem coordinateSystem, int start, int end) {
         return PreciseCoordinates.of(coordinateSystem, start, end);
@@ -326,7 +393,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
         //  C   S  L  E
         //  []  1  1  1  (S + L - 1)  ('one-based')
         //  [)  0  1  1  (S + L)      ('zero-based')
-        return PreciseCoordinates.of(coordinateSystem, pos, pos + ref.length() + endDelta(coordinateSystem));
+        return PreciseCoordinates.of(coordinateSystem, pos, calculateEnd(coordinateSystem, pos, ref));
     }
 
     /**
@@ -347,7 +414,7 @@ public interface Coordinates extends CoordinateSystemed<Coordinates> {
             result = ConfidenceInterval.compare(x.startConfidenceInterval(), y.startConfidenceInterval());
         }
         if (result == 0) {
-            result = Integer.compare(x.end(), y.endWithCoordinateSystem(x.coordinateSystem()));
+            result = Integer.compare(x.end(), y.end());
         }
         if (result == 0) {
             result = ConfidenceInterval.compare(x.endConfidenceInterval(), y.endConfidenceInterval());

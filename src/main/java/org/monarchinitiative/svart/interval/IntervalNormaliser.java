@@ -1,7 +1,7 @@
 package org.monarchinitiative.svart.interval;
 
 /**
- * Normalises the begin and end positions for a type.
+ * Normalises the start and end positions for a type.
  * <p>
  * Taken from Jannovar, with minor alterations.
  *
@@ -17,7 +17,7 @@ public interface IntervalNormaliser<T> {
     public int start(T x);
 
     /**
-     * @return begin position of <code>x</code> (exclusive)
+     * @return end position of <code>x</code> (exclusive)
      */
     public int end(T x);
 

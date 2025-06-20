@@ -1,8 +1,13 @@
 package org.monarchinitiative.svart;
 
+import org.monarchinitiative.svart.coordinates.CoordinatesFormat;
+
 import java.util.Objects;
 
 /**
+ * Base class of a {@link GenomicRegion}. It is intended that this class be extended by other classes requiring this base
+ * functionality. An optional fluent {@link Builder} class is also provided for extension.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @author Daniel Danis <daniel.danis@jax.org>
  */
@@ -16,18 +21,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         this.contig = Objects.requireNonNull(contig, "contig must not be null");
         this.strand = Objects.requireNonNull(strand, "strand must not be null");
         this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
-        validateCoordinatesOnContig(coordinates, contig);
-    }
-
-    private void validateCoordinatesOnContig(Coordinates coordinates, Contig contig) {
-        CoordinateSystem coordinateSystem = coordinates.coordinateSystem();
-        int start = coordinates.start();
-        int end = coordinates.end();
-        if (coordinateSystem == CoordinateSystem.ONE_BASED && (start < 1 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("One-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 1 + ',' + contig.length() + ']');
-        } else if (coordinateSystem == CoordinateSystem.ZERO_BASED && (start < 0 || end > contig.length())) {
-            throw new CoordinatesOutOfBoundsException("Zero-based coordinates " + contig.name() + ':' + start + '-' + end + " out of contig bounds [" + 0 + ',' + contig.length() + ')');
-        }
+        GenomicInterval.validateCoordinatesOnContig(contig, coordinates);
     }
 
     protected BaseGenomicRegion(Builder<?> builder) {
@@ -92,8 +86,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BaseGenomicRegion)) return false;
-        BaseGenomicRegion<?> that = (BaseGenomicRegion<?>) o;
+        if (!(o instanceof BaseGenomicRegion<?> that)) return false;
         return contig.equals(that.contig) &&
                 strand == that.strand &&
                 coordinates.equals(that.coordinates);
@@ -109,19 +102,8 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
         return "BaseGenomicRegion{" +
                 "contig=" + contig.id() +
                 ", strand=" + strand +
-                ", " + formatCoordinates() +
+                ", " + CoordinatesFormat.formatCoordinates(coordinates) +
                 '}';
-    }
-
-    protected String formatCoordinates() {
-        if (coordinates.isPrecise()) {
-            return "coordinateSystem=" + coordinateSystem() +
-                    ", start=" + start() +
-                    ", end=" + end();
-        }
-        return "coordinateSystem=" + coordinateSystem() +
-                ", start=" + start() + ' ' + startConfidenceInterval() +
-                ", end=" + end() + ' ' + endConfidenceInterval();
     }
 
     protected abstract static class Builder<T extends Builder<T>> {
@@ -135,20 +117,15 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
 
         // n.b. this class does not offer the usual plethora of Builder options for each and every variable as they are
         // inherently linked to one-another and to allow this will more than likely ensure that objects are built in an
-        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters so as
-        // to maintain the correct state when finally built.
+        // improper state. These methods are intended to allow subclasses to easily pass in the correct parameters to
+        // maintain the correct state when finally built.
 
-        public T with(GenomicRegion genomicRegion) {
+        public T region(GenomicRegion genomicRegion) {
             Objects.requireNonNull(genomicRegion, "genomicRegion cannot be null");
-            return with(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
+            return region(genomicRegion.contig(), genomicRegion.strand(), genomicRegion.coordinates());
         }
 
-        public T with(GenomicVariant genomicVariant) {
-            Objects.requireNonNull(genomicVariant, "variant cannot be null");
-            return with(genomicVariant.contig(), genomicVariant.strand(), genomicVariant.coordinates());
-        }
-
-        public T with(Contig contig, Strand strand, Coordinates coordinates) {
+        public T region(Contig contig, Strand strand, Coordinates coordinates) {
             this.contig = Objects.requireNonNull(contig, "contig must not be null");
             this.strand = Objects.requireNonNull(strand, "strand must not be null");
             this.coordinates = Objects.requireNonNull(coordinates, "coordinates must not be null");
@@ -185,7 +162,7 @@ public abstract class BaseGenomicRegion<T extends GenomicRegion> implements Geno
             return self();
         }
 
-        protected abstract BaseGenomicRegion<?> build();
+        protected abstract GenomicRegion build();
 
         protected abstract T self();
     }
