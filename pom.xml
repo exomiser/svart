@@ -106,7 +106,7 @@
         <dependency>
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
-            <version>3.0.5</version>
+            <version>4.2.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
