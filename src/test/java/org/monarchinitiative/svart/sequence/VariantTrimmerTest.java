@@ -279,6 +279,30 @@ class VariantTrimmerTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            // already trimmed
+            "1001, TC, AG, LEFT,  RETAIN, 1001, TC, AG",
+            "1001, TC, AG, LEFT,  REMOVE, 1001, TC, AG",
+            "1001, TC, AG, RIGHT,  RETAIN, 1001, TC, AG",
+            "1001, TC, AG, RIGHT,  REMOVE, 1001, TC, AG",
+            // needs a trim
+            "1001, TCAGCAGCAG, TCAGCAG, LEFT,  RETAIN, 1001, TCAG, T",
+            "1001, TCAGCAGCAG, TCAGCAG, LEFT,  REMOVE, 1002, CAG, ''",
+            "1001, TCAGCAGCAG, TCAGCAG, RIGHT,  RETAIN, 1007, GCAG, G",
+            "1001, TCAGCAGCAG, TCAGCAG, RIGHT,  REMOVE, 1008, CAG, ''",
+    })
+    void trimVariant(int start, String ref, String alt, TrimDirection trimDirection, BaseRetention baseRetention, int expStart, String expRef, String expAlt) {
+
+        BaseRetentionStrategy baseRetentionStrategy = baseRetention == BaseRetention.RETAIN ? retainingCommonBase() : removingCommonBase();
+        VariantTrimmer instance = trimDirection == TrimDirection.LEFT ? VariantTrimmer.leftShiftingTrimmer(baseRetentionStrategy) : VariantTrimmer.rightShiftingTrimmer(baseRetentionStrategy);
+
+        TestContig contig = TestContig.of(2, 2000);
+        GenomicVariant input = GenomicVariant.of(contig, Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.oneBased(), start, ref), ref, alt);
+        GenomicVariant expected = GenomicVariant.of(contig, Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.oneBased(), expStart, expRef), expRef, expAlt);
+        assertThat(instance.trimVariant(input), equalTo(expected));
+    }
+
     @Nested
     class JannovarTests {
 

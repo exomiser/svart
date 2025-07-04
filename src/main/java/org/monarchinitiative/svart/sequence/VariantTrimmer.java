@@ -1,5 +1,6 @@
 package org.monarchinitiative.svart.sequence;
 
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.VariantType;
 
@@ -32,6 +33,7 @@ import java.util.Objects;
  * <a href="https://doi.org/10.1093/bioinformatics/btz856">SPDI: data model for variants and applications at NCBI</a> Variant OverCorrection Algorithm (VOCA) described in supplementary material
  * <p>
  * <a href="https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html">GA4GH Variation Representation Specification - Normalisation</a> published as <a href="https://doi.org/10.1016/j.xgen.2021.100027">The GA4GH Variation Representation Specification (VRS): a computational framework for variation representation and federated identification.</a>
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class VariantTrimmer {
@@ -50,13 +52,36 @@ public abstract class VariantTrimmer {
     public abstract VariantPosition trim(Strand strand, int start, String ref, String alt);
 
     /**
+     * Trims the input {@link GenomicVariant} according to the type of trimmmer this was called from. Symbolic, Breaked
+     * and fully trimmed sequence variants will be returned as input. Trimmable variants will have a new trimmed instance
+     * returned.
+     *
+     * @param genomicVariant The variant to trim.
+     * @return A trimmed {@link GenomicVariant}, trimmed according to the type of {@link VariantTrimmer} this was called
+     * on.
+     */
+    public GenomicVariant trimVariant(GenomicVariant genomicVariant) {
+        if (genomicVariant.isSymbolic() || genomicVariant.isBreakend()) {
+            return genomicVariant;
+        }
+        // cache these here as these could be producing new strings from a CompactSequenceVariant
+        String ref = genomicVariant.ref();
+        String alt = genomicVariant.alt();
+        if (canTrim(ref, alt)) {
+            VariantPosition trimmed = trim(genomicVariant.strand(), genomicVariant.start(), ref, alt);
+            return GenomicVariant.of(genomicVariant.contig(), genomicVariant.id(), genomicVariant.strand(), genomicVariant.coordinateSystem(), trimmed.start(), trimmed.ref(), trimmed.alt());
+        }
+        return genomicVariant;
+    }
+
+    /**
      * Returns an instance of a {@link VariantTrimmer} which will "left-shift" any input variants. This should be used
      * on any multi-alleleic sites from a VCF along with {@link #retainingCommonBase()}. Variants to be further
      * processed by the VOCA should also use this method but choose {@link #removingCommonBase()} such that pure
      * insertions or deletions will have an empty ref/alt base once fully trimmed.
      *
      * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
-     *                             ALT allele, once trimmed.
+     *                              ALT allele, once trimmed.
      * @return an instance of the trimmer which will "left-shift" any variants.
      */
     public static VariantTrimmer leftShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
@@ -109,8 +134,8 @@ public abstract class VariantTrimmer {
         @Override
         public String toString() {
             return "LeftShiftingTrimmer{" +
-                    "baseRetentionStrategy=" + baseRetentionStrategy +
-                    '}';
+                   "baseRetentionStrategy=" + baseRetentionStrategy +
+                   '}';
         }
     }
 
@@ -119,7 +144,7 @@ public abstract class VariantTrimmer {
      * for variants to be reported in HGVS along with {@link #removingCommonBase()}.
      *
      * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
-     *                             ALT allele, once trimmed.
+     *                              ALT allele, once trimmed.
      * @return an instance of the trimmer which will "right-shift" any variants.
      */
     public static VariantTrimmer rightShiftingTrimmer(BaseRetentionStrategy baseRetentionStrategy) {
@@ -170,8 +195,8 @@ public abstract class VariantTrimmer {
         @Override
         public String toString() {
             return "RightShiftingTrimmer{" +
-                    "baseRetentionStrategy=" + baseRetentionStrategy +
-                    '}';
+                   "baseRetentionStrategy=" + baseRetentionStrategy +
+                   '}';
         }
     }
 
@@ -182,10 +207,10 @@ public abstract class VariantTrimmer {
      * fully trimmed.
      * <p>
      * <b>WARNING!! STRAND IS IMPORTANT! IT IS ASSUMED VARIANTS ARE PROVIDED ON THE POSITIVE STRAND.</b> The
-     * {@link LeftShiftingTrimmer#trim} method will safely handle strandedness.
+     * {@link LeftShiftingTrimmer#trimVariant} method will safely handle strandedness.
      *
      * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
-     *                             ALT allele, once trimmed.
+     *                              ALT allele, once trimmed.
      * @return a left-shifted trimmed variant.
      */
     static VariantPosition leftShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
@@ -232,10 +257,10 @@ public abstract class VariantTrimmer {
      * with {@link #removingCommonBase()}.
      * <p>
      * <b>WARNING!! STRAND IS IMPORTANT! IT IS ASSUMED VARIANTS ARE PROVIDED ON THE POSITIVE STRAND.</b> The
-     * {@link RightShiftingTrimmer#trim} method will safely handle strandedness.
+     * {@link RightShiftingTrimmer#trimVariant} method will safely handle strandedness.
      *
      * @param baseRetentionStrategy Indicates how the trimmer will handle any common prefix or suffix between the REF and
-     *                             ALT allele, once trimmed.
+     *                              ALT allele, once trimmed.
      * @return a right-shifted trimmed variant.
      */
     static VariantPosition rightShift(int start, String ref, String alt, BaseRetentionStrategy baseRetentionStrategy) {
@@ -415,10 +440,10 @@ public abstract class VariantTrimmer {
         @Override
         public String toString() {
             return "VariantPosition{" +
-                    "start=" + start +
-                    ", ref='" + ref + '\'' +
-                    ", alt='" + alt + '\'' +
-                    '}';
+                   "start=" + start +
+                   ", ref='" + ref + '\'' +
+                   ", alt='" + alt + '\'' +
+                   '}';
         }
     }
 }
