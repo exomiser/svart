@@ -74,7 +74,7 @@ public record DefaultSequenceVariant(Contig contig, String id, Strand strand, Co
      */
     @Override
     public DefaultSequenceVariant withStrand(Strand other) {
-        if (strand() == other || isBreakend()) {
+        if (strand() == other) {
             return this;
         }
         String refRevComp = NucleotideSeq.reverseComplement(ref);
@@ -92,6 +92,16 @@ public record DefaultSequenceVariant(Contig contig, String id, Strand strand, Co
             return this;
         }
         return new DefaultSequenceVariant(contig(), id, strand(), coordinates().withCoordinateSystem(coordinateSystem), ref, alt, variantType);
+    }
+
+    @Override
+    public boolean isSymbolic() {
+        return false;
+    }
+
+    @Override
+    public boolean isBreakend() {
+        return false;
     }
 
     @Override
